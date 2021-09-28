@@ -1,0 +1,11 @@
+basePath: /
+host: qanda-bauhinia.app.secoder.net
+info:
+  contact: {}
+  title: Q&A API
+  version: "1.0"
+paths:
+  /:
+    get:
+      summary: Index
+swagger: "2.0"
