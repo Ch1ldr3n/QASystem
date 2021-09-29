@@ -59,6 +59,38 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/v1/qestion/:id": {
+            "get": {
+                "description": "Query a question",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Question Query",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "question query id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "question query response",
+                        "schema": {
+                            "$ref": "#/definitions/question.questionQueryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -77,6 +109,20 @@ var doc = `{
             "type": "object",
             "properties": {
                 "questionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "question.questionQueryResponse": {
+            "type": "object",
+            "properties": {
+                "answererId": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "state": {
                     "type": "string"
                 }
             }

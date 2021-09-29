@@ -12,6 +12,15 @@ definitions:
       questionId:
         type: string
     type: object
+  question.questionQueryResponse:
+    properties:
+      answererId:
+        type: string
+      content:
+        type: string
+      state:
+        type: string
+    type: object
 host: qanda-bauhinia.app.secoder.net
 info:
   contact: {}
@@ -42,4 +51,25 @@ paths:
           schema:
             type: string
       summary: Question Create
+  /v1/qestion/:id:
+    get:
+      description: Query a question
+      parameters:
+      - description: question query id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: question query response
+          schema:
+            $ref: '#/definitions/question.questionQueryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Question Query
 swagger: "2.0"

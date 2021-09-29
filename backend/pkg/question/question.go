@@ -4,6 +4,7 @@ import "github.com/labstack/echo/v4"
 
 func Register(group *echo.Group) {
 	group.POST("/", create)
+	group.GET("/:id", query)
 }
 
 // @Summary Question Create
@@ -25,4 +26,21 @@ type questionCreateRequest struct {
 
 type questionCreateResponse struct {
 	QuestionId string
+}
+
+// @Summary Question Query
+// @Description Query a question
+// @Produce json
+// @Param id path string true "question query id"
+// @Success 200 {object} questionQueryResponse "question query response"
+// @Failure 400 {string} string
+// @Router /v1/qestion/:id [get]
+func query(ctx echo.Context) error {
+	return echo.ErrMethodNotAllowed
+}
+
+type questionQueryResponse struct {
+	AnswererId string
+	Content    string
+	State      string
 }
