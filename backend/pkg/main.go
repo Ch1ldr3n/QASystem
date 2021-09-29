@@ -8,19 +8,17 @@ import (
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/question"
 )
 
-var Echo *echo.Echo
-
 // @title Q&A API
 // @version 1.0
 
 // @host qanda-bauhinia.app.secoder.net
 // @BasePath /
-func init() {
+func New() *echo.Echo {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.GET("/docs/*", echoSwagger.WrapHandler)
 	v1 := e.Group("/v1")
 	question.Register(v1)
-	Echo = e
+	return e
 }
