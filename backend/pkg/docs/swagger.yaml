@@ -1,11 +1,45 @@
 basePath: /
+definitions:
+  question.questionCreateRequest:
+    properties:
+      answererId:
+        type: string
+      content:
+        type: string
+    type: object
+  question.questionCreateResponse:
+    properties:
+      questionId:
+        type: string
+    type: object
 host: qanda-bauhinia.app.secoder.net
 info:
   contact: {}
   title: Q&A API
   version: "1.0"
 paths:
-  /:
-    get:
-      summary: Index
+  /v1/qestion:
+    post:
+      consumes:
+      - application/json
+      description: Create a question towards the specified answerer
+      parameters:
+      - description: question create request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/question.questionCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: question create response
+          schema:
+            $ref: '#/definitions/question.questionCreateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Question Create
 swagger: "2.0"

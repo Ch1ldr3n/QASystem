@@ -5,7 +5,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/swaggo/echo-swagger"
 	_ "gitlab.secoder.net/bauhinia/qanda/backend/pkg/docs"
-	"net/http"
+	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/question"
 )
 
 var Echo *echo.Echo
@@ -19,13 +19,8 @@ func init() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.GET("/", index)
 	e.GET("/docs/*", echoSwagger.WrapHandler)
+	v1 := e.Group("/v1")
+	question.Register(v1)
 	Echo = e
-}
-
-// @Summary Index
-// @Router / [get]
-func index(c echo.Context) error {
-	return c.String(http.StatusOK, "index")
 }

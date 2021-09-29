@@ -8,9 +8,62 @@
     "host": "qanda-bauhinia.app.secoder.net",
     "basePath": "/",
     "paths": {
-        "/": {
-            "get": {
-                "summary": "Index"
+        "/v1/qestion": {
+            "post": {
+                "description": "Create a question towards the specified answerer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Question Create",
+                "parameters": [
+                    {
+                        "description": "question create request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/question.questionCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "question create response",
+                        "schema": {
+                            "$ref": "#/definitions/question.questionCreateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "question.questionCreateRequest": {
+            "type": "object",
+            "properties": {
+                "answererId": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                }
+            }
+        },
+        "question.questionCreateResponse": {
+            "type": "object",
+            "properties": {
+                "questionId": {
+                    "type": "string"
+                }
             }
         }
     }
