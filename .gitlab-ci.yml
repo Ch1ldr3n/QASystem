@@ -19,8 +19,13 @@ unit-test:
   stage: test
 
   before_script:
+    - echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye main contrib non-free" > /etc/apt/sources.list
+    - echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-updates main contrib non-free" >> /etc/apt/sources.list
+    - echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-backports main contrib non-free" >> /etc/apt/sources.list
+    - echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list
+    - apt-get update && apt-get install -y nodejs
     - export GOPROXY=https://goproxy.cn
-    - pushd backend && go mod download && popd
+    - pushd backend && go mod download && go install github.com/swaggo/swag/cmd/swag@latest && swag init -d pkg -o pkg/docs && popd
 
   script:
     - pushd backend && go test -cover -race -v -coverprofile=../coverage.out ./... && popd

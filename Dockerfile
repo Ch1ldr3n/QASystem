@@ -7,6 +7,8 @@ RUN yarn build
 FROM golang:1.17 as backend
 ADD backend /go/src/backend
 WORKDIR /go/src/backend
+RUN GOPROXY=https://goproxy.cn go install github.com/swaggo/swag/cmd/swag@latest
+RUN swag init -d pkg -o pkg/docs
 RUN GOPROXY=https://goproxy.cn CGO_ENABLED=0 go build -o /go/bin/qanda ./cmd/qanda
 
 FROM alpine:edge
