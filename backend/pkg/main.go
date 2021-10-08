@@ -13,10 +13,11 @@ import (
 
 // @host qanda-bauhinia.app.secoder.net
 // @BasePath /
-func New() *echo.Echo {
+func New(serve string) *echo.Echo {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Static("/", serve)
 	e.GET("/docs/*", echoSwagger.WrapHandler)
 	v1 := e.Group("/v1")
 	question.Register(v1)
