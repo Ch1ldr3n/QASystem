@@ -19,6 +19,7 @@ unit-test:
   stage: test
 
   before_script:
+    - apt-get update && apt-get install -y nodejs
     - export GOPROXY=https://goproxy.cn
     - pushd backend && go mod download && popd
 
