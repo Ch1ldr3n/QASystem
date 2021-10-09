@@ -2,10 +2,29 @@
   <div class="hello">
     <h1>{{ msg }}</h1>
     <p>
-      For a guide and recipes on how to configure / customize this project,<br>
+      <!-- For a guide and recipes on how to configure / customize this project,<br>
       check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
+      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>. -->
+
     </p>
+
+    <h3>功能介绍</h3>
+    <p>
+      提问者可以向指定回答者发起提问并支付，问题经过审核系统审核后，<br>
+      将会被推送给回答者，回答者在限定的时间内进行作答。<br>
+      问答服务完成后将会自动对订单进行结算，<br>
+      回答者和平台会进行收入和佣金分配。
+    </p>
+
+    <h3>开发人员</h3>
+     <p>
+      队伍：紫荆我的最爱<br>
+      队长：曹隽诚<br>
+      前端：车熙嘉 邱翊君 周满盈<br>
+      后端：曹隽诚 吴志立
+    </p>
+
+
     <h3>Installed CLI Plugins</h3>
     <ul>
       <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
