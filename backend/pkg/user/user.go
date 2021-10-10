@@ -1,0 +1,60 @@
+package user
+
+import "github.com/labstack/echo/v4"
+import "net/http"
+
+func Register(group *echo.Group) {
+	group.POST("/register", register)
+	group.POST("/login", login)
+}
+
+// @Summary User Register
+// @Description Register a new user
+// @Accept json
+// @Produce json
+// @Param body body userRegisterRequest true "user register request"
+// @Success 200 {object} userRegisterResponse "user register response"
+// @Failure 400 {string} string
+// @Router /v1/user/register [post]
+func register(ctx echo.Context) error {
+	return echo.ErrMethodNotAllowed
+}
+
+type userRegisterRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type userRegisterResponse struct {
+	Token string `json:"token"`
+}
+
+// @Summary User Login
+// @Description Login for a exsisting user
+// @Accept json
+// @Produce json
+// @Param body body userLoginRequest true "user login request"
+// @Success 200 {object} userLoginRequest "user login request"
+// @Failure 400 {string} string
+// @Router /v1/user/login [post]
+func login(ctx echo.Context) error {
+	u := new(userLoginRequest)
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	return ctx.JSON(http.StatusOK, userLoginResponse{
+		Token: "example",
+	})
+}
+
+type userLoginRequest struct {
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
+type userLoginResponse struct {
+	Token string `json:"token"`
+}
