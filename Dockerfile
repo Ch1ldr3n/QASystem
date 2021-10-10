@@ -1,8 +1,9 @@
 FROM node:14 as frontend
 ADD frontend /src
 WORKDIR /src
-RUN npm install
-RUN npm run build
+RUN npm install -g cnpm --registry=https://registry.npmmirror.com
+RUN cnpm install
+RUN cnpm run build
 
 FROM golang:1.17 as backend
 ADD backend /go/src/backend
