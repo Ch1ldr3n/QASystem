@@ -2,7 +2,12 @@
   <el-container>
     <el-header>
       <el-menu mode="horizontal">
-        <el-menu-item index="1">付费问答</el-menu-item>
+        <el-menu-item index="2">付费问答</el-menu-item>
+         
+         <el-row style='position: absolute;right:10px;top:5px;'>
+          <el-button plain v-on:click="login=true">登陆</el-button>
+          <el-button plain v-on:click="login=true">注册</el-button>
+        </el-row>
       </el-menu>
     </el-header>
     <el-main>
@@ -70,7 +75,8 @@ export default {
   },
   data() {
     return {
-      image
+      image,
+      login:false
     }
   }
 }
