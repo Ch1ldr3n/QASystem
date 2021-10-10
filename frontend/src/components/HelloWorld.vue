@@ -8,20 +8,27 @@
       <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
     </p> -->
 
-    <h3>功能介绍</h3>
-     <h5>
-      提问者可以向指定回答者发起提问并支付，问题经过审核系统审核后，<br>
-      将会被推送给回答者，回答者在限定的时间内进行作答。<br>
-      问答服务完成后将会自动对订单进行结算，<br>
-      回答者和平台会进行收入和佣金分配。
-     </h5>
+    <ul>
+      <li>
+        <h3>海量题目</h3>
+        <h5>
+            计算机、电子、金融、医药<br>
+            面面俱到
+        </h5>
+      </li>
+    
+      <li>
+        <h3>专业认知</h3>
+          <h5>
+            领域前沿学者<br>
+            客观解答
+          </h5>
+      </li>
+    </ul>
 
     <h4>开发人员</h4>
      <p>
-      队伍：紫荆我的最爱<br>
-      队长：曹隽诚<br>
-      前端：车熙嘉 邱翊君 周满盈<br>
-      后端：曹隽诚 吴志立
+      队伍：紫荆我的最爱 队长：曹隽诚  前端：邱翊君 周满盈 车熙嘉   后端：曹隽诚 吴志立
      </p>
 
 
@@ -38,14 +45,7 @@
       <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
       <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
     </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul> -->
+ -->
   </div>
 </template>
 
@@ -65,22 +65,23 @@ c {
   font-size: 50px;
 }
 h5 {
-  text-align:center;
+  text-align:centery;
   /* border-style: solid;
   border-width:15px; */
-  margin: 30px 1250px 100px 250px;
-  background-color: pink;
+  margin: 40px 1250px 100px 250px;
   font-size: 18px;
 }
 h3 {
-  margin: 50px 0 50px 400px;
+  margin: 60px 1300px 50px 300px;
   text-align:left;
   font-size: 25px;
+  /* background-color: rgb(192, 235, 255); */
 }
 h4 {
   margin: 20px 0 0;
 }
 ul {
+  display: inline;
   list-style-type: none;
   padding: 0;
 }
