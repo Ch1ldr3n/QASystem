@@ -17,12 +17,21 @@ func Register(group *echo.Group) {
 // @Failure 400 {string} string
 // @Router /v1/user/register [post]
 func register(ctx echo.Context) error {
-	return echo.ErrMethodNotAllowed
+	u := new(userRegisterRequest)
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	return ctx.JSON(http.StatusOK, userRegisterResponse{
+		Token: "example",
+	})
 }
 
 type userRegisterRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 type userRegisterResponse struct {
