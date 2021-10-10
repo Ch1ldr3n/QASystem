@@ -1,30 +1,30 @@
 <template>
   <div class="hello">
-    <c>{{ msg }}</c>
+    <c style="font-weight:bold;">{{ msg }}</c>
     <!-- <h1>{{ msg }}</h1> -->
-    <!-- <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p> -->
 
-    <ul>
-      <li>
-        <h3>海量题目</h3>
-        <h5>
-            计算机、电子、金融、医药<br>
-            面面俱到
-        </h5>
-      </li>
-    
-      <li>
-        <h3>专业认知</h3>
-          <h5>
-            领域前沿学者<br>
-            客观解答
-          </h5>
-      </li>
-    </ul>
+    <br>
+
+    <h3>海量题目</h3>
+    <h3>专业认知</h3>
+    <h3>安全可信</h3>
+
+    <br>
+
+    <h5>
+        计算机、电子、金融、医药<br>
+        面面俱到
+    </h5>
+
+    <h5>
+      领域前沿学者<br>
+      客观解答
+    </h5>
+
+    <h5>
+      第三方支付平台<br>
+      可信结算
+    </h5>
 
     <h4>开发人员</h4>
      <p>
@@ -47,6 +47,7 @@
     </ul>
  -->
   </div>
+
 </template>
 
 <script>
@@ -65,20 +66,21 @@ c {
   font-size: 50px;
 }
 h5 {
-  text-align:centery;
+  display: inline-block;
+  text-align:center;
   /* border-style: solid;
   border-width:15px; */
-  margin: 40px 1250px 100px 250px;
+  margin: 10px 200px 50px 160px;
   font-size: 18px;
 }
 h3 {
-  margin: 60px 1300px 50px 300px;
+  display: inline-block;
+  margin: 100px 200px 50px 200px;
   text-align:left;
   font-size: 25px;
-  /* background-color: rgb(192, 235, 255); */
 }
 h4 {
-  margin: 20px 0 0;
+  margin: 100px 0 0;
 }
 ul {
   display: inline;
