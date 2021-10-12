@@ -7,27 +7,27 @@
     <el-form label-width="80px">
       <el-form-item label="用户名">
         <el-input placeholder="username" v-model="state.username" autocomplete="off"></el-input>
-        <span v-if="state.username_valid===false" style="color: red">请输入合法用户名!</span>
+        <span v-if="state.username_valid===false" style="color: red">请设置合法用户名!</span>
       </el-form-item>
     </el-form>
 	<el-form label-width="80px">
       <el-form-item label="密码">
         <el-input placeholder="password" v-model="state.password" autocomplete="off"></el-input>
-        <span v-if="state.password_valid===false" style="color: red">请输入合法密码!</span>
+        <span v-if="state.password_valid===false" style="color: red">请设置合法密码!</span>
       </el-form-item>
     </el-form>
     <span class="dialog-footer">
       <el-button v-on:click="quit">取 消</el-button>
-      <el-button type="primary" v-on:click="signin"
+      <el-button type="primary" v-on:click="register"
                   :disabled="!state.valid"
-                  >登 陆</el-button>
+                  >注 册</el-button>
     </span>
   </el-dialog>
 </template>
 
 <script>
 export default {
-	name: "Signin",
+	name: "Register",
 	props:{
 		dialogVisible: {
 			type: Boolean,
@@ -47,8 +47,8 @@ export default {
 		}
 	},
 	methods: {
-		signin: function(){
-			this.$parent.signin_()//this.state.username,this.state.password),
+		register: function(){
+			this.$parent.register_()//this.state.username,this.state.password),
 			this.state.username="",
 			this.state.password=""
 			},

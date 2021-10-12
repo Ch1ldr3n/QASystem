@@ -65,17 +65,19 @@
   </el-container>
 
   <Signin v-model="signin.dialogVisible"/>
+  <Register v-model="register.dialogVisible"/>
 </template>
 
 <script>
 import Signin from './Signin.vue'
+import Register from './Register.vue'
 const image = require('../assets/fufeiwenda_pic1_tu.png')
 
 export default {
   name: 'Homepage',
   components: {
 		Signin,
-		//Register
+		Register
 	},
   props: {
     msg: String
@@ -92,6 +94,9 @@ export default {
     }
   },
   methods:{
+    register_: function(){
+      this.register.dialogVisible = false;
+    },
     signin_: function(){//username, password) {
       this.signin.dialogVisible = false;
     },
