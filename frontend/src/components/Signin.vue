@@ -13,13 +13,13 @@
 	<el-form label-width="80px">
       <el-form-item label="密码">
         <el-input placeholder="password" v-model="state.password" autocomplete="off"></el-input>
-        <span v-if="state.username_valid===false" style="color: red">请设置合法密码!</span>
+        <span v-if="state.password_valid===false" style="color: red">请设置合法密码!</span>
       </el-form-item>
     </el-form>
     <span class="dialog-footer">
       <el-button v-on:click="quit">取 消</el-button>
-      <el-button type="primary" v-on:click="pushList"
-                  :disabled="state.username_valid===false"
+      <el-button type="primary" v-on:click="signin"
+                  :disabled="!state.valid"
                   >确 定</el-button>
     </span>
   </el-dialog>
@@ -38,15 +38,11 @@ export default {
 	data(){
 		return {
 			state: {
-				type: Object,
-				default: () => {
-					return {
-						username: "",
-						username_valid: false,
-						password: "",
-						password_valid: false,
-					}
-				}
+				username: "",
+				username_valid: true,
+				password: "",
+				password_valid: true,
+				valid: false,
 			}
 		}
 	},
@@ -62,15 +58,21 @@ export default {
 			this.state.password=""
 		},
 	},
-	watch: { // 用于实时检测username是否合法
+	watch: {
 		"state.username": {
 			handler(newName) {
-				this.state.username_valid = /^[A-Za-z\u4e00-\u9fa5][-A-Za-z0-9\u4e00-\u9fa5_]*$/.test(newName)
+				this.state.username_valid = /^[A-Za-z\u4e00-\u9fa5][-A-Za-z0-9\u4e00-\u9fa5_]*$/.test(newName),
+				this.state.valid = this.state.username_valid&&this.state.password_valid;
+				if(!(this.state.username==""&&this.state.password==""))
+					this.state.valid = false;
 			}
 		},
 		"state.password": {
 			handler(newName) {
-				this.state.password_valid = /^[A-Za-z\u4e00-\u9fa5][-A-Za-z0-9\u4e00-\u9fa5_]*$/.test(newName)
+				this.state.password_valid = /^[A-Za-z][-A-Za-z0-9_]*$/.test(newName),
+				this.state.valid = this.state.username_valid&&this.state.password_valid;
+				if(!(this.state.username==""&&this.state.password==""))
+					this.state.valid = false;
 			}
 		}
 	}
