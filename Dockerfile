@@ -5,12 +5,14 @@ RUN npm install -g cnpm --registry=https://registry.npmmirror.com
 RUN cnpm install
 RUN cnpm run build
 
-FROM golang:1.17 as backend
+FROM golang:1.17-alpine as backend
 ADD backend /go/src/backend
 WORKDIR /go/src/backend
 RUN GOPROXY=https://goproxy.cn go install github.com/swaggo/swag/cmd/swag@latest
 RUN swag init -d pkg -o pkg/docs
-RUN GOPROXY=https://goproxy.cn CGO_ENABLED=0 go build -o /go/bin/qanda ./cmd/qanda
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
+RUN apk update && apk add build-base
+RUN GOPROXY=https://goproxy.cn go build -o /go/bin/qanda ./cmd/qanda
 
 FROM alpine:edge
 COPY --from=frontend /src/dist /usr/share/qanda
