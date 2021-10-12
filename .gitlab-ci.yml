@@ -1,5 +1,8 @@
 image: registry.secoder.net/tool/deployer
 
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
 stages:
   - build
   - test
