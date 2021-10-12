@@ -4,7 +4,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/swaggo/echo-swagger"
+	"gitlab.secoder.net/bauhinia/qanda-schema/ent"
 	_ "gitlab.secoder.net/bauhinia/qanda/backend/pkg/docs"
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/question"
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/user"
@@ -22,14 +24,33 @@ func (v *Validator) Validate(i interface{}) error {
 	return nil
 }
 
+type Context struct {
+	echo.Context
+	db *ent.Client
+}
+
+func (c *Context) DB() *ent.Client {
+	return c.db
+}
+
 // @title Q&A API
 // @version 1.0
 
 // @host qanda-bauhinia.app.secoder.net
 // @BasePath /
-func New(serve string) *echo.Echo {
+func New(serve string, storage string, database string) *echo.Echo {
 	e := echo.New()
 	e.Validator = &Validator{validator: validator.New()}
+	db, err := ent.Open(storage, database)
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			cc := &Context{Context: c, db: db}
+			return next(cc)
+		}
+	})
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Static("/", serve)
