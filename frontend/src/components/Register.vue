@@ -13,7 +13,13 @@
 	<el-form label-width="80px">
       <el-form-item label="密码">
         <el-input placeholder="password" v-model="state.password" autocomplete="off"></el-input>
-        <span v-if="state.password_valid===false" style="color: red">请设置合法密码!</span>
+        <span v-if="state.password_valid===false" style="color: red">密码至少4位仅限字母数字</span>
+      </el-form-item>
+    </el-form>
+	<el-form label-width="80px">
+      <el-form-item label="邮箱">
+        <el-input placeholder="email" v-model="state.email" autocomplete="off"></el-input>
+        <span v-if="state.email_valid===false" style="color: red">请输入正确的邮箱!</span>
       </el-form-item>
     </el-form>
     <span class="dialog-footer">
@@ -42,20 +48,18 @@ export default {
 				username_valid: true,
 				password: "",
 				password_valid: true,
+				email:"",
+				email_valid: true,
 				valid: false,
 			}
 		}
 	},
 	methods: {
 		register: function(){
-			this.$parent.register_()//this.state.username,this.state.password),
-			this.state.username="",
-			this.state.password=""
+			this.$parent.register_()//this.state.username,this.state.password,this.state.email),
 			},
 		quit: function(){
-			this.$parent.quit(),
-			this.state.username="",
-			this.state.password=""
+			this.$parent.quit()
 		},
 	},
 	watch: {
@@ -65,17 +69,27 @@ export default {
 				this.state.valid = this.state.username_valid&&this.state.password_valid;
 				if(newName=="")
 					this.state.username_valid = true;
-				if(this.state.username==""||this.state.password=="")
+				if(this.state.username==""||this.state.password==""||this.state.email=="")
 					this.state.valid = false;
 			}
 		},
 		"state.password": {
 			handler(newName) {
-				this.state.password_valid = /^[A-Za-z][-A-Za-z0-9_]*$/.test(newName),
+				this.state.password_valid = /^[-A-Za-z0-9_]{4,20}$/.test(newName),
 				this.state.valid = this.state.username_valid&&this.state.password_valid;
 				if(newName=="")
 					this.state.password_valid = true;
-				if(this.state.username==""||this.state.password=="")
+				if(this.state.username==""||this.state.password==""||this.state.email=="")
+					this.state.valid = false;
+			}
+		},
+		"state.email": {
+			handler(newName) {
+				this.state.email_valid = /^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/.test(newName),
+				this.state.valid = this.state.username_valid&&this.state.password_valid;
+				if(newName=="")
+					this.state.password_valid = true;
+				if(this.state.username==""||this.state.password==""||this.state.email=="")
 					this.state.valid = false;
 			}
 		}
