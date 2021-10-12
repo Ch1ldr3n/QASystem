@@ -1,7 +1,10 @@
 package user
 
 import "github.com/labstack/echo/v4"
+import "gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 import "net/http"
+import "golang.org/x/crypto/bcrypt"
+import "encoding/hex"
 
 func Register(group *echo.Group) {
 	group.POST("/register", register)
@@ -16,12 +19,21 @@ func Register(group *echo.Group) {
 // @Success 200 {object} userRegisterResponse "user register response"
 // @Failure 400 {string} string
 // @Router /v1/user/register [post]
-func register(ctx echo.Context) error {
+func register(c echo.Context) error {
+	ctx := c.(*common.Context)
 	u := new(userRegisterRequest)
 	if err := ctx.Bind(u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	password, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	_, err = ctx.DB().User.Create().SetUsername(u.Username).SetPassword(hex.EncodeToString(password)).Save(ctx.Request().Context())
+	if err != nil {
 		return err
 	}
 	return ctx.JSON(http.StatusOK, userRegisterResponse{

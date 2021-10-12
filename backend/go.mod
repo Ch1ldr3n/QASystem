@@ -9,6 +9,7 @@ require (
 	github.com/swaggo/echo-swagger v1.1.3
 	github.com/swaggo/swag v1.7.3
 	gitlab.secoder.net/bauhinia/qanda-schema v0.0.0-00010101000000-000000000000
+	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 )
 
 require (
@@ -33,7 +34,6 @@ require (
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
-	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/net v0.0.0-20210913180222-943fd674d43e // indirect
 	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 // indirect
 	golang.org/x/text v0.3.7 // indirect
