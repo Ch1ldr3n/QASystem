@@ -5,8 +5,8 @@
         <el-menu-item index="2">付费问答</el-menu-item>
          
          <el-row style='position: absolute;right:10px;top:5px;'>
-          <el-button plain v-on:click="login=true">登陆</el-button>
-          <el-button plain v-on:click="login=true">注册</el-button>
+          <el-button plain v-on:click="signin.dialogVisible=true">登陆</el-button>
+          <el-button plain v-on:click="register.dialogVisible=true">注册</el-button>
         </el-row>
       </el-menu>
     </el-header>
@@ -63,22 +63,48 @@
     <el-footer>
     </el-footer>
   </el-container>
+
+  <Signin v-model="signin.dialogVisible"/>
+  <Register v-model="register.dialogVisible"/>
 </template>
 
 <script>
+import Signin from './Signin.vue'
+import Register from './Register.vue'
 const image = require('../assets/fufeiwenda_pic1_tu.png')
 
 export default {
-  name: 'HelloWorld',
+  name: 'Homepage',
+  components: {
+		Signin,
+		Register
+	},
   props: {
     msg: String
   },
   data() {
     return {
       image,
-      login:false
+      signin:{
+        dialogVisible:false
+      },
+      register:{
+        dialogVisible:false
+      }
     }
-  }
+  },
+  methods:{
+    register_: function(){
+      this.register.dialogVisible = false;
+    },
+    signin_: function(){//username, password) {
+      this.signin.dialogVisible = false;
+    },
+    quit:function() {
+			this.signin.dialogVisible = false;
+      this.register.dialogVisible = false
+		},
+	},
 }
 </script>
 
