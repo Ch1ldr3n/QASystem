@@ -17,5 +17,5 @@ RUN GOPROXY=https://goproxy.cn go build -o /go/bin/qanda ./cmd/qanda
 FROM alpine:edge
 COPY --from=frontend /src/dist /usr/share/qanda
 COPY --from=backend /go/bin/qanda /usr/bin/qanda
-ENTRYPOINT [ "/usr/bin/qanda", "-listen", ":80" ]
+ENTRYPOINT [ "/usr/bin/qanda", "-listen", ":80", "-storage", "postgres", "-database", "postgres://postgres:7a5d3540fabb91e4be5b8d60b5c10767@database.bauhinia.secoder.local/postgres" ]
 EXPOSE 80
