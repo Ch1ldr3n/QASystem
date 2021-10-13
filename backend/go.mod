@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/labstack/echo/v4 v4.6.1
+	github.com/lib/pq v1.10.2
 	github.com/mattn/go-sqlite3 v1.14.8
 	github.com/swaggo/echo-swagger v1.1.3
 	github.com/swaggo/swag v1.7.3

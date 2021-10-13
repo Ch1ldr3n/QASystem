@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/swaggo/echo-swagger"
+	_ "github.com/lib/pq"
 	"gitlab.secoder.net/bauhinia/qanda-schema/ent"
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 	_ "gitlab.secoder.net/bauhinia/qanda/backend/pkg/docs"
