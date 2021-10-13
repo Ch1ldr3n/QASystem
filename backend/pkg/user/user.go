@@ -32,12 +32,16 @@ func register(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	_, err = ctx.DB().User.Create().SetUsername(u.Username).SetPassword(hex.EncodeToString(password)).Save(ctx.Request().Context())
+	user, err := ctx.DB().User.Create().SetUsername(u.Username).SetPassword(hex.EncodeToString(password)).Save(ctx.Request().Context())
+	if err != nil {
+		return err
+	}
+	token, err := ctx.Sign(user.Username)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(http.StatusOK, userRegisterResponse{
-		Token: "example",
+		Token: token,
 	})
 }
 
