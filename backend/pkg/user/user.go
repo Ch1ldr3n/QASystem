@@ -2,6 +2,7 @@ package user
 
 import "github.com/labstack/echo/v4"
 import "gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
+import userp "gitlab.secoder.net/bauhinia/qanda-schema/ent/user"
 import "net/http"
 import "golang.org/x/crypto/bcrypt"
 import "encoding/hex"
@@ -32,12 +33,16 @@ func register(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	_, err = ctx.DB().User.Create().SetUsername(u.Username).SetPassword(hex.EncodeToString(password)).Save(ctx.Request().Context())
+	user, err := ctx.DB().User.Create().SetUsername(u.Username).SetPassword(hex.EncodeToString(password)).Save(ctx.Request().Context())
+	if err != nil {
+		return err
+	}
+	token, err := ctx.Sign(user.Username)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(http.StatusOK, userRegisterResponse{
-		Token: "example",
+		Token: token,
 	})
 }
 
@@ -55,10 +60,11 @@ type userRegisterResponse struct {
 // @Accept json
 // @Produce json
 // @Param body body userLoginRequest true "user login request"
-// @Success 200 {object} userLoginRequest "user login request"
+// @Success 200 {object} userLoginResponse "user login request"
 // @Failure 400 {string} string
 // @Router /v1/user/login [post]
-func login(ctx echo.Context) error {
+func login(c echo.Context) error {
+	ctx := c.(*common.Context)
 	u := new(userLoginRequest)
 	if err := ctx.Bind(u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -66,8 +72,24 @@ func login(ctx echo.Context) error {
 	if err := ctx.Validate(u); err != nil {
 		return err
 	}
+	user, err := ctx.DB().User.Query().Where(userp.Username(u.Username)).Only(ctx.Request().Context())
+	if err != nil {
+		return err
+	}
+	password, err := hex.DecodeString(user.Password)
+	if err != nil {
+		return err
+	}
+	err = bcrypt.CompareHashAndPassword(password, []byte(u.Password))
+	if err != nil {
+		return err
+	}
+	token, err := ctx.Sign(user.Username)
+	if err != nil {
+		return err
+	}
 	return ctx.JSON(http.StatusOK, userLoginResponse{
-		Token: "example",
+		Token: token,
 	})
 }
 

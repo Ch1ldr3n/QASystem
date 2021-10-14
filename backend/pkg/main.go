@@ -5,9 +5,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/swaggo/echo-swagger"
-	_ "github.com/lib/pq"
 	"gitlab.secoder.net/bauhinia/qanda-schema/ent"
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 	_ "gitlab.secoder.net/bauhinia/qanda/backend/pkg/docs"
@@ -32,7 +32,7 @@ func (v *Validator) Validate(i interface{}) error {
 
 // @host qanda-bauhinia.app.secoder.net
 // @BasePath /
-func New(serve string, storage string, database string) *echo.Echo {
+func New(serve string, storage string, database string, key string) *echo.Echo {
 	e := echo.New()
 	e.Validator = &Validator{validator: validator.New()}
 	db, err := ent.Open(storage, database)
@@ -44,7 +44,7 @@ func New(serve string, storage string, database string) *echo.Echo {
 	}
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			cc := &common.Context{Context: c, DBField: db}
+			cc := &common.Context{Context: c, DBField: db, Key: []byte(key)}
 			return next(cc)
 		}
 	})
