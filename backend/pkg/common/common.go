@@ -22,6 +22,10 @@ func (c *Context) Sign(username string) (string, error) {
 	}).SignedString(c.Key)
 }
 
-func (c *Context) Verify() *ent.Client {
-	return c.DBField
+func (c *Context) Verify(token string) (*jwt.RegisteredClaims, error) {
+	parsed, err := jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, func(_ *jwt.Token) (interface{}, error) { return c.Key, nil })
+	if err != nil {
+		return nil, err
+	}
+	return parsed.Claims.(*jwt.RegisteredClaims), nil
 }
