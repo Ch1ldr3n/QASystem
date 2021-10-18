@@ -11,6 +11,7 @@ func Register(group *echo.Group) {
 	group.POST("/register", register)
 	group.POST("/login", login)
 	group.GET("/info", info)
+	group.POST("/edit", edit)
 }
 
 // @Summary User Register
@@ -148,4 +149,48 @@ type userInfoResponse struct {
 	Answerer   bool    `json:"answerer"`
 	Price      float64 `json:"price"`
 	Profession string  `json:"profession"`
+}
+
+// @Summary User Edit
+// @Description Edit current user
+// @Security token
+// @Accept json
+// @Param body body userEditRequest true "user edit request"
+// @Success 200 {string} string
+// @Failure 400 {string} string
+// @Router /v1/user/edit [post]
+func edit(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(userEditRequest)
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.Verify(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	_, err = ctx.DB().User.Update().Where(userp.Username(claims.Subject)).
+		SetNillableEmail(u.Email).SetNillablePhone(u.Phone).
+		SetNillableAnswerer(u.Answerer).SetNillablePrice(u.Price).
+		SetNillableProfession(u.Profession).
+		Save(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.String(http.StatusOK, "user info updated")
+}
+
+type userEditRequest struct {
+	Token      string   `header:"authorization" validate:"required"`
+	Email      *string  `json:"email"`
+	Phone      *string  `json:"phone"`
+	Answerer   *bool    `json:"answerer"`
+	Price      *float64 `json:"price"`
+	Profession *string  `json:"profession"`
 }
