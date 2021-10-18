@@ -10,6 +10,7 @@ import "encoding/hex"
 func Register(group *echo.Group) {
 	group.POST("/register", register)
 	group.POST("/login", login)
+	group.GET("/info", info)
 }
 
 // @Summary User Register
@@ -60,7 +61,7 @@ type userRegisterResponse struct {
 // @Accept json
 // @Produce json
 // @Param body body userLoginRequest true "user login request"
-// @Success 200 {object} userLoginResponse "user login request"
+// @Success 200 {object} userLoginResponse "user login response"
 // @Failure 400 {string} string
 // @Router /v1/user/login [post]
 func login(c echo.Context) error {
@@ -100,4 +101,51 @@ type userLoginRequest struct {
 
 type userLoginResponse struct {
 	Token string `json:"token"`
+}
+
+// @Summary User Info
+// @Description Info of current user
+// @Security token
+// @Produce json
+// @Success 200 {object} userInfoResponse "user info response"
+// @Failure 400 {string} string
+// @Router /v1/user/info [get]
+func info(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(userInfoRequest)
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.Verify(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	user, err := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.JSON(http.StatusOK, userInfoResponse{
+		Username:   user.Username,
+		Email:      user.Email,
+		Phone:      user.Phone,
+		Answerer:   user.Answerer,
+		Price:      user.Price,
+		Profession: user.Profession,
+	})
+}
+
+type userInfoRequest struct {
+	Token string `header:"authorization" validate:"required"`
+}
+
+type userInfoResponse struct {
+	Username   string  `json:"username"`
+	Email      string  `json:"email"`
+	Phone      string  `json:"phone"`
+	Answerer   bool    `json:"answerer"`
+	Price      float64 `json:"price"`
+	Profession string  `json:"profession"`
 }
