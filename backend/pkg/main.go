@@ -32,6 +32,10 @@ func (v *Validator) Validate(i interface{}) error {
 
 // @host qanda-bauhinia.app.secoder.net
 // @BasePath /
+
+// @securityDefinitions.apikey token
+// @in header
+// @name Authorization
 func New(serve string, storage string, database string, key string) *echo.Echo {
 	e := echo.New()
 	e.Validator = &Validator{validator: validator.New()}

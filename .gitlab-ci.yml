@@ -31,7 +31,7 @@ unit-test:
     - pushd backend && go mod download && go install github.com/swaggo/swag/cmd/swag@latest && swag init -d pkg -o pkg/docs && popd
 
   script:
-    - pushd backend && go test -cover -race -v -coverprofile=../coverage.out ./... && popd
+    - pushd backend && go test -cover -race -v -coverprofile=./coverage.out ./... && popd
   after_script:
     - SUFFIX=$RANDOM
     - curl "http://10.0.0.11/sonar-scanner.tar.gz" -s -o "/tmp/sonar-$SUFFIX.tar.gz"
