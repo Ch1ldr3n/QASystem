@@ -16,7 +16,7 @@
           >
         </el-row>
         <el-row v-else style="position: absolute; right: 10px; top: 5px">
-          <el-button plain>个人信息</el-button>
+          <el-button @click="toUser" plain>个人信息</el-button>
           <el-button plain>注销</el-button>
         </el-row>
       </el-menu>
@@ -77,9 +77,21 @@
 <script>
 import Signin from "./Signin.vue";
 import Register from "./Register.vue";
+import { useRouter } from "vue-router";
 const image = require("../assets/fufeiwenda_pic1_tu.png");
 
 export default {
+  setup() {
+    const router = useRouter();
+    const toUser = () => {
+      router.push({
+        name: "user",
+      });
+    };
+    return {
+      toUser,
+    };
+  },
   name: "Homepage",
   components: {
     Signin,
