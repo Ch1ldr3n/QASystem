@@ -1,5 +1,8 @@
 <template>
-  <p>user</p>
+  <div>
+    <h1>hello world</h1>
+    <p>user</p>
+  </div>
 </template>
 <script>
 export default {};
