@@ -1,16 +1,17 @@
 <template>
-  <Homepage/>
+  <!-- <Homepage/> -->
+  <router-view />
 </template>
 
 <script>
-import Homepage from './components/Homepage.vue'
+// import Homepage from "./components/Homepage.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    Homepage
-  }
-}
+    // Homepage,
+  },
+};
 </script>
 
 <style>
