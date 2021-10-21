@@ -77,10 +77,11 @@
 </template>
 
 <script>
-import Signin from "./Signin.vue";
-import Register from "./Register.vue";
+import Signin from './Signin.vue'
+import Register from './Register.vue'
 import { useRouter } from "vue-router";
-const image = require("../assets/fufeiwenda_pic1_tu.png");
+import {postsignin, postregister} from '@/utils/http.js'
+const image = require('../assets/fufeiwenda_pic1_tu.png')
 
 export default {
   setup() {
@@ -109,19 +110,25 @@ export default {
       signin: {
         dialogVisible: false,
       },
-      register: {
-        dialogVisible: false,
+      register:{
+        dialogVisible:false
       },
-      online: true,
-    };
+      tolen: ""
+    }
   },
-  methods: {
-    register_: function () {
-      this.register.dialogVisible = false;
+  methods:{
+    translate: function(response) {
+      if (response.status == 200) {
+        window.localStorage.setItem("token", response.data.token);
+      }
     },
-    signin_: function () {
-      //username, password) {
+    signin_: function(username, password) {
+      postsignin(username, password, this.token, this.translate);
       this.signin.dialogVisible = false;
+    },
+    register_: function(username, password){
+      postregister(username, password, this.translate);
+      this.register.dialogVisible = false;
     },
     quit: function () {
       this.signin.dialogVisible = false;

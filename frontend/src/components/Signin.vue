@@ -60,21 +60,12 @@ export default {
     };
   },
   methods: {
-    signin: function () {
-      this.$router.push("/home");
-      //   this.$parent.signin_(); //this.state.username,this.state.password),
-      //   const { data: res } = this.$http.post("v1/user/login", this.state); //这样传可以吗
-      //   //   (this.state.username = ""), (this.state.password = "");
-      //   console.log(res); // 服务器返回的数据
-      //   if (res.meta.status !== 200) return console.log("登陆失败");
-      //   console.log("登陆成功");
-      //   this.$router.push("/home");
+    signin: function(){
+            this.$parent.signin_(this.state.username,this.state.password)
     },
-    quit: function () {
-      this.$parent.quit(),
-        (this.state.username = ""),
-        (this.state.password = "");
-    },
+    quit: function(){
+            this.$parent.quit()
+    }
   },
   watch: {
     "state.username": {
