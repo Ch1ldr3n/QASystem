@@ -12,6 +12,7 @@ func Register(group *echo.Group) {
 	group.POST("/login", login)
 	group.GET("/info", info)
 	group.POST("/edit", edit)
+	group.GET("/filter", filter)
 }
 
 // @Summary User Register
@@ -193,4 +194,53 @@ type userEditRequest struct {
 	Answerer   *bool    `json:"answerer"`
 	Price      *float64 `json:"price"`
 	Profession *string  `json:"profession"`
+}
+
+// @Summary User Filter
+// @Description Filter for wanted users
+
+func filter(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(userFilterRequest)
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	ctx.Bind(u)
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	users, err := ctx.DB().User.Query().Where(userp.UsernameContains(u.Username)).All(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	listlen := len(users)
+	var userlist [1000]userInfoDisplay
+	for i := 0; i < listlen; i++ {
+		userlist[i].Username	=	users[i].Username
+		userlist[i].Email	=	users[i].Email
+		userlist[i].Phone	=	users[i].Phone
+		userlist[i].Answerer	=	users[i].Answerer
+		userlist[i].Price	=	users[i].Price
+		userlist[i].Profession	=	users[i].Profession
+	}
+	return ctx.JSON(http.StatusOK, userFilterResponse {
+		ResultNum :	listlen,
+		Userlist :	userlist[:listlen],
+	})
+}
+
+type userFilterRequest struct {
+	Username   string  `query:"username"`
+	Email      string  `query:"email"`
+	Phone      string  `query:"phone"`
+	Answerer   bool    `query:"answerer"`
+	Price      float64 `query:"price"`
+	Profession string  `query:"profession"`
+}
+
+type userInfoDisplay	=	userInfoResponse
+
+type userFilterResponse struct {
+	ResultNum	int					`json:"num"`
+	Userlist	[]userInfoDisplay	`json:"userlist"`
 }
