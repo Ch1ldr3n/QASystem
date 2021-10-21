@@ -209,19 +209,122 @@ func filter(c echo.Context) error {
 	if err := ctx.Validate(u); err != nil {
 		return err
 	}
-	users, err := ctx.DB().User.Query().Where(userp.UsernameContains(u.Username)).All(ctx.Request().Context())
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	// begin Filter
+	listCreated := false
+	var candidates [1000]userInfoDisplay
+	var candidateNum int
+	var ifNotCandidate [1000]bool	// all elements are false
+	var listlen int
+	//	- username
+	if u.Username != "" {
+		if listCreated {
+			for i := 0; i < candidateNum; i++ {
+				if !ifNotCandidate[i] && candidates[i].Username != u.Username {
+					ifNotCandidate[i] = true
+					listlen--
+				}
+			}
+		} else {
+			users, err := ctx.DB().User.Query().Where(userp.UsernameContains(u.Username)).All(ctx.Request().Context())
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+			}
+			candidateNum = len(users)
+			listlen = candidateNum
+			for i := 0; i < candidateNum; i++ {
+				candidates[i].Username	=	users[i].Username;
+				candidates[i].Email	=	users[i].Email;
+				candidates[i].Phone	=	users[i].Phone;
+				candidates[i].Answerer	=	users[i].Answerer;
+				candidates[i].Price	=	users[i].Price;
+				candidates[i].Profession	=	users[i].Profession;
+			}
+		}
 	}
-	listlen := len(users)
+	//	- email
+	if u.Email != "" {
+		if listCreated {
+			for i := 0; i < candidateNum; i++ {
+				if !ifNotCandidate[i] && candidates[i].Email != u.Email {
+					ifNotCandidate[i] = true
+					listlen--
+				}
+			}
+		} else {
+			users, err := ctx.DB().User.Query().Where(userp.Email(u.Email)).All(ctx.Request().Context())
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+			}
+			candidateNum = len(users)
+			listlen = candidateNum
+			for i := 0; i < candidateNum; i++ {
+				candidates[i].Username	=	users[i].Username;
+				candidates[i].Email	=	users[i].Email;
+				candidates[i].Phone	=	users[i].Phone;
+				candidates[i].Answerer	=	users[i].Answerer;
+				candidates[i].Price	=	users[i].Price;
+				candidates[i].Profession	=	users[i].Profession;
+			}
+		}
+	}
+	//	- Phone
+	if u.Phone != "" {
+		if listCreated {
+			for i := 0; i < candidateNum; i++ {
+				if !ifNotCandidate[i] && candidates[i].Phone != u.Phone {
+					ifNotCandidate[i] = true
+					listlen--
+				}
+			}
+		} else {
+			users, err := ctx.DB().User.Query().Where(userp.Phone(u.Phone)).All(ctx.Request().Context())
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+			}
+			candidateNum = len(users)
+			listlen = candidateNum
+			for i := 0; i < candidateNum; i++ {
+				candidates[i].Username	=	users[i].Username;
+				candidates[i].Email	=	users[i].Email;
+				candidates[i].Phone	=	users[i].Phone;
+				candidates[i].Answerer	=	users[i].Answerer;
+				candidates[i].Price	=	users[i].Price;
+				candidates[i].Profession	=	users[i].Profession;
+			}
+		}
+	}
+	//	- Profession
+	if u.Profession != "" {
+		if listCreated {
+			for i := 0; i < candidateNum; i++ {
+				if !ifNotCandidate[i] && candidates[i].Profession != u.Profession {
+					ifNotCandidate[i] = true
+					listlen--
+				}
+			}
+		} else {
+			users, err := ctx.DB().User.Query().Where(userp.Profession(u.Profession)).All(ctx.Request().Context())
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+			}
+			candidateNum = len(users)
+			listlen = candidateNum
+			for i := 0; i < candidateNum; i++ {
+				candidates[i].Username	=	users[i].Username;
+				candidates[i].Email	=	users[i].Email;
+				candidates[i].Phone	=	users[i].Phone;
+				candidates[i].Answerer	=	users[i].Answerer;
+				candidates[i].Price	=	users[i].Price;
+				candidates[i].Profession	=	users[i].Profession;
+			}
+		}
+	}
+	// print result
 	var userlist [1000]userInfoDisplay
 	for i := 0; i < listlen; i++ {
-		userlist[i].Username	=	users[i].Username
-		userlist[i].Email	=	users[i].Email
-		userlist[i].Phone	=	users[i].Phone
-		userlist[i].Answerer	=	users[i].Answerer
-		userlist[i].Price	=	users[i].Price
-		userlist[i].Profession	=	users[i].Profession
+		if !ifNotCandidate[i] {
+			userlist[i] = candidates[i]
+		}
 	}
 	return ctx.JSON(http.StatusOK, userFilterResponse {
 		ResultNum :	listlen,
