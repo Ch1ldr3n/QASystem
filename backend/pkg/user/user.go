@@ -198,7 +198,11 @@ type userEditRequest struct {
 
 // @Summary User Filter
 // @Description Filter for wanted users
-
+// @Produce json
+// @Param query query userFilterRequest true "user filter request"
+// @Success 200 {object} userFilterResponse "user filter response"
+// @Failure 400 {string} string
+// @Router /v1/user/filter [get]
 func filter(c echo.Context) error {
 	ctx := c.(*common.Context)
 	u := new(userFilterRequest)
@@ -213,7 +217,7 @@ func filter(c echo.Context) error {
 	listCreated := false
 	var candidates [1000]userInfoDisplay
 	var candidateNum int
-	var ifNotCandidate [1000]bool	// all elements are false
+	var ifNotCandidate [1000]bool // all elements are false
 	var listlen int
 	//	- username
 	if u.Username != "" {
@@ -232,12 +236,12 @@ func filter(c echo.Context) error {
 			candidateNum = len(users)
 			listlen = candidateNum
 			for i := 0; i < candidateNum; i++ {
-				candidates[i].Username	=	users[i].Username;
-				candidates[i].Email	=	users[i].Email;
-				candidates[i].Phone	=	users[i].Phone;
-				candidates[i].Answerer	=	users[i].Answerer;
-				candidates[i].Price	=	users[i].Price;
-				candidates[i].Profession	=	users[i].Profession;
+				candidates[i].Username = users[i].Username
+				candidates[i].Email = users[i].Email
+				candidates[i].Phone = users[i].Phone
+				candidates[i].Answerer = users[i].Answerer
+				candidates[i].Price = users[i].Price
+				candidates[i].Profession = users[i].Profession
 			}
 		}
 	}
@@ -258,12 +262,12 @@ func filter(c echo.Context) error {
 			candidateNum = len(users)
 			listlen = candidateNum
 			for i := 0; i < candidateNum; i++ {
-				candidates[i].Username	=	users[i].Username;
-				candidates[i].Email	=	users[i].Email;
-				candidates[i].Phone	=	users[i].Phone;
-				candidates[i].Answerer	=	users[i].Answerer;
-				candidates[i].Price	=	users[i].Price;
-				candidates[i].Profession	=	users[i].Profession;
+				candidates[i].Username = users[i].Username
+				candidates[i].Email = users[i].Email
+				candidates[i].Phone = users[i].Phone
+				candidates[i].Answerer = users[i].Answerer
+				candidates[i].Price = users[i].Price
+				candidates[i].Profession = users[i].Profession
 			}
 		}
 	}
@@ -284,12 +288,12 @@ func filter(c echo.Context) error {
 			candidateNum = len(users)
 			listlen = candidateNum
 			for i := 0; i < candidateNum; i++ {
-				candidates[i].Username	=	users[i].Username;
-				candidates[i].Email	=	users[i].Email;
-				candidates[i].Phone	=	users[i].Phone;
-				candidates[i].Answerer	=	users[i].Answerer;
-				candidates[i].Price	=	users[i].Price;
-				candidates[i].Profession	=	users[i].Profession;
+				candidates[i].Username = users[i].Username
+				candidates[i].Email = users[i].Email
+				candidates[i].Phone = users[i].Phone
+				candidates[i].Answerer = users[i].Answerer
+				candidates[i].Price = users[i].Price
+				candidates[i].Profession = users[i].Profession
 			}
 		}
 	}
@@ -310,12 +314,12 @@ func filter(c echo.Context) error {
 			candidateNum = len(users)
 			listlen = candidateNum
 			for i := 0; i < candidateNum; i++ {
-				candidates[i].Username	=	users[i].Username;
-				candidates[i].Email	=	users[i].Email;
-				candidates[i].Phone	=	users[i].Phone;
-				candidates[i].Answerer	=	users[i].Answerer;
-				candidates[i].Price	=	users[i].Price;
-				candidates[i].Profession	=	users[i].Profession;
+				candidates[i].Username = users[i].Username
+				candidates[i].Email = users[i].Email
+				candidates[i].Phone = users[i].Phone
+				candidates[i].Answerer = users[i].Answerer
+				candidates[i].Price = users[i].Price
+				candidates[i].Profession = users[i].Profession
 			}
 		}
 	}
@@ -326,9 +330,9 @@ func filter(c echo.Context) error {
 			userlist[i] = candidates[i]
 		}
 	}
-	return ctx.JSON(http.StatusOK, userFilterResponse {
-		ResultNum :	listlen,
-		Userlist :	userlist[:listlen],
+	return ctx.JSON(http.StatusOK, userFilterResponse{
+		ResultNum: listlen,
+		Userlist:  userlist[:listlen],
 	})
 }
 
@@ -341,9 +345,9 @@ type userFilterRequest struct {
 	Profession string  `query:"profession"`
 }
 
-type userInfoDisplay	=	userInfoResponse
+type userInfoDisplay = userInfoResponse
 
 type userFilterResponse struct {
-	ResultNum	int					`json:"num"`
-	Userlist	[]userInfoDisplay	`json:"userlist"`
+	ResultNum int               `json:"num"`
+	Userlist  []userInfoDisplay `json:"userlist"`
 }

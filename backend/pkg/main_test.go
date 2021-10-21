@@ -10,6 +10,7 @@ import (
 
 func TestUser(t *testing.T) {
 	e := New("/var/empty", "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1", "super-secret-key")
+
 	req := httptest.NewRequest(http.MethodPost, "/v1/user/register", bytes.NewBufferString(`
 {
 	"username": "testuser",
@@ -22,6 +23,7 @@ func TestUser(t *testing.T) {
 	if rec.Result().StatusCode != http.StatusOK {
 		t.Fatal("register failed")
 	}
+
 	req = httptest.NewRequest(http.MethodPost, "/v1/user/login", bytes.NewBufferString(`
 {
 	"username": "testuser",
@@ -41,6 +43,7 @@ func TestUser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	req = httptest.NewRequest(http.MethodGet, "/v1/user/info", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", resp.Token)
@@ -48,5 +51,12 @@ func TestUser(t *testing.T) {
 	e.ServeHTTP(rec, req)
 	if rec.Result().StatusCode != http.StatusOK {
 		t.Fatal("get user info failed")
+	}
+
+	req = httptest.NewRequest(http.MethodGet, "/v1/user/filter?username=test", nil)
+	rec = httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+	if rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("filter user failed")
 	}
 }
