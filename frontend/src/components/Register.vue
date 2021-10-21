@@ -16,12 +16,12 @@
         <span v-if="state.password_valid===false" style="color: red">密码至少4位仅限字母数字</span>
       </el-form-item>
     </el-form>
-	<el-form label-width="80px">
+	<!--el-form label-width="80px">
       <el-form-item label="邮箱">
         <el-input placeholder="email" v-model="state.email" autocomplete="off"></el-input>
         <span v-if="state.email_valid===false" style="color: red">请输入正确的邮箱!</span>
       </el-form-item>
-    </el-form>
+    </el-form-->
     <span class="dialog-footer">
       <el-button v-on:click="quit">取 消</el-button>
       <el-button type="primary" v-on:click="register"
@@ -49,14 +49,14 @@ export default {
 				password: "",
 				password_valid: true,
 				email:"",
-				email_valid: true,
-				valid: false,
+				//email_valid: true,
+				//valid: false,
 			}
 		}
 	},
 	methods: {
 		register: function(){
-			this.$parent.register_()//this.state.username,this.state.password,this.state.email),
+			this.$parent.register_(this.state.username,this.state.password)//,this.state.email),
 			},
 		quit: function(){
 			this.$parent.quit()
@@ -69,7 +69,7 @@ export default {
 				this.state.valid = this.state.username_valid&&this.state.password_valid;
 				if(newName=="")
 					this.state.username_valid = true;
-				if(this.state.username==""||this.state.password==""||this.state.email=="")
+				if(this.state.username==""||this.state.password==""/*||this.state.email==""*/)
 					this.state.valid = false;
 			}
 		},
@@ -79,10 +79,10 @@ export default {
 				this.state.valid = this.state.username_valid&&this.state.password_valid;
 				if(newName=="")
 					this.state.password_valid = true;
-				if(this.state.username==""||this.state.password==""||this.state.email=="")
+				if(this.state.username==""||this.state.password==""/*||this.state.email==""*/)
 					this.state.valid = false;
 			}
-		},
+		},/*
 		"state.email": {
 			handler(newName) {
 				this.state.email_valid = /^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/.test(newName),
@@ -92,7 +92,7 @@ export default {
 				if(this.state.username==""||this.state.password==""||this.state.email=="")
 					this.state.valid = false;
 			}
-		}
+		}*/
 	}
 }
 </script>
