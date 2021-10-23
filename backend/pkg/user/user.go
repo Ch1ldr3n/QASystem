@@ -229,8 +229,11 @@ func filter(c echo.Context) error {
 	if u.Answerer != nil {
 		users = users.Where(userp.Answerer(*u.Answerer))
 	}
-	if u.Price != nil {
-		users = users.Where(userp.Price(*u.Price))
+	if u.PriceLowerBound != nil {
+		users = users.Where(userp.PriceGT(*u.PriceLowerBound))
+	}
+	if u.PriceUpperBound != nil {
+		users = users.Where(userp.PriceLT(*u.PriceUpperBound))
 	}
 	if u.Profession != nil {
 		users = users.Where(userp.Profession(*u.Profession))
@@ -261,7 +264,8 @@ type userFilterRequest struct {
 	Email      *string  `query:"email"`
 	Phone      *string  `query:"phone"`
 	Answerer   *bool    `query:"answerer"`
-	Price      *float64 `query:"price"`
+	PriceUpperBound      *float64 `query:"priceUpperBound"`
+	PriceLowerBound      *float64 `query:"priceLowerBound"`
 	Profession *string  `query:"profession"`
 }
 
