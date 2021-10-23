@@ -53,17 +53,13 @@
       <el-footer> </el-footer>
     </el-container>
 
-    <Signin v-model="signin.dialogVisible" />
-    <Register v-model="register.dialogVisible" />
   </div>
 </template>
 
 <script>
-import Signin from './Signin.vue'
-import Register from './Register.vue'
 import NavBar from './NavBar.vue'
 import { useRouter } from "vue-router";
-import {postsignin, postregister} from '@/utils/http.js'
+
 const image = require('../assets/fufeiwenda_pic1_tu.png')
 
 export default {
@@ -81,8 +77,6 @@ export default {
   },
   name: "Homepage",
   components: {
-    Signin,
-    Register,
     NavBar,
   },
   props: {
@@ -91,12 +85,6 @@ export default {
   data() {
     return {
       image,
-      signin: {
-        dialogVisible: false,
-      },
-      register:{
-        dialogVisible:false
-      },
       tolen: ""
     }
   },
@@ -105,18 +93,6 @@ export default {
       if (response.status == 200) {
         window.localStorage.setItem("token", response.data.token);
       }
-    },
-    signin_: function(username, password) {
-      postsignin(username, password, this.token, this.translate);
-      this.signin.dialogVisible = false;
-    },
-    register_: function(username, password){
-      postregister(username, password, this.translate);
-      this.register.dialogVisible = false;
-    },
-    quit: function () {
-      this.signin.dialogVisible = false;
-      this.register.dialogVisible = false;
     },
   },
 };
