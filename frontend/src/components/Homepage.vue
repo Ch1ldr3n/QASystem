@@ -2,25 +2,22 @@
   <div>
     <el-container>
       <el-header>
-        <el-menu mode="horizontal">
+        <NavBar/>
+        <!-- <el-menu mode="horizontal">
           <el-menu-item index="2">付费问答</el-menu-item>
 
           <el-row
             v-if="!online"
             style="position: absolute; right: 10px; top: 5px"
           >
-            <el-button plain v-on:click="signin.dialogVisible = true"
-              >登陆</el-button
-            >
-            <el-button plain v-on:click="register.dialogVisible = true"
-              >注册</el-button
-            >
+            <el-button plain v-on:click="signin.dialogVisible = true">登陆</el-button>
+            <el-button plain v-on:click="register.dialogVisible = true">注册</el-button>
           </el-row>
           <el-row v-else style="position: absolute; right: 10px; top: 5px">
             <el-button @click="toUser" plain>个人信息</el-button>
             <el-button plain>注销</el-button>
           </el-row>
-        </el-menu>
+        </el-menu> -->
       </el-header>
       <el-main>
         <el-row justify="center">
@@ -79,6 +76,7 @@
 <script>
 import Signin from './Signin.vue'
 import Register from './Register.vue'
+import NavBar from './NavBar.vue'
 import { useRouter } from "vue-router";
 import {postsignin, postregister} from '@/utils/http.js'
 const image = require('../assets/fufeiwenda_pic1_tu.png')
@@ -100,6 +98,7 @@ export default {
   components: {
     Signin,
     Register,
+    NavBar,
   },
   props: {
     msg: String,
