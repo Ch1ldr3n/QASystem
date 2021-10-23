@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     style="text-align: center"
-    title="登陆"
+    title="注册"
     :show-close="false"
     width="30%"
   >
