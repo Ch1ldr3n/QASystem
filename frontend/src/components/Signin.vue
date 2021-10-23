@@ -81,7 +81,7 @@ export default {
     },
     "state.password": {
       handler(newName) {
-        (this.state.password_valid = /^[A-Za-z][-A-Za-z0-9_]*$/.test(newName)),
+        (this.state.password_valid = /^[-A-Za-z0-9_]{4,20}$/.test(newName)),
           (this.state.valid =
             this.state.username_valid && this.state.password_valid);
         if (newName == "") this.state.password_valid = true;
