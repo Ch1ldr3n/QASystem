@@ -3,7 +3,7 @@
     mode="horizontal"
     text-align="right"
   >
-    <el-menu-item index="1">提问者列表</el-menu-item>
+    <el-menu-item index="1" v-if="loginDone===true">提问者列表</el-menu-item>
     <el-sub-menu index="2">
       <template #title>回答者列表</template>
       <el-menu-item index="2-1">item one</el-menu-item>
@@ -29,7 +29,6 @@
 </template>
 
 <script>
-// import { defineComponent } from '@vue/composition-api'
 import Signin from './Signin.vue'
 import Register from './Register.vue'
 import {postsignin, postregister} from '@/utils/http.js'
@@ -39,6 +38,12 @@ export default {
     components: {
         Signin,
         Register,
+    },
+    props: {
+        loginDone: {
+            type: Boolean,
+			default: () => false
+        },
     },
     data() {
         return {

@@ -1,8 +1,8 @@
 <template>
   <div>
     <el-container>
-      <el-header style="text-align: right">
-        <NavBar/>
+      <el-header>
+        <NavBar :loginDone="navbar.loginDone"/>
       </el-header>
       <el-main>
         <el-row justify="center">
@@ -85,7 +85,10 @@ export default {
   data() {
     return {
       image,
-      tolen: ""
+      tolen: "",
+      navbar: {
+        loginDone: false,
+      }
     }
   },
   methods:{
