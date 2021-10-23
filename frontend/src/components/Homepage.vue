@@ -1,23 +1,8 @@
 <template>
   <div>
     <el-container>
-      <el-header>
+      <el-header style="text-align: right">
         <NavBar/>
-        <!-- <el-menu mode="horizontal">
-          <el-menu-item index="2">付费问答</el-menu-item>
-
-          <el-row
-            v-if="!online"
-            style="position: absolute; right: 10px; top: 5px"
-          >
-            <el-button plain v-on:click="signin.dialogVisible = true">登陆</el-button>
-            <el-button plain v-on:click="register.dialogVisible = true">注册</el-button>
-          </el-row>
-          <el-row v-else style="position: absolute; right: 10px; top: 5px">
-            <el-button @click="toUser" plain>个人信息</el-button>
-            <el-button plain>注销</el-button>
-          </el-row>
-        </el-menu> -->
       </el-header>
       <el-main>
         <el-row justify="center">
@@ -138,4 +123,9 @@ export default {
 </script>
 
 <style scoped>
+/* .el-header {
+        text-align: right;
+        width: 100%;
+        height: 100px;      
+    } */
 </style>
