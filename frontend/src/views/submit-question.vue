@@ -2,6 +2,12 @@
   <div>
     <el-container>
       <el-aside width="400px" style="background-color: rgb(238, 241, 246)">
+        <el-image
+          style="width: 100; height: 100"
+          :src="require('../assets/logo.png')"
+          :fit="fill"
+        >
+        </el-image>
         <el-menu :default-openeds="['1', '3']">
           <el-sub-menu index="1">
             <template #title
