@@ -2,6 +2,7 @@ package user
 
 import "github.com/labstack/echo/v4"
 import "gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
+import "gitlab.secoder.net/bauhinia/qanda-schema/ent"
 import userp "gitlab.secoder.net/bauhinia/qanda-schema/ent/user"
 import "net/http"
 import "golang.org/x/crypto/bcrypt"
@@ -239,11 +240,12 @@ func filter(c echo.Context) error {
 		users = users.Where(userp.Profession(*u.Profession))
 	}
 	// print result
-	candidates, err := users.All(ctx.Request().Context())
+	const numLimit = 1000
+	candidates, err := users.Order(ent.Asc(userp.FieldID)).Limit(numLimit).All(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	var userlist [1000]userInfoDisplay
+	var userlist [numLimit]userInfoDisplay
 	listlen := len(candidates)
 	for i := 0; i < listlen; i++ {
 		userlist[i].Username = candidates[i].Username

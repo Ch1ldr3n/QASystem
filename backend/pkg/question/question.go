@@ -24,7 +24,7 @@ func submit(c echo.Context) error {
 	if err := ctx.Bind(u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	_, err := ctx.DB().Question.Create().
+	question, err := ctx.DB().Question.Create().
 		SetPrice(u.Price).
 		SetTitle(u.Title).
 		SetContent(u.Content).
@@ -36,22 +36,21 @@ func submit(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	questionid := "123456abc"	//TO-DO: impl algorithm for generating questionid
 	return ctx.JSON(http.StatusOK, questionSubmitResponse{
-		QuestionId: questionid,
+		QuestionId: question.ID,
 	})
 }
 
 type questionSubmitRequest struct {
-	Price      float64	`json:price`
-	Title	   string	`json:title`
-	Content    string	`json:content`
-	QuestionerID	int	`json:questionerid`
-	AnswererID	int	`json:questionerid`
+	Price      float64	`json:"price"`
+	Title	   string	`json:"title"`
+	Content    string	`json:"content"`
+	QuestionerID	int	`json:"questionerid"`
+	AnswererID	int	`json:"answererid"`
 }
 
 type questionSubmitResponse struct {
-	QuestionId string
+	QuestionId int	`json:"questionid"`
 }
 
 // @Summary Question Query

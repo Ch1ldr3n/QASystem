@@ -7,12 +7,12 @@ import (
 	"testing"
 )
 
-func TestQuestionCreate(t *testing.T) {
+func TestQuestionSubmit(t *testing.T) {
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "/", nil)
+	req := httptest.NewRequest(http.MethodPost, "/submit", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
-	create(c)
+	submit(c)
 }
 
 func TestQuestionQuery(t *testing.T) {
