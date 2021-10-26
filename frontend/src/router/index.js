@@ -9,52 +9,52 @@ import Register from '../components/Register.vue'
 import Submit from '../views/submit-question.vue'
 
 const routes = [
-    {
-        path: "/",
-        name: "Explore",
-        component: Explore,
-        meta: {
-            public: true
-        }
+  {
+    path: '/',
+    name: 'Explore',
+    component: Explore,
+    meta: {
+      public: true,
     },
-    {
-        path: "/login",
-        name: "Login",
-        component: Login,
-        meta: {
-            public: true
-        }
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: {
+      public: true,
     },
-    {
-        path: "/register",
-        name: "Register",
-        component: Register,
-        meta: {
-            public: true
-        }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
+    meta: {
+      public: true,
     },
-    {
-        path: "/user",
-        name: "user",
-        component: User
-    },
-    {
-        path: "/question",
-        name: "Question",
-        component: Question
-    },
-    /*
+  },
+  {
+    path: '/user',
+    name: 'User',
+    component: User,
+  },
+  {
+    path: '/question',
+    name: 'Question',
+    component: Question,
+  },
+  /*
     {
         path: "/pay",
         name: "Pay",
         component: Pay, 
     },
     */
-    {
-        path: "/submit",
-        name: "Submit",
-        component: Submit, 
-    },
+  {
+    path: '/submit',
+    name: 'Submit',
+    component: Submit,
+  },
 ]
 
 const router = createRouter({
@@ -62,15 +62,15 @@ const router = createRouter({
   routes: routes,
 })
 router.beforeEach((to, from, next) => {
-    if (!to.matched.some(record => record.meta.public)) {
-        if (window.localStorage.getItem("token") == null) {
-            next({ name: 'Login' })
-        } else {
-            next()
-        }
+  if (!to.matched.some((record) => record.meta.public)) {
+    if (window.localStorage.getItem('token') == null) {
+      next({ name: 'Login' })
     } else {
-        next()
+      next()
     }
+  } else {
+    next()
+  }
 })
 
 export default router
