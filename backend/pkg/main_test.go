@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 	"github.com/labstack/echo/v4"
+	"strconv"
 )
 
 // auxiliary functions
@@ -21,7 +22,7 @@ func auxUserRegister(e *echo.Echo, t *testing.T, name string, password string) *
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
 
-	if rec.Result().StatusCode != http.StatusOK {
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
 		t.Fatal("register failed")
 	}
 
@@ -39,7 +40,7 @@ func auxUserLogin(e *echo.Echo, t *testing.T, name string, password string) *htt
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
 
-	if rec.Result().StatusCode != http.StatusOK {
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
 		t.Fatal("login failed")
 	}
 
@@ -53,7 +54,7 @@ func auxUserInfo(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRec
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
 
-	if rec.Result().StatusCode != http.StatusOK {
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
 		t.Fatal("get user info failed")
 	}
 
@@ -65,7 +66,7 @@ func auxUserFilter(e *echo.Echo, t *testing.T, query string) *httptest.ResponseR
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
 
-	if rec.Result().StatusCode != http.StatusOK {
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
 		t.Fatal("filter user failed")
 	}
 
@@ -78,8 +79,26 @@ func auxQuestionSubmit(e *echo.Echo, t *testing.T, body string) *httptest.Respon
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
 
-	if rec.Result().StatusCode != http.StatusOK {
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
 		t.Fatal("submit question failed")
+	}
+
+	return rec
+}
+
+func auxQuestionPay(e *echo.Echo, t *testing.T, questionid int, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/question/pay", bytes.NewBufferString(`
+{
+	"questionid": `+strconv.Itoa(questionid)+`
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("question pay failed")
 	}
 
 	return rec
@@ -104,18 +123,27 @@ func TestUser(t *testing.T) {
 }
 
 func TestQuestion(t *testing.T) {
-	e := New("/var/empty", "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1", "super-secret-key")
+	e := New("/var/empty", "sqlite3", "file:ent2?mode=memory&cache=shared&_fk=1", "super-secret-key")
 
-	auxUserRegister(e, t, "user1", "pass")
+	rec := auxUserRegister(e, t, "user1", "pass")
+	resp := new(struct {
+		Token string `json:"token"`
+	})
+	err := json.NewDecoder(rec.Body).Decode(resp)
+	if err != nil {
+		t.Fatal(err)
+	}
 	auxUserRegister(e, t, "user2", "pass")
 
 	auxQuestionSubmit(e, t, `
 {
-	"price": 100,
+	"price": 0,
 	"title": "test title",
 	"content":"test content",
 	"questionerid":1,
 	"answererid":2
 }
 	`)
+
+	auxQuestionPay(e, t, 1, resp.Token)
 }
