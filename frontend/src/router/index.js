@@ -13,8 +13,11 @@ const routes = [
     },
     {
         path: "/login",
-        name: "login",
-        component: Login
+        name: "Login",
+        component: Login,
+        meta: {
+            public: true
+        }
     },
     {
         path: "/user",
@@ -31,6 +34,17 @@ const routes = [
 const router = createRouter({
     history: createWebHashHistory(),
     routes: routes
+})
+router.beforeEach((to, from, next) => {
+    if (!to.matched.some(record => record.meta.public)) {
+        if (window.localStorage.getItem("token") == null) {
+            next({ name: 'Login' })
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 export default router
