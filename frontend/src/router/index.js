@@ -7,6 +7,7 @@ import Login from '../components/Login.vue'
 import Register from '../components/Register.vue'
 // import Pay from '../views/pay.vue'
 import Submit from '../views/submit-question.vue'
+import NewQuestion from '../components'
 
 const routes = [
     {

@@ -17,7 +17,7 @@
         </el-card>
       </el-aside>
       <el-container>
-        <QuestionList/>
+        <AnswererList/>
       </el-container>
     </el-container>
   </el-main>
@@ -27,9 +27,9 @@
 import QuestionList from './QuestionList.vue'
 
 export default {
-  name: "question",
+  name: "newquestion",
   components: {
-    QuestionList,
+    AnswererList,
   },
   data() {
     return
