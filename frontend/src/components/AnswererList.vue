@@ -8,7 +8,7 @@
     <el-table-column type="expand">
       <template #default="props">
         <p>{{ props.row.content }}</p>
-            <el-button @click="submit">向他提问</el-button>
+            <el-button @click="ask">向他提问</el-button>
       </template>
     </el-table-column>
     <el-table-column prop="name" label="姓名" width="180" column-key="name"/>
@@ -87,10 +87,13 @@ export default {
       return row.area === value
     },
     ask() {
-        // this.$message({
-        //     message: "登出成功",
-        //     type: "success"
-        // })
+        this.$message({
+            message: "登出成功",
+            type: "success"
+        })
+        this.$router.push({
+            name: "Submit"
+        })
     },
   },
 }
