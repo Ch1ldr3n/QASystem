@@ -64,10 +64,10 @@ func TestUser(t *testing.T) {
 func TestQuestionSubmit(t *testing.T) {
 	e := New("/var/empty", "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1", "super-secret-key")
 
-	{
+	{	//create user1 -- supposing his id is 1
 		req := httptest.NewRequest(http.MethodPost, "/v1/user/register", bytes.NewBufferString(`
 {
-	"username": "testuser",
+	"username": "testuse1",
 	"password": "testpassword"
 }
 		`))
@@ -75,10 +75,10 @@ func TestQuestionSubmit(t *testing.T) {
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, req)
 	}
-	{
+	{	//create user2	-- supposing his id is 2
 		req := httptest.NewRequest(http.MethodPost, "/v1/user/register", bytes.NewBufferString(`
 {
-	"username": "testuser",
+	"username": "testuser2",
 	"password": "testpassword"
 }
 		`))
@@ -87,18 +87,20 @@ func TestQuestionSubmit(t *testing.T) {
 		e.ServeHTTP(rec, req)
 	}
 
-	req := httptest.NewRequest(http.MethodPost, "/submit", bytes.NewBufferString(`
+	req := httptest.NewRequest(http.MethodPost, "/v1/question/submit", bytes.NewBufferString(`
 {
 	"price": 100,
 	"title": "test title",
 	"content":"test content",
 	"questionerid":1,
-	"answererid":2,
+	"answererid":2
 }
 	`))
 	// Note: if generation pattern of user.ID changes, so shall the line above do as well.
 	req.Header.Add("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-	submit(c)
+	e.ServeHTTP(rec, req)
+	if rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("submit question failed")
+	}
 }
