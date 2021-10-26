@@ -68,6 +68,7 @@ export default {
         if (valid) {
           fetch("/v1/user/login", {
             method: "POST",
+            headers: {"content-type": "application/json"},
             body: JSON.stringify(this.model)
           })
           .then(resp => {
@@ -81,6 +82,9 @@ export default {
             this.$message({
               message: "登录成功",
               type: "success",
+            })
+            this.$router.push({
+              name: "Question",
             })
           })
           .catch(error => {
@@ -97,4 +101,3 @@ export default {
   },
 };
 </script>
-

@@ -25,8 +25,8 @@ const routes = [
         component: User
     },
     {
-        path: "/issues",
-        name: "issues",
+        path: "/question",
+        name: "Question",
         component: Issues
     },
 ]
