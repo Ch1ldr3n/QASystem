@@ -14,7 +14,7 @@
           </div>
         </el-card>
       </el-aside>
-      <el-container style="margin-left: 50px; margin-top: 50px;">
+      <el-container style="margin-left: 50px; margin-top: 20px;">
         <QuestionList/>
       </el-container>
     </el-container>
