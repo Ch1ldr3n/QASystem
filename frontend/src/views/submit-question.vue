@@ -1,7 +1,6 @@
 <template>
   <div>
     <el-main>
-      <!-- <el-space direction="vertical" wrap :size="30"> -->
         <el-container>
           <el-aside width="unset">
             <el-card class="box-card">
@@ -18,24 +17,21 @@
               </div>
             </el-card>
           </el-aside>
-          <!-- <el-space direction="vertical" :size="30"> -->
-            <el-container style="margin-left: 50px; margin-top: 50px;">
-              <el-form>
-                <el-form-item label="问题名称">
-                  <el-input v-model="qname"></el-input>
-                </el-form-item>
-                <el-form-item label="问题描述">
-                  <el-input type="textarea" :autosize="{ minRows: 6, maxRows: 10 }" v-model="qdesc"></el-input>
-                </el-form-item>
-                <el-form-item>
-                  <el-button type="primary" @click="onSubmit">提交问题</el-button>
-                  <el-button>取消提问</el-button>
-                </el-form-item>
-              </el-form>
-            </el-container>
-          <!-- </el-space> -->
+          <el-container style="margin-left: 50px; margin-top: 50px;">
+            <el-form>
+              <el-form-item label="问题名称">
+                <el-input v-model="qname"></el-input>
+              </el-form-item>
+              <el-form-item label="问题描述">
+                <el-input type="textarea" :autosize="{ minRows: 6, maxRows: 10 }" v-model="qdesc"></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="onSubmit">提交问题</el-button>
+                <el-button>取消提问</el-button>
+              </el-form-item>
+            </el-form>
+          </el-container>
         </el-container>
-      <!-- </el-space> -->
       </el-main>
   </div>
 </template>
