@@ -1,9 +1,4 @@
 <template>
-  <div>
-    <el-container>
-      <el-header>
-        <NavBar :loginDone="navbar.loginDone"/>
-      </el-header>
       <el-main>
         <el-row justify="center">
           <el-image style="height: 500px" :src="image" :fit="fit"></el-image>
@@ -51,16 +46,12 @@
         </el-row>
       </el-main>
       <el-footer> </el-footer>
-    </el-container>
-
-  </div>
 </template>
 
 <script>
-import NavBar from './NavBar.vue'
 import { useRouter } from "vue-router";
 
-const image = require('../assets/fufeiwenda_pic1_tu.png')
+const image = require('../assets/fufeiwenda_pic1_tu.png');
 
 export default {
   setup() {
@@ -77,7 +68,6 @@ export default {
   },
   name: "Homepage",
   components: {
-    NavBar,
   },
   props: {
     msg: String,
