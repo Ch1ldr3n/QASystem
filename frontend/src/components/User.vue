@@ -1,114 +1,161 @@
 <template>
-  <div>
-    <div>
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-card shadow="hover">
-            <template #header>
-              <div class="clearfix">
-                <span>基础信息</span>
-              </div>
-            </template>
-            <div class="info">
-              <div class="info-image">
-                <img src="../assets/logo.png" />
-                <span class="info-edit">
-                  <i class="el-icon-lx-camerafill"></i>
-                </span>
-              </div>
-              <div class="info-name">{{ name }}</div>
-              <div class="info-desc">{{ description }}</div>
+  <el-main>
+    <el-row justify="center">
+      <el-col :span="8">
+        <el-card shadow="hover">
+          <template #header>
+            <div class="clearfix">
+              <span>账户编辑</span>
             </div>
-          </el-card>
-        </el-col>
-        <el-col :span="12">
-          <el-card shadow="hover">
-            <template #header>
-              <div class="clearfix">
-                <span>账户编辑</span>
-              </div>
-            </template>
-            <el-form
-              label-width="90px"
-              ref="ruleForm"
-              :model="ruleForm"
-              status-icon
-              :rules="rules"
+          </template>
+          <el-form
+            label-width="120px"
+            ref="form"
+            :model="model"
+            status-icon
+            :rules="rules"
+          >
+            <el-form-item label="用户名: ">{{ model.name }}</el-form-item>
+            <el-form-item label="身份:" v-if="model.answerer"
+              >回答者</el-form-item
             >
-              <el-form-item label="用户名: ">{{ name }}</el-form-item>
-              <el-form-item label="旧密码: ">
-                <el-input type="password" v-model="password.old"></el-input>
-              </el-form-item>
-              <el-form-item label="新密码: " prop="pass">
-                <el-input type="password" v-model="password.new1"></el-input>
-                <span v-if="this.password.valid1 === false" style="color: red;"
-                  >请输入合法密码</span
-                >
-              </el-form-item>
-              <el-form-item label="确认密码: ">
-                <el-input type="password" v-model="password.new2"> </el-input>
-              </el-form-item>
+            <el-form-item label="身份:" v-else>提问者</el-form-item>
+            <el-form-item label="新密码: " prop="password1">
+              <el-input type="password" v-model="model.password1"></el-input>
+            </el-form-item>
+            <el-form-item label="确认密码: " prop="password2">
+              <el-input type="password" v-model="model.password2"> </el-input>
+            </el-form-item>
 
-              <el-form-item>
-                <el-button
-                  type="primary"
-                  @click="onSubmit"
-                  :disabled="!password.valid1"
-                  >保存</el-button
-                >
-              </el-form-item>
-            </el-form>
-          </el-card>
-        </el-col>
-      </el-row>
-    </div>
-  </div>
+            <el-form-item label="是否成为回答者">
+              <el-switch v-model="model.answerer"></el-switch>
+            </el-form-item>
+            <el-form-item label="email">
+              <el-input v-model="model.email"> </el-input>
+            </el-form-item>
+
+            <el-form-item label="手机号码">
+              <el-input v-model="model.phone"> </el-input>
+            </el-form-item>
+
+            <el-form-item label="账户余额">
+              {{ model.price }}
+            </el-form-item>
+
+            <el-form-item label="职业">
+              <el-input v-model="model.profession"> </el-input>
+            </el-form-item>
+
+            <el-form-item>
+              <el-button type="primary" @click="onSubmit">保存</el-button>
+              <el-button>返回</el-button>
+            </el-form-item>
+          </el-form>
+        </el-card>
+      </el-col>
+    </el-row>
+  </el-main>
 </template>
 
 <script>
 export default {
-  name: 'user',
+  name: 'User',
   data() {
     return {
-      password: {
-        old: '', // 这里和后端绑定
-        new1: '',
-        valid1: true,
-        new2: '',
+      model: {
+        password1: '',
+        password2: '',
+        name: '', //这里和后端那个数据绑定
+        answerer: false,
+        email: '',
+        phone: '',
+        price: 0,
+        profession: '',
       },
-      name: '后端传进来', //这里和后端那个数据绑定
-      description: '这个人很懒，什么都没留下',
+      rules: {
+        password1: [
+          {
+            message: '请输入密码',
+            trigger: 'blur',
+          },
+          {
+            pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/,
+            message: '密码长度至少为8，且至少有一个字母和数字',
+            trigger: 'blur',
+          },
+        ],
+        password2: [
+          {
+            validator: (rule, value) => value == this.model.password1,
+            message: '两次输入的密码不一致',
+            trigger: 'blur',
+          },
+        ],
+      },
     }
   },
   methods: {
     onSubmit() {
-      console.log(this.password)
-      //检查新密码前后输入是否一致
-      const isSame = this.password.new1 === this.password.new2
-      if (isSame) {
-        //向后端发送用户信息修改请求
-        const editSucc = true
-        if (editSucc) {
-          alert('修改成功！')
-        } else {
-          alert('修改失败！')
+      console.log('dian')
+      //向后端请求修改数据
+      this.$refs['form'].validate((valid) => {
+        if (valid) {
+          fetch('/v1/user/edit', {
+            method: 'POST',
+            headers: {
+              Authorization: window.localStorage.getItem('token'),
+            },
+            body: JSON.stringify({
+              answerer: this.model.answerer,
+              email: this.model.email,
+              phone: this.model.phone,
+              price: this.model.price,
+              profession: this.model.profession,
+              token: window.localStorage.getItem('token'),
+            }),
+          }).then((resp) => {
+            if (!resp.ok) {
+              throw new Error('修改失败!')
+            }
+            this.$message({
+              message: '修改成功',
+              type: 'success',
+            })
+            location.reload()
+          })
         }
-        return
-      } else {
-        alert('新密码前后输入不一致')
-      }
+      })
     },
   },
-  watch: {
-    'password.new1': {
-      handler(newName) {
-        if (newName === '') {
-          this.password.valid1 = false
-          return
-        }
-        this.password.valid1 = /^[-A-Za-z0-9_]{4,20}$/.test(newName)
+
+  created() {
+    fetch('/v1/user/info', {
+      method: 'GET',
+      headers: {
+        Authorization: window.localStorage.getItem('token'),
       },
-    },
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('用户信息加载失败')
+        }
+        return resp.json()
+      })
+      .then((data) => {
+        console.log(data)
+        this.model.name = data.username
+        this.model.answerer = data.answerer
+        this.model.email = data.email
+        this.model.phone = data.phone
+        this.model.price = data.price
+        this.model.profession = data.profession
+      })
+      .catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        })
+      })
   },
 }
 </script>
