@@ -4,6 +4,7 @@ import home from '../components/Homepage.vue'
 import User from '../components/User.vue'
 import Issues from '../components/Issues.vue'
 import Login from '../components/Login.vue'
+import Register from '../components/Register.vue'
 
 const routes = [
     {
@@ -15,6 +16,14 @@ const routes = [
         path: "/login",
         name: "Login",
         component: Login,
+        meta: {
+            public: true
+        }
+    },
+    {
+        path: "/register",
+        name: "Register",
+        component: Register,
         meta: {
             public: true
         }

@@ -1,118 +1,119 @@
 <template>
-  <el-dialog
-    style="text-align: center"
-    title="注册"
-    :show-close="false"
-    width="30%"
-  >
-    <el-form label-width="80px">
-      <el-form-item label="用户名">
-        <el-input
-          placeholder="username"
-          v-model="state.username"
-          autocomplete="off"
-        ></el-input>
-        <span v-if="state.username_valid === false" style="color: red"
-          >请设置合法用户名!</span
-        >
-      </el-form-item>
-    </el-form>
-    <el-form label-width="80px">
-      <el-form-item label="密码">
-        <el-input
-          placeholder="password"
-          v-model="state.password"
-          autocomplete="off"
-          type="password"
-        ></el-input>
-        <span v-if="state.password_valid === false" style="color: red"
-          >密码至少4位仅限字母数字</span
-        >
-      </el-form-item>
-    </el-form>
-    <!--el-form label-width="80px">
-      <el-form-item label="邮箱">
-        <el-input placeholder="email" v-model="state.email" autocomplete="off"></el-input>
-        <span v-if="state.email_valid===false" style="color: red">请输入正确的邮箱!</span>
-      </el-form-item>
-    </el-form-->
-    <span class="dialog-footer">
-      <el-button v-on:click="quit">取 消</el-button>
-      <el-button type="primary" v-on:click="register" :disabled="!state.valid"
-        >注 册</el-button
-      >
-    </span>
-  </el-dialog>
+  <el-main>
+    <el-row justify="center">
+      <el-col :span="8">
+        <el-card>
+          <div class="card-header">
+            <h2>注册</h2>
+          </div>
+          <div>
+            <el-form :model="model" :rules="rules" ref="form">
+              <el-form-item prop="username">
+                <el-input v-model="model.username" placeholder="用户名"/>
+              </el-form-item>
+              <el-form-item prop="password">
+                <el-input v-model="model.password" placeholder="密码" type="password"/>
+              </el-form-item>
+              <el-form-item prop="password_confirm">
+                <el-input v-model="model.password_confirm" placeholder="确认密码" type="password"/>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="submit">注册</el-button>
+              </el-form-item>
+            </el-form>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+  </el-main>
 </template>
 
 <script>
 export default {
   name: "Register",
-  props: {
-    dialogVisible: {
-      type: Boolean,
-      default: () => true,
-    },
-  },
   data() {
     return {
-      state: {
+      model: {
         username: "",
-        username_valid: true,
         password: "",
-        password_valid: true,
-        email: "",
-        //email_valid: true,
-        //valid: false,
+        password_confirm: "",
       },
-    };
+      rules: {
+        username: [
+          {
+            required: true,
+            message: "请输入用户名",
+            trigger: "blur"
+          },
+          {
+            min: 5,
+            message: "用户名长度至少为5",
+            trigger: "blur"
+          }
+        ],
+        password: [
+          {
+            required: true,
+            message: "请输入密码",
+            trigger: "blur"
+          },
+          {
+            pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/,
+            message: "密码长度至少为8，且至少有一个字母和数字",
+            trigger: "blur"
+          }
+        ],
+        password_confirm: [
+          {
+            required: true,
+            // eslint-disable-next-line no-unused-vars
+            validator: (rule, value) => value == this.model.password,
+            message: "两次输入的密码不一致",
+            trigger: "blur"
+          }
+        ]
+      },
+    }
   },
   methods: {
-    register: function () {
-      this.$parent.register_(this.state.username, this.state.password);
+    submit() {
+      this.$refs["form"].validate((valid) => {
+        if (valid) {
+          fetch("/v1/user/register", {
+            method: "POST",
+            headers: {"content-type": "application/json"},
+            body: JSON.stringify({
+              username: this.model.username,
+              password: this.model.password,
+            })
+          })
+          .then(resp => {
+            if (!resp.ok) {
+              throw new Error("用户名已被注册")
+            }
+            return resp.json()
+          })
+          .then(data => {
+            window.localStorage.setItem("token", data.token) 
+            this.$message({
+              message: "注册成功",
+              type: "success",
+            })
+            this.$router.push({
+              name: "Question",
+            })
+          })
+          .catch(error => {
+            this.$message({
+              message: error,
+              type: "error",
+            })
+          })
+        } else {
+          return false
+        }
+      })
     },
-    quit: function () {
-      this.$parent.quit();
-    },
-  },
-  watch: {
-    "state.username": {
-      handler(newName) {
-        (this.state.username_valid =
-          /^[A-Za-z\u4e00-\u9fa5][-A-Za-z0-9\u4e00-\u9fa5_]*$/.test(newName)),
-          (this.state.valid =
-            this.state.username_valid && this.state.password_valid);
-        if (newName == "") this.state.username_valid = true;
-        if (
-          this.state.username == "" ||
-          this.state.password == "" /*||this.state.email==""*/
-        )
-          this.state.valid = false;
-      },
-    },
-    "state.password": {
-      handler(newName) {
-        (this.state.password_valid = /^[-A-Za-z0-9_]{4,20}$/.test(newName)),
-          (this.state.valid =
-            this.state.username_valid && this.state.password_valid);
-        if (newName == "") this.state.password_valid = true;
-        if (
-          this.state.username == "" ||
-          this.state.password == "" /*||this.state.email==""*/
-        )
-          this.state.valid = false;
-      },
-    } /*
-		"state.email": {
-			handler(newName) {
-				this.state.email_valid = /^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/.test(newName),
-				this.state.valid = this.state.username_valid&&this.state.password_valid;
-				if(newName=="")
-					this.state.password_valid = true;
-				if(this.state.username==""||this.state.password==""||this.state.email=="")
-					this.state.valid = false;
-			}
-		}*/,
   },
 };
 </script>

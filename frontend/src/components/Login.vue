@@ -15,6 +15,11 @@
                 <el-input v-model="model.password" placeholder="密码" type="password"/>
               </el-form-item>
               <el-form-item>
+                <router-link to="/register">
+                  <el-link>没有账户？立即注册</el-link>
+                </router-link>
+              </el-form-item>
+              <el-form-item>
                 <el-button type="primary" @click="submit">登录</el-button>
               </el-form-item>
             </el-form>
