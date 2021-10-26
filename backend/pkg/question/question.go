@@ -7,6 +7,7 @@ import questionp "gitlab.secoder.net/bauhinia/qanda-schema/ent/question"
 import "net/http"
 import "time"
 
+
 func Register(group *echo.Group) {
 	group.POST("/submit", submit)
 	group.POST("/pay", pay)
@@ -60,13 +61,16 @@ type questionSubmitResponse struct {
 // @Description Pay for a question
 // @Accept json
 // @Param body body questionPayRequest true "question pay request"
-// @Success 200 {object} questionPayResponse "question pay response"
+// @Success 200 {object} string "question pay response"
 // @Failure 400 {string} string
 // @Router /v1/question/pay [post]
 func pay(c echo.Context) error {
 	ctx := c.(*common.Context)
 	u := new(questionPayRequest)
 	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
@@ -76,7 +80,17 @@ func pay(c echo.Context) error {
 	if question.State != "created" {
 		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'created'")
 	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.Verify(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
 	payer, payee := question.Edges.Questioner, question.Edges.Answerer
+	if claims.Subject != payer.Username {
+		return echo.NewHTTPError(http.StatusBadRequest, "current user is not the questioner")
+	}
 	if payer.Balance < question.Price {
 		return echo.NewHTTPError(http.StatusBadRequest, "payer's balance is less than question price")
 	}
@@ -97,6 +111,7 @@ func pay(c echo.Context) error {
 
 type questionPayRequest struct {
 	QuestionID	int	`json:"questionid"`
+	Token	string   `header:"authorization" validate:"required"`
 }
 
 // @Summary Question Query

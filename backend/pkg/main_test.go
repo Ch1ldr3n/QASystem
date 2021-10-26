@@ -86,13 +86,14 @@ func auxQuestionSubmit(e *echo.Echo, t *testing.T, body string) *httptest.Respon
 	return rec
 }
 
-func auxQuestionPay(e *echo.Echo, t *testing.T, questionid int) *httptest.ResponseRecorder {
+func auxQuestionPay(e *echo.Echo, t *testing.T, questionid int, token string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(http.MethodPost, "/v1/question/pay", bytes.NewBufferString(`
 {
 	"questionid": `+strconv.Itoa(questionid)+`
 }
     `))
 	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
 
@@ -122,9 +123,16 @@ func TestUser(t *testing.T) {
 }
 
 func TestQuestion(t *testing.T) {
-	e := New("/var/empty", "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1", "super-secret-key")
+	e := New("/var/empty", "sqlite3", "file:ent2?mode=memory&cache=shared&_fk=1", "super-secret-key")
 
-	auxUserRegister(e, t, "user1", "pass")
+	rec := auxUserRegister(e, t, "user1", "pass")
+	resp := new(struct {
+		Token string `json:"token"`
+	})
+	err := json.NewDecoder(rec.Body).Decode(resp)
+	if err != nil {
+		t.Fatal(err)
+	}
 	auxUserRegister(e, t, "user2", "pass")
 
 	auxQuestionSubmit(e, t, `
@@ -137,5 +145,5 @@ func TestQuestion(t *testing.T) {
 }
 	`)
 
-	auxQuestionPay(e, t, 1)
+	auxQuestionPay(e, t, 1, resp.Token)
 }
