@@ -28,6 +28,9 @@ func submit(c echo.Context) error {
 	if err := ctx.Bind(u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
+	if u.QuestionerID == u.AnswererID {
+		return echo.NewHTTPError(http.StatusBadRequest, "error: questioner and answerer being the same person")
+	}
 	question, err := ctx.DB().Question.Create().
 		SetPrice(u.Price).
 		SetTitle(u.Title).
