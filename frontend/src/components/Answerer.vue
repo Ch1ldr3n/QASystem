@@ -24,10 +24,10 @@
 </template>
 
 <script>
-import QuestionList from './QuestionList.vue'
+import AnswererList from './AnswererList.vue'
 
 export default {
-  name: "newquestion",
+  name: "answerer",
   components: {
     AnswererList,
   },
