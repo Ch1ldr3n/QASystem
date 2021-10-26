@@ -17,19 +17,19 @@
         </el-card>
       </el-aside>
       <el-container>
-        <Issueslist/>
+        <QuestionList/>
       </el-container>
     </el-container>
   </el-main>
 </template>
 
 <script>
-import Issueslist from './Issueslist.vue'
+import QuestionList from './QuestionList.vue'
 
 export default {
   name: "Homepage",
   components: {
-    Issueslist,
+    QuestionList,
   },
   data() {
     return
