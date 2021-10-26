@@ -1,27 +1,4 @@
 <template>
-  <div>
-    <el-container>
-      <el-header>
-        <el-menu mode="horizontal">
-          <el-menu-item index="2">付费问答</el-menu-item>
-
-          <el-row
-            v-if="!online"
-            style="position: absolute; right: 10px; top: 5px"
-          >
-            <el-button plain v-on:click="signin.dialogVisible = true"
-              >登陆</el-button
-            >
-            <el-button plain v-on:click="register.dialogVisible = true"
-              >注册</el-button
-            >
-          </el-row>
-          <el-row v-else style="position: absolute; right: 10px; top: 5px">
-            <el-button @click="toUser" plain>个人信息</el-button>
-            <el-button plain>注销</el-button>
-          </el-row>
-        </el-menu>
-      </el-header>
       <el-main>
         <el-row justify="center">
           <el-image style="height: 500px" :src="image" :fit="fit"></el-image>
@@ -69,19 +46,12 @@
         </el-row>
       </el-main>
       <el-footer> </el-footer>
-    </el-container>
-
-    <Signin v-model="signin.dialogVisible" />
-    <Register v-model="register.dialogVisible" />
-  </div>
 </template>
 
 <script>
-import Signin from './Signin.vue'
-import Register from './Register.vue'
 import { useRouter } from "vue-router";
-import {postsignin, postregister} from '@/utils/http.js'
-const image = require('../assets/fufeiwenda_pic1_tu.png')
+
+const image = require('../assets/fufeiwenda_pic1_tu.png');
 
 export default {
   setup() {
@@ -98,8 +68,6 @@ export default {
   },
   name: "Homepage",
   components: {
-    Signin,
-    Register,
   },
   props: {
     msg: String,
@@ -107,13 +75,10 @@ export default {
   data() {
     return {
       image,
-      signin: {
-        dialogVisible: false,
-      },
-      register:{
-        dialogVisible:false
-      },
-      tolen: ""
+      tolen: "",
+      navbar: {
+        loginDone: false,
+      }
     }
   },
   methods:{
@@ -122,21 +87,14 @@ export default {
         window.localStorage.setItem("token", response.data.token);
       }
     },
-    signin_: function(username, password) {
-      postsignin(username, password, this.token, this.translate);
-      this.signin.dialogVisible = false;
-    },
-    register_: function(username, password){
-      postregister(username, password, this.translate);
-      this.register.dialogVisible = false;
-    },
-    quit: function () {
-      this.signin.dialogVisible = false;
-      this.register.dialogVisible = false;
-    },
   },
 };
 </script>
 
 <style scoped>
+/* .el-header {
+        text-align: right;
+        width: 100%;
+        height: 100px;      
+    } */
 </style>
