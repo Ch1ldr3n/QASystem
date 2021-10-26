@@ -11,8 +11,7 @@
         <p>{{ props.row.content }}</p>
       </template>
     </el-table-column>
-    <el-table-column prop="date" label="日期" sortable width="180" column-key="date"
-    />
+    <el-table-column prop="date" label="日期" sortable width="180" column-key="date"/>
 
     <el-table-column prop="question" label="问题" :formatter="formatter" />
     <el-table-column prop="name" label="昵称" width="180" />
