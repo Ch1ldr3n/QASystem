@@ -1,31 +1,16 @@
 <template>
-  <el-menu
-    mode="horizontal"
-    text-align="right"
-  >
-    <el-menu-item index="1" v-if="loginDone===true">提问者列表</el-menu-item>
-    <el-sub-menu index="2">
-      <template #title>回答者列表</template>
-      <el-menu-item index="2-1">item one</el-menu-item>
-      <el-menu-item index="2-2">item two</el-menu-item>
-      <el-menu-item index="2-3">item three</el-menu-item>
-      <el-sub-menu index="2-4">
-        <template #title>item four</template>
-        <el-menu-item index="2-4-1">item one</el-menu-item>
-        <el-menu-item index="2-4-2">item two</el-menu-item>
-        <el-menu-item index="2-4-3">item three</el-menu-item>
-      </el-sub-menu>
-    </el-sub-menu>
-    <el-menu-item index="3" style="position: absolute; right: 70px">
+  <el-menu mode="horizontal" router="true">
+    <el-menu-item index="1">我要提问</el-menu-item>
+    <el-menu-item index="2" :route="{ name: 'issues' }">我的问题</el-menu-item>
+    <el-menu-item index="3">
         <span v-on:click="signin.dialogVisible=true">登录</span>
     </el-menu-item>
-    <el-menu-item index="4" style="position: absolute; right: 10px">
+    <el-menu-item index="4">
         <span v-on:click="register.dialogVisible=true">注册</span>
     </el-menu-item>
   </el-menu>
-
-    <Signin v-model="signin.dialogVisible" />
-    <Register v-model="register.dialogVisible" />
+  <Signin v-model="signin.dialogVisible" />
+  <Register v-model="register.dialogVisible" />
 </template>
 
 <script>
