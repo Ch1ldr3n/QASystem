@@ -8,6 +8,7 @@
     <el-table-column type="expand">
       <template #default="props">
         <p>{{ props.row.content }}</p>
+            <el-button @click="submit">向他提问</el-button>
       </template>
     </el-table-column>
     <el-table-column prop="name" label="姓名" width="180" column-key="name"/>
@@ -31,8 +32,6 @@
     >
       <template #default="scope">
         <el-tag
-          :type="scope.row.area === 'Math' ? 'warning' : 'success'"
-          disable-transitions
           >{{ scope.row.area }}</el-tag
         >
       </template>
