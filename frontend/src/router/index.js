@@ -5,6 +5,8 @@ import User from '../components/User.vue'
 import Question from '../components/Question.vue'
 import Login from '../components/Login.vue'
 import Register from '../components/Register.vue'
+// import Pay from '../views/pay.vue'
+import Submit from '../views/submit-question.vue'
 
 const routes = [
     {
@@ -40,6 +42,18 @@ const routes = [
         path: "/question",
         name: "Question",
         component: Question
+    },
+    /*
+    {
+        path: "/pay",
+        name: "Pay",
+        component: Pay, 
+    },
+    */
+    {
+        path: "/submit",
+        name: "Submit",
+        component: Submit, 
     },
 ]
 
