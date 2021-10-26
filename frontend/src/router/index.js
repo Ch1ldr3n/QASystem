@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from 'vue-router'
 
 import Explore from '../components/Explore.vue'
 import User from '../components/User.vue'
@@ -58,8 +58,8 @@ const routes = [
 ]
 
 const router = createRouter({
-    history: createWebHashHistory(),
-    routes: routes
+  history: createWebHashHistory(),
+  routes: routes,
 })
 router.beforeEach((to, from, next) => {
     if (!to.matched.some(record => record.meta.public)) {

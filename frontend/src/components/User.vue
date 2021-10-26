@@ -16,8 +16,8 @@
                   <i class="el-icon-lx-camerafill"></i>
                 </span>
               </div>
-              <div class="info-name">name</div>
-              <div class="info-desc">description</div>
+              <div class="info-name">{{ name }}</div>
+              <div class="info-desc">{{ description }}</div>
             </div>
           </el-card>
         </el-col>
@@ -28,19 +28,34 @@
                 <span>账户编辑</span>
               </div>
             </template>
-            <el-form label-width="90px">
-              <el-form-item label="用户名: ">name</el-form-item>
+            <el-form
+              label-width="90px"
+              ref="ruleForm"
+              :model="ruleForm"
+              status-icon
+              :rules="rules"
+            >
+              <el-form-item label="用户名: ">{{ name }}</el-form-item>
               <el-form-item label="旧密码: ">
-                <el-input type="password"></el-input>
+                <el-input type="password" v-model="password.old"></el-input>
               </el-form-item>
-              <el-form-item label="新密码: ">
-                <el-input type="password"></el-input>
+              <el-form-item label="新密码: " prop="pass">
+                <el-input type="password" v-model="password.new1"></el-input>
+                <span v-if="this.password.valid1 === false" style="color: red;"
+                  >请输入合法密码</span
+                >
               </el-form-item>
-              <el-form-item label="个人简介: ">
-                <el-input></el-input>
+              <el-form-item label="确认密码: ">
+                <el-input type="password" v-model="password.new2"> </el-input>
               </el-form-item>
+
               <el-form-item>
-                <el-button type="primary" @click="onSubmit">保存</el-button>
+                <el-button
+                  type="primary"
+                  @click="onSubmit"
+                  :disabled="!password.valid1"
+                  >保存</el-button
+                >
               </el-form-item>
             </el-form>
           </el-card>
@@ -51,9 +66,51 @@
 </template>
 
 <script>
-// import { reactive, ref } from "vue";
-// import VueCropper from "vue-cropperjs";
-export default {};
+export default {
+  name: 'user',
+  data() {
+    return {
+      password: {
+        old: '', // 这里和后端绑定
+        new1: '',
+        valid1: true,
+        new2: '',
+      },
+      name: '后端传进来', //这里和后端那个数据绑定
+      description: '这个人很懒，什么都没留下',
+    }
+  },
+  methods: {
+    onSubmit() {
+      console.log(this.password)
+      //检查新密码前后输入是否一致
+      const isSame = this.password.new1 === this.password.new2
+      if (isSame) {
+        //向后端发送用户信息修改请求
+        const editSucc = true
+        if (editSucc) {
+          alert('修改成功！')
+        } else {
+          alert('修改失败！')
+        }
+        return
+      } else {
+        alert('新密码前后输入不一致')
+      }
+    },
+  },
+  watch: {
+    'password.new1': {
+      handler(newName) {
+        if (newName === '') {
+          this.password.valid1 = false
+          return
+        }
+        this.password.valid1 = /^[-A-Za-z0-9_]{4,20}$/.test(newName)
+      },
+    },
+  },
+}
 </script>
 
 <style scoped>
