@@ -1,31 +1,56 @@
 package question
 
 import "github.com/labstack/echo/v4"
+import "gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
+import "net/http"
+import "time"
 
 func Register(group *echo.Group) {
-	group.POST("/", create)
+	group.POST("/submit", submit)
 	group.GET("/:id", query)
 }
 
-// @Summary Question Create
-// @Description Create a question towards the specified answerer
+// @Summary Question submit
+// @Description submit a question towards the specified answerer
 // @Accept json
 // @Produce json
-// @Param body body questionCreateRequest true "question create request"
-// @Success 200 {object} questionCreateResponse "question create response"
+// @Param body body questionSubmitRequest true "question submit request"
+// @Success 200 {object} questionSubmitResponse "question submit response"
 // @Failure 400 {string} string
 // @Router /v1/qestion [post]
-func create(ctx echo.Context) error {
-	return echo.ErrMethodNotAllowed
+func submit(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(questionSubmitRequest)
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	question, err := ctx.DB().Question.Create().
+		SetPrice(u.Price).
+		SetTitle(u.Title).
+		SetContent(u.Content).
+		SetCreated(time.Now()).
+		SetState("created").
+		SetQuestionerID(u.QuestionerID).
+		SetAnswererID(u.AnswererID).
+		Save(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.JSON(http.StatusOK, questionSubmitResponse{
+		QuestionId: question.ID,
+	})
 }
 
-type questionCreateRequest struct {
-	AnswererId string
-	Content    string
+type questionSubmitRequest struct {
+	Price      float64	`json:"price"`
+	Title	   string	`json:"title"`
+	Content    string	`json:"content"`
+	QuestionerID	int	`json:"questionerid"`
+	AnswererID	int	`json:"answererid"`
 }
 
-type questionCreateResponse struct {
-	QuestionId string
+type questionSubmitResponse struct {
+	QuestionId int	`json:"questionid"`
 }
 
 // @Summary Question Query
