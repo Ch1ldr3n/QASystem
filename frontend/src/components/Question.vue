@@ -7,11 +7,9 @@
             <el-image :src="'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png'"/>
           </div>
           <div>
-            <el-descriptions direction="vertical" column="1">
-              <el-descriptions-item label="用户名">测试用户</el-descriptions-item>
-              <el-descriptions-item label="手机号">18100000000</el-descriptions-item>
-              <el-descriptions-item label="称号"><el-tag size="small">回答者</el-tag></el-descriptions-item>
-              <el-descriptions-item label="余额">999999.99</el-descriptions-item>
+            <el-descriptions column="1">
+              <el-descriptions-item label="用户名">{{username}}</el-descriptions-item>
+              <el-descriptions-item label="称号"><el-tag size="small">{{answerer}}</el-tag></el-descriptions-item>
             </el-descriptions>
           </div>
         </el-card>
@@ -32,9 +30,35 @@ export default {
     QuestionList,
   },
   data() {
-    return
+    return {
+      answerer: "",
+      username: ""
+    }
   },
   methods:{
+  },
+  created() {
+    fetch("/v1/user/info", {
+      method: "GET",
+      headers: {"authorization": window.localStorage.getItem("token")},
+    })
+    .then(resp => {
+      if (!resp.ok) {
+        throw new Error("获取用户信息失败")
+      }
+      return resp.json()
+    })
+    .then(data => {
+      this.username = data.username
+      this.answerer = data.answerer ? "回答者" : "提问者"
+      console.log(data)
+    })
+    .catch(error => {
+      this.$message({
+        message: error,
+        type: "error",
+      })
+    })
   }
 };
 </script>
