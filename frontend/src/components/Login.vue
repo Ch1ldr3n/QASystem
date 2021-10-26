@@ -4,7 +4,7 @@
       <el-col :span="8">
         <el-card>
           <div class="card-header">
-            <h2>注册</h2>
+            <h2>登录</h2>
           </div>
           <div>
             <el-form :model="model" :rules="rules" ref="form">
@@ -14,11 +14,13 @@
               <el-form-item prop="password">
                 <el-input v-model="model.password" placeholder="密码" type="password"/>
               </el-form-item>
-              <el-form-item prop="password_confirm">
-                <el-input v-model="model.password_confirm" placeholder="确认密码" type="password"/>
+              <el-form-item>
+                <router-link to="/register">
+                  <el-link>没有账户？立即注册</el-link>
+                </router-link>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="submit">注册</el-button>
+                <el-button type="primary" @click="submit">登录</el-button>
               </el-form-item>
             </el-form>
           </div>
@@ -30,13 +32,12 @@
 
 <script>
 export default {
-  name: "Register",
+  name: "Login",
   data() {
     return {
       model: {
         username: "",
         password: "",
-        password_confirm: "",
       },
       rules: {
         username: [
@@ -63,15 +64,6 @@ export default {
             trigger: "blur"
           }
         ],
-        password_confirm: [
-          {
-            required: true,
-            // eslint-disable-next-line no-unused-vars
-            validator: (rule, value) => value == this.model.password,
-            message: "两次输入的密码不一致",
-            trigger: "blur"
-          }
-        ]
       },
     }
   },
@@ -79,24 +71,21 @@ export default {
     submit() {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          fetch("/v1/user/register", {
+          fetch("/v1/user/login", {
             method: "POST",
             headers: {"content-type": "application/json"},
-            body: JSON.stringify({
-              username: this.model.username,
-              password: this.model.password,
-            })
+            body: JSON.stringify(this.model)
           })
           .then(resp => {
             if (!resp.ok) {
-              throw new Error("用户名已被注册")
+              throw new Error("用户名或密码错误")
             }
             return resp.json()
           })
           .then(data => {
             window.localStorage.setItem("token", data.token) 
             this.$message({
-              message: "注册成功",
+              message: "登录成功",
               type: "success",
             })
             this.$router.push({
