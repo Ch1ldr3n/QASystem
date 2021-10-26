@@ -1,17 +1,17 @@
 <template>
   <el-main>
     <el-container>
-      <QuestionList/>
+      <ExploreList/>
     </el-container>
   </el-main>
 </template>
 
 <script>
-import QuestionList from './QuestionList.vue'
+import ExploreList from './ExploreList.vue'
 export default {
   name: "Explore",
   components: {
-    QuestionList,
+    ExploreList,
   }
 };
 </script>
