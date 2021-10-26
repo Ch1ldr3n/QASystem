@@ -1,7 +1,6 @@
 <template>
   <el-table
     ref="filterTable"
-    row-key="date"
     :data="tableData"
     :default-sort="{ prop: 'date', order: 'descending' }"
     style="width: 100%"

@@ -1,7 +1,6 @@
 <template>
     <el-table
     ref="filterTable"
-    row-key="name"
     :data="tableData"
     :default-sort="{ prop: 'name', order: 'descending' }"
     style="width: 100%"
@@ -12,9 +11,7 @@
       </template>
     </el-table-column>
     <el-table-column prop="name" label="姓名" width="180" column-key="name"/>
-
     <el-table-column prop="date" label="注册日期" />
-    
     <el-table-column prop="money" label="价格" sortable width="180" />
 
     <el-table-column
