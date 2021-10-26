@@ -1,16 +1,19 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 
-import home from '../components/Homepage.vue'
+import Explore from '../components/Explore.vue'
 import User from '../components/User.vue'
-import Issues from '../components/Issues.vue'
+import Question from '../components/Question.vue'
 import Login from '../components/Login.vue'
 import Register from '../components/Register.vue'
 
 const routes = [
     {
         path: "/",
-        name: "home",
-        component: home
+        name: "Explore",
+        component: Explore,
+        meta: {
+            public: true
+        }
     },
     {
         path: "/login",
@@ -36,7 +39,7 @@ const routes = [
     {
         path: "/question",
         name: "Question",
-        component: Issues
+        component: Question
     },
 ]
 
