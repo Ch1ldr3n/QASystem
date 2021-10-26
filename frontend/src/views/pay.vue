@@ -29,7 +29,7 @@
               :fit="fill"
             >
             </el-image>
-            <p>支付已完成</p>
+            <p>支付已完成，点击这里跳转</p>
           </el-col>
         </el-row>
       </el-main>
