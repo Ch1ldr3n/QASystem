@@ -31,7 +31,7 @@
     >
       <template #default="scope">
         <el-tag
-          :type="scope.row.tag === 'ask' ? 'primary' : 'success'"
+          :type="scope.row.tag === 'ask' ? 'warning' : 'success'"
           disable-transitions
           >{{ scope.row.tag }}</el-tag
         >
