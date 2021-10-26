@@ -20,7 +20,7 @@
     <el-table-column
       prop="tag"
       label="Tag"
-      width="100"
+      min-width="10%"
       :filters="[
         { text: '我提的问题', value: 'ask' },
         { text: '别人问我的问题', value: 'que' },
