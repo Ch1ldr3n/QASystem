@@ -133,7 +133,7 @@ func query(c echo.Context) error {
 	}
 	question, err1 := ctx.DB().Question.Query().Where(questionp.ID(id)).Only(ctx.Request().Context())
 	if err1 != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err1.Error())
 	}
 	return ctx.JSON(http.StatusOK, questionQueryResponse{
 		Price:	question.Price,
