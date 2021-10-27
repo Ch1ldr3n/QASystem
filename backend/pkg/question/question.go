@@ -6,7 +6,7 @@ import userp "gitlab.secoder.net/bauhinia/qanda-schema/ent/user"
 import questionp "gitlab.secoder.net/bauhinia/qanda-schema/ent/question"
 import "net/http"
 import "time"
-
+import "strconv"
 
 func Register(group *echo.Group) {
 	group.POST("/submit", submit)
@@ -124,12 +124,28 @@ type questionPayRequest struct {
 // @Success 200 {object} questionQueryResponse "question query response"
 // @Failure 400 {string} string
 // @Router /v1/question/:id [get]
-func query(ctx echo.Context) error {
-	return echo.ErrMethodNotAllowed
+func query(c echo.Context) error {
+	ctx := c.(*common.Context)
+	idstring := c.Param("id")
+	id, err := strconv.Atoi(idstring)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	question, err1 := ctx.DB().Question.Query().Where(questionp.ID(id)).Only(ctx.Request().Context())
+	if err1 != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err1.Error())
+	}
+	return ctx.JSON(http.StatusOK, questionQueryResponse{
+		Price:	question.Price,
+		Title:	question.Title,
+		Content:	question.Content,
+		State:	string(question.State),
+	})
 }
 
 type questionQueryResponse struct {
-	AnswererId string
-	Content    string
-	State      string
+	Price      float64	`json:"price"`
+	Title	   string	`json:"title"`
+	Content    string	`json:"content"`
+	State	   string	`json:"state"`
 }
