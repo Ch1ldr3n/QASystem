@@ -104,6 +104,7 @@ export default {
             method: 'POST',
             headers: {
               Authorization: window.localStorage.getItem('token'),
+              'content-type': 'application/json',
             },
             body: JSON.stringify({
               answerer: this.model.answerer,
