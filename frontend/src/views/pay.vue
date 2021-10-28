@@ -17,7 +17,7 @@
           <el-col :span="12">
             <el-image
               style="width: 50%; height: 100%"
-              :src="require('../assets/pay/pay-demo.png')"
+              :src="require('../assets/pay-demo.png')"
               :fit="contain"
             >
             </el-image>
@@ -25,7 +25,7 @@
           <el-col :span="12">
             <el-image
               style="width: 100; height: 100"
-              :src="require('../assets/pay/pay-qrscan.png')"
+              :src="require('../assets/pay-qrscan.png')"
               :fit="fill"
             >
             </el-image>
@@ -39,8 +39,8 @@
 
 <script>
 export default {
-  name: "pay",
-};
+  name: 'pay',
+}
 </script>
 
 <style scoped>
