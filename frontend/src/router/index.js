@@ -33,33 +33,34 @@ const routes = [
     meta: {
       public: true,
     },
-    {
-        path: "/user",
-        name: "user",
-        component: User
-    },
-    {
-        path: "/question",
-        name: "Question",
-        component: Question
-    },
-    {
-        path: "/answerer",
-        name: "Answerer",
-        component: Answerer
-    },
-    /*
-    {
-        path: "/pay",
-        name: "Pay",
-        component: Pay, 
-    },
-    */
-    {
-        path: "/submit",
-        name: "Submit",
-        component: Submit, 
-    },
+  },  
+  {
+      path: "/user",
+      name: "User",
+      component: User
+  },
+  {
+      path: "/question",
+      name: "Question",
+      component: Question
+  },
+  {
+      path: "/answerer",
+      name: "Answerer",
+      component: Answerer
+  },
+  /*
+  {
+      path: "/pay",
+      name: "Pay",
+      component: Pay, 
+  },
+  */
+  {
+      path: "/submit",
+      name: "Submit",
+      component: Submit, 
+  },
 ]
 
 const router = createRouter({
