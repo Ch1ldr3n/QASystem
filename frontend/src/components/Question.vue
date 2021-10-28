@@ -25,7 +25,7 @@
 import QuestionList from './QuestionList.vue'
 
 export default {
-  name: "Homepage",
+  name: "question",
   components: {
     QuestionList,
   },
