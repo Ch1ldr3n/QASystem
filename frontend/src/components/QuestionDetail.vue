@@ -27,5 +27,31 @@ export default {
   },
   methods: {
   },
+  created() {
+    fetch('/v1/user/gensig', {
+      method: 'GET',
+      headers: {
+        Authorization: window.localStorage.getItem('token'),
+      },
+    })
+    .then((resp) => {
+      if (!resp.ok) {
+        throw new Error('获取imsdk签名失败')
+      }
+      return resp.json()
+    })
+    .then((data) => {
+      return tim.login({userID: data.userid, userSig: data.signature })
+    })
+    .then((resp) => {
+      console.log(resp)
+    })
+    .catch((error) => {
+      this.$message({
+        message: error,
+        type: 'error',
+      })
+    })
+  }
 }
 </script>

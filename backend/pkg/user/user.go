@@ -8,6 +8,7 @@ import userp "gitlab.secoder.net/bauhinia/qanda-schema/ent/user"
 import "net/http"
 import "golang.org/x/crypto/bcrypt"
 import "encoding/hex"
+import "strconv"
 
 func Register(group *echo.Group) {
 	group.POST("/register", register)
@@ -136,11 +137,12 @@ func gensig(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	sig, err := tencentyun.GenUserSig(1400586942, "'b1c5ac2dd23bc7556ab94e23d2735806641f8d7fb3be28b779b66fe1672e6dd6", user.Username, 86400*180)
+	sig, err := tencentyun.GenUserSig(1400586942, "b1c5ac2dd23bc7556ab94e23d2735806641f8d7fb3be28b779b66fe1672e6dd6", strconv.Itoa(user.ID), 86400*180)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return ctx.JSON(http.StatusOK, userGensigResponse{
+		Userid:    strconv.Itoa(user.ID),
 		Signature: sig,
 	})
 }
@@ -150,6 +152,7 @@ type userGensigRequest struct {
 }
 
 type userGensigResponse struct {
+	Userid     string  `json:"userid"`
 	Signature string `json:"signature"`
 }
 
