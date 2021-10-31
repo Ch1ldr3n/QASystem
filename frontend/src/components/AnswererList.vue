@@ -5,36 +5,24 @@
     :default-sort="{ prop: 'username', order: 'descending' }"
     style="width: 100%"
   >
-    <el-table-column type="expand">
-      <template #default="props">
-        <p>{{ props.row.content }}</p>
-            <el-button @click="ask">向他提问</el-button>
-      </template>
-    </el-table-column>
-    <el-table-column prop="username" label="姓名" width="180" column-key="name"/>
-    <el-table-column prop="price" label="价格" sortable width="180" />
-
+    
+    <el-table-column prop="username" label="姓名" min-width="10%" column-key="name"/>
+    <el-table-column prop="price" label="价格" sortable min-width="10%" />
     <el-table-column
       prop="profession"
       label="专业领域"
-      width="100"
-      :filters="[
-        { text: '生命科学', value: 'Biology' },
-        { text: '计算机科学', value: 'CS' },
-        { text: '数学', value: 'Math'},
-        { text: '物理学', value: 'Physics'},
-        { text: '中国文学', value: 'Chinese'},
-        { text: '英语', value: 'English'},
-      ]"
+      min-width="10%"
+      :filters="Array.from(new Set(userlist.map(x => x.profession))).map(x => { return { text: x, value: x } })"
       :filter-method="filterTag"
       filter-placement="bottom-end"
     >
       <template #default="scope">
         <el-tag
-          >{{ scope.row.area }}</el-tag
+          >{{ scope.row.profession }}</el-tag
         >
       </template>
     </el-table-column>
+    <el-table-column min-width="10%" ><el-button @click="ask">向他提问</el-button></el-table-column>
   </el-table>
 </template>
 
@@ -69,10 +57,10 @@ export default {
   },
   methods: {
     formatter(row) {
-      return row.area
+      return row.profession
     },
     filterTag(value, row) {
-      return row.area === value
+      return row.profession === value
     },
     ask() {
         this.$router.push({
