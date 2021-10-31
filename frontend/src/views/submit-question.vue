@@ -59,6 +59,7 @@ export default {
   },
   methods: {
     onSubmit() {
+      alert(this.qdesc)
       this.$router.push({
         name: 'Pay',
       })
