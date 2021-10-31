@@ -132,7 +132,7 @@ func query(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	question, err1 := ctx.DB().Question.Query().Where(questionp.ID(id)).Only(ctx.Request().Context())
+	question, err1 := ctx.DB().Question.Query().Where(questionp.ID(id)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
 	if err1 != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err1.Error())
 	}
@@ -141,6 +141,8 @@ func query(c echo.Context) error {
 		Title:	question.Title,
 		Content:	question.Content,
 		State:	string(question.State),
+		QuestionerID: question.Edges.Questioner.ID,
+		AnswererID: question.Edges.Answerer.ID,
 	})
 }
 
@@ -149,6 +151,8 @@ type questionQueryResponse struct {
 	Title	   string	`json:"title"`
 	Content    string	`json:"content"`
 	State	   string	`json:"state"`
+	QuestionerID int    `json:"questionerid"`
+	AnswererID   int    `json:"answererid"`
 }
 
 // @Summary Question List
@@ -167,6 +171,7 @@ func list(c echo.Context) error {
 	}
 	listlen := len(questions)
 	for i := 0; i < listlen; i = i + 1 {
+		questionlist[i].ID = questions[i].ID;
 		questionlist[i].Price = questions[i].Price;
 		questionlist[i].Title = questions[i].Title;
 		questionlist[i].Content = questions[i].Content;
@@ -181,6 +186,7 @@ func list(c echo.Context) error {
 }
 
 type questionInfoDesplay struct {
+	ID         int      `json:"id"`
 	Price      float64	`json:"price"`
 	Title	   string	`json:"title"`
 	Content    string	`json:"content"`
@@ -229,6 +235,7 @@ func mine(c echo.Context) error {
 	// asked
 	listlen1 := len(user.Edges.Asked)
 	for i := 0; i < listlen1; i = i + 1 {
+		askedlist[i].ID = user.Edges.Asked[i].ID;
 		askedlist[i].Price = user.Edges.Asked[i].Price;
 		askedlist[i].Title = user.Edges.Asked[i].Title;
 		askedlist[i].Content = user.Edges.Asked[i].Content;
@@ -244,6 +251,7 @@ func mine(c echo.Context) error {
 	// answered
 	listlen2 := len(user.Edges.Answered)
 	for i := 0; i < listlen2; i = i + 1 {
+		answeredlist[i].ID = user.Edges.Answered[i].ID;
 		answeredlist[i].Price = user.Edges.Answered[i].Price;
 		answeredlist[i].Title = user.Edges.Answered[i].Title;
 		answeredlist[i].Content = user.Edges.Answered[i].Content;
