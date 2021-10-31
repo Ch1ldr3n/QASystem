@@ -49,6 +49,7 @@ func register(c echo.Context) error {
 	}
 	return ctx.JSON(http.StatusOK, userRegisterResponse{
 		Token: token,
+		ID: user.ID,
 	})
 }
 
@@ -59,6 +60,7 @@ type userRegisterRequest struct {
 
 type userRegisterResponse struct {
 	Token string `json:"token"`
+	ID    int	 `json:"id"`
 }
 
 // @Summary User Login
@@ -96,6 +98,7 @@ func login(c echo.Context) error {
 	}
 	return ctx.JSON(http.StatusOK, userLoginResponse{
 		Token: token,
+		ID: user.ID,
 	})
 }
 
@@ -106,6 +109,7 @@ type userLoginRequest struct {
 
 type userLoginResponse struct {
 	Token string `json:"token"`
+	ID	  int	 `json:"id"`
 }
 
 // @Summary User Gensig
@@ -174,6 +178,7 @@ func info(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return ctx.JSON(http.StatusOK, userInfoResponse{
+		ID:         user.ID,
 		Username:   user.Username,
 		Email:      user.Email,
 		Phone:      user.Phone,
@@ -188,6 +193,7 @@ type userInfoRequest struct {
 }
 
 type userInfoResponse struct {
+	ID         int     `json:"id"`
 	Username   string  `json:"username"`
 	Email      string  `json:"email"`
 	Phone      string  `json:"phone"`
@@ -261,6 +267,9 @@ func filter(c echo.Context) error {
 	}
 	// begin Filter
 	users := ctx.DB().User.Query()
+	if u.ID != nil {
+		users = users.Where(userp.ID(*u.ID))
+	}
 	if u.Username != nil {
 		users = users.Where(userp.UsernameContains(*u.Username))
 	}
@@ -291,6 +300,7 @@ func filter(c echo.Context) error {
 	var userlist [numLimit]userInfoDisplay
 	listlen := len(candidates)
 	for i := 0; i < listlen; i++ {
+		userlist[i].ID = candidates[i].ID
 		userlist[i].Username = candidates[i].Username
 		userlist[i].Email = candidates[i].Email
 		userlist[i].Phone = candidates[i].Phone
@@ -305,6 +315,7 @@ func filter(c echo.Context) error {
 }
 
 type userFilterRequest struct {
+	ID         *int     `query:"id"`
 	Username   *string  `query:"username"`
 	Email      *string  `query:"email"`
 	Phone      *string  `query:"phone"`

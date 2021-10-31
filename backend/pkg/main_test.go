@@ -215,7 +215,6 @@ func TestQuestion(t *testing.T) {
 
 	auxQuestionSubmit(e, t, `
 {
-	"price": 0,
 	"title": "test title",
 	"content":"test content",
 	"questionerid":1,

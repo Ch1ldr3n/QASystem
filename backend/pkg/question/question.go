@@ -35,8 +35,12 @@ func submit(c echo.Context) error {
 	if u.QuestionerID == u.AnswererID {
 		return echo.NewHTTPError(http.StatusBadRequest, "error: questioner and answerer being the same person")
 	}
+	answerer, err0 := ctx.DB().User.Query().Where(userp.ID(u.QuestionerID)).Only(ctx.Request().Context())
+	if err0 != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err0.Error())
+	}
 	question, err := ctx.DB().Question.Create().
-		SetPrice(u.Price).
+		SetPrice(answerer.Price).
 		SetTitle(u.Title).
 		SetContent(u.Content).
 		SetCreated(time.Now()).
@@ -53,7 +57,6 @@ func submit(c echo.Context) error {
 }
 
 type questionSubmitRequest struct {
-	Price      float64	`json:"price"`
 	Title	   string	`json:"title"`
 	Content    string	`json:"content"`
 	QuestionerID	int	`json:"questionerid"`
@@ -66,6 +69,7 @@ type questionSubmitResponse struct {
 
 // @Summary Question Pay
 // @Description Pay for a question
+// @Security token
 // @Accept json
 // @Param body body questionPayRequest true "question pay request"
 // @Success 200 {object} string "question pay response"
@@ -131,7 +135,7 @@ func query(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	question, err1 := ctx.DB().Question.Query().Where(questionp.ID(id)).Only(ctx.Request().Context())
+	question, err1 := ctx.DB().Question.Query().Where(questionp.ID(id)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
 	if err1 != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err1.Error())
 	}
@@ -140,6 +144,8 @@ func query(c echo.Context) error {
 		Title:	question.Title,
 		Content:	question.Content,
 		State:	string(question.State),
+		QuestionerID: question.Edges.Questioner.ID,
+		AnswererID: question.Edges.Answerer.ID,
 	})
 }
 
@@ -148,6 +154,8 @@ type questionQueryResponse struct {
 	Title	   string	`json:"title"`
 	Content    string	`json:"content"`
 	State	   string	`json:"state"`
+	QuestionerID int    `json:"questionerid"`
+	AnswererID   int    `json:"answererid"`
 }
 
 // @Summary Question List
@@ -166,6 +174,7 @@ func list(c echo.Context) error {
 	}
 	listlen := len(questions)
 	for i := 0; i < listlen; i = i + 1 {
+		questionlist[i].ID = questions[i].ID;
 		questionlist[i].Price = questions[i].Price;
 		questionlist[i].Title = questions[i].Title;
 		questionlist[i].Content = questions[i].Content;
@@ -180,6 +189,7 @@ func list(c echo.Context) error {
 }
 
 type questionInfoDesplay struct {
+	ID         int      `json:"id"`
 	Price      float64	`json:"price"`
 	Title	   string	`json:"title"`
 	Content    string	`json:"content"`
@@ -195,6 +205,7 @@ type questionListResponse struct {
 
 // @Summary Question Mine
 // @Description List of all relevant questions
+// @Security token
 // @Accept json
 // @Produce json
 // @Param body body questionMineRequest true "question mine request"
@@ -227,6 +238,7 @@ func mine(c echo.Context) error {
 	// asked
 	listlen1 := len(user.Edges.Asked)
 	for i := 0; i < listlen1; i = i + 1 {
+		askedlist[i].ID = user.Edges.Asked[i].ID;
 		askedlist[i].Price = user.Edges.Asked[i].Price;
 		askedlist[i].Title = user.Edges.Asked[i].Title;
 		askedlist[i].Content = user.Edges.Asked[i].Content;
@@ -242,6 +254,7 @@ func mine(c echo.Context) error {
 	// answered
 	listlen2 := len(user.Edges.Answered)
 	for i := 0; i < listlen2; i = i + 1 {
+		answeredlist[i].ID = user.Edges.Answered[i].ID;
 		answeredlist[i].Price = user.Edges.Answered[i].Price;
 		answeredlist[i].Title = user.Edges.Answered[i].Title;
 		answeredlist[i].Content = user.Edges.Answered[i].Content;
@@ -275,6 +288,7 @@ type questionMineResponse struct {
 
 // @Summary Question Accept
 // @Description Accept a question
+// @Security token
 // @Accept json
 // @Param body body questionAcceptRequest true "question accept request"
 // @Success 200 {object} string "question accept response"
@@ -334,6 +348,7 @@ type questionAcceptRequest struct {
 
 // @Summary Question Close
 // @Description Close a question; Questioner only
+// @Security token
 // @Accept json
 // @Param body body questionCloseRequest true "question close request"
 // @Success 200 {object} string "question close response"
