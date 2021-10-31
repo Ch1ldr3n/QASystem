@@ -8,6 +8,7 @@ import (
 	"testing"
 	"github.com/labstack/echo/v4"
 	"strconv"
+	"fmt"
 )
 
 // auxiliary functions
@@ -142,6 +143,25 @@ func auxQuestionMine(e *echo.Echo, t *testing.T, token string) *httptest.Respons
 	return rec
 }
 
+func auxQuestionAccept(e *echo.Echo, t *testing.T, questionid int, choice bool, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/question/accept", bytes.NewBufferString(`
+{
+	"questionid": `+strconv.Itoa(questionid)+`,
+	"choice": `+fmt.Sprintf(`%t`,choice)+`
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("question accept failed")
+	}
+
+	return rec
+}
+
 // test functions
 
 func TestUser(t *testing.T) {
@@ -164,14 +184,21 @@ func TestQuestion(t *testing.T) {
 	e := New("/var/empty", "sqlite3", "file:ent2?mode=memory&cache=shared&_fk=1", "super-secret-key")
 
 	rec := auxUserRegister(e, t, "user1", "pass")
-	resp := new(struct {
+	resp1 := new(struct {
 		Token string `json:"token"`
 	})
-	err := json.NewDecoder(rec.Body).Decode(resp)
-	if err != nil {
-		t.Fatal(err)
+	err1 := json.NewDecoder(rec.Body).Decode(resp1)
+	if err1 != nil {
+		t.Fatal(err1)
 	}
-	auxUserRegister(e, t, "user2", "pass")
+	rec = auxUserRegister(e, t, "user2", "pass")
+	resp2 := new(struct {
+		Token string `json:"token"`
+	})
+	err2 := json.NewDecoder(rec.Body).Decode(resp2)
+	if err2 != nil {
+		t.Fatal(err2)
+	}
 
 	auxQuestionSubmit(e, t, `
 {
@@ -183,8 +210,10 @@ func TestQuestion(t *testing.T) {
 }
 	`)
 
-	auxQuestionPay(e, t, 1, resp.Token)
+	auxQuestionPay(e, t, 1, resp1.Token)
 	auxQuestionQuery(e, t, 1)
 	auxQuestionList(e, t)
-	auxQuestionMine(e, t, resp.Token)
+	auxQuestionMine(e, t, resp1.Token)
+
+	auxQuestionAccept(e, t, 1, true, resp2.Token)
 }
