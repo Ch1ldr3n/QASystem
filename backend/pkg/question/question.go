@@ -15,6 +15,7 @@ func Register(group *echo.Group) {
 	group.GET("/list", list)
 	group.GET("/mine", mine)
 	group.POST("/accept", accept)
+	group.POST("/close", close)
 }
 
 // @Summary Question Submit
@@ -93,18 +94,14 @@ func pay(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	}
-	payer, payee := question.Edges.Questioner, question.Edges.Answerer
+	payer, _ := question.Edges.Questioner, question.Edges.Answerer
 	if claims.Subject != payer.Username {
 		return echo.NewHTTPError(http.StatusBadRequest, "current user is not the questioner")
 	}
 	if payer.Balance < question.Price {
 		return echo.NewHTTPError(http.StatusBadRequest, "payer's balance is less than question price")
 	}
-	_, err = ctx.DB().User.Update().Where(userp.ID(payer.ID)).SetBalance(payer.Balance + question.Price).Save(ctx.Request().Context())
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	_, err = ctx.DB().User.Update().Where(userp.ID(payee.ID)).SetBalance(payee.Balance + question.Price).Save(ctx.Request().Context())
+	_, err = ctx.DB().User.Update().Where(userp.ID(payer.ID)).SetBalance(payer.Balance - question.Price).Save(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -292,7 +289,7 @@ func accept(c echo.Context) error {
 	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithAnswerer().Only(ctx.Request().Context())
+	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -306,7 +303,7 @@ func accept(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	}
-	answerer := question.Edges.Answerer
+	questioner, answerer := question.Edges.Questioner, question.Edges.Answerer
 	if claims.Subject != answerer.Username {
 		return echo.NewHTTPError(http.StatusBadRequest, "current user is not the answerer")
 	}
@@ -321,6 +318,10 @@ func accept(c echo.Context) error {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
+		_, err = ctx.DB().User.Update().Where(userp.ID(questioner.ID)).SetBalance(questioner.Balance + question.Price).Save(ctx.Request().Context())
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
 		return ctx.JSON(http.StatusOK, "question is canceled")
 	}
 }
@@ -328,5 +329,55 @@ func accept(c echo.Context) error {
 type questionAcceptRequest struct {
 	QuestionID	int	`json:"questionid"`
 	Choice	bool	`json:"choice"`
+	Token	string   `header:"authorization" validate:"required"`
+}
+
+// @Summary Question Close
+// @Description Close a question; Questioner only
+// @Accept json
+// @Param body body questionCloseRequest true "question close request"
+// @Success 200 {object} string "question close response"
+// @Failure 400 {string} string
+// @Router /v1/question/close [post]
+func close(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(questionCloseRequest)
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if question.State != "accepted" {
+		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'accepted'")
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.Verify(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	questioner, answerer := question.Edges.Questioner, question.Edges.Answerer
+	if claims.Subject != questioner.Username {
+		return echo.NewHTTPError(http.StatusBadRequest, "current user is not the questioner")
+	}
+	_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("done").Save(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	_, err = ctx.DB().User.Update().Where(userp.ID(answerer.ID)).SetBalance(answerer.Balance + question.Price).Save(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.JSON(http.StatusOK, "question is done")
+}
+
+type questionCloseRequest struct {
+	QuestionID	int	`json:"questionid"`
 	Token	string   `header:"authorization" validate:"required"`
 }
