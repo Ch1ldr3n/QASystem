@@ -11,6 +11,19 @@ import (
 	"fmt"
 )
 
+// auxiliary functions for auxiliary functions
+
+func getTokenFromBody(rec *httptest.ResponseRecorder, t *testing.T) string {
+	resp := new(struct {
+		Token string `json:"token"`
+	})
+	err := json.NewDecoder(rec.Body).Decode(resp)
+	if t != nil && err != nil {
+		t.Fatal(err)
+	}
+	return resp.Token
+} 
+
 // auxiliary functions
 func auxUserRegister(e *echo.Echo, t *testing.T, name string, password string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(http.MethodPost, "/v1/user/register", bytes.NewBufferString(`
@@ -162,6 +175,24 @@ func auxQuestionAccept(e *echo.Echo, t *testing.T, questionid int, choice bool, 
 	return rec
 }
 
+func auxQuestionClose(e *echo.Echo, t *testing.T, questionid int, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/question/close", bytes.NewBufferString(`
+{
+	"questionid": `+strconv.Itoa(questionid)+`
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("question close failed")
+	}
+
+	return rec
+}
+
 // test functions
 
 func TestUser(t *testing.T) {
@@ -169,14 +200,8 @@ func TestUser(t *testing.T) {
 
 	auxUserRegister(e, t, "testuser", "testpassword")
 	rec := auxUserLogin(e, t, "testuser", "testpassword")
-	resp := new(struct {
-		Token string `json:"token"`
-	})
-	err := json.NewDecoder(rec.Body).Decode(resp)
-	if err != nil {
-		t.Fatal(err)
-	}
-	auxUserInfo(e, t, resp.Token)
+	token := getTokenFromBody(rec, t)
+	auxUserInfo(e, t, token)
 	auxUserFilter(e, t, "?username=testuser")
 }
 
@@ -184,21 +209,9 @@ func TestQuestion(t *testing.T) {
 	e := New("/var/empty", "sqlite3", "file:ent2?mode=memory&cache=shared&_fk=1", "super-secret-key")
 
 	rec := auxUserRegister(e, t, "user1", "pass")
-	resp1 := new(struct {
-		Token string `json:"token"`
-	})
-	err1 := json.NewDecoder(rec.Body).Decode(resp1)
-	if err1 != nil {
-		t.Fatal(err1)
-	}
+	token1 := getTokenFromBody(rec, t)
 	rec = auxUserRegister(e, t, "user2", "pass")
-	resp2 := new(struct {
-		Token string `json:"token"`
-	})
-	err2 := json.NewDecoder(rec.Body).Decode(resp2)
-	if err2 != nil {
-		t.Fatal(err2)
-	}
+	token2 := getTokenFromBody(rec, t)
 
 	auxQuestionSubmit(e, t, `
 {
@@ -210,10 +223,11 @@ func TestQuestion(t *testing.T) {
 }
 	`)
 
-	auxQuestionPay(e, t, 1, resp1.Token)
+	auxQuestionPay(e, t, 1, token1)
 	auxQuestionQuery(e, t, 1)
 	auxQuestionList(e, t)
-	auxQuestionMine(e, t, resp1.Token)
+	auxQuestionMine(e, t, token1)
 
-	auxQuestionAccept(e, t, 1, true, resp2.Token)
+	auxQuestionAccept(e, t, 1, true, token2)
+	auxQuestionClose(e, t, 1, token1)
 }
