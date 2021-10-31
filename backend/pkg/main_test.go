@@ -128,6 +128,20 @@ func auxQuestionList(e *echo.Echo, t *testing.T) *httptest.ResponseRecorder {
 	return rec
 }
 
+func auxQuestionMine(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodGet, "/v1/question/mine", nil)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("question mine failed")
+	}
+
+	return rec
+}
+
 // test functions
 
 func TestUser(t *testing.T) {
@@ -172,4 +186,5 @@ func TestQuestion(t *testing.T) {
 	auxQuestionPay(e, t, 1, resp.Token)
 	auxQuestionQuery(e, t, 1)
 	auxQuestionList(e, t)
+	auxQuestionMine(e, t, resp.Token)
 }

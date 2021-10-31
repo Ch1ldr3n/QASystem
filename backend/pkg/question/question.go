@@ -13,6 +13,7 @@ func Register(group *echo.Group) {
 	group.POST("/pay", pay)
 	group.GET("/:id", query)
 	group.GET("/list", list)
+	group.GET("/mine", mine)
 }
 
 // @Summary Question Submit
@@ -192,4 +193,84 @@ type questionInfoDesplay struct {
 type questionListResponse struct {
 	ResultNum	int	`json:"num"`
 	Questionlist	[]questionInfoDesplay	`json:"questionlist"`
+}
+
+// @Summary Question Mine
+// @Description List of all relevant questions
+// @Accept json
+// @Produce json
+// @Param body body questionMineRequest true "question mine request"
+// @Success 200 {object} questionMineResponse "question mine response"
+// @Failure 400 {string} string
+// @Router /v1/question/mine [get]
+func mine(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(questionPayRequest)
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.Verify(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	const numLimit = 1000
+	var askedlist [numLimit]questionInfoDesplay
+	var answeredlist [numLimit]questionInfoDesplay
+	user, err1 := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).WithAsked().WithAnswered().Only(ctx.Request().Context())
+	if err1 != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err1.Error())
+	}
+	// asked
+	listlen1 := len(user.Edges.Asked)
+	for i := 0; i < listlen1; i = i + 1 {
+		askedlist[i].Price = user.Edges.Asked[i].Price;
+		askedlist[i].Title = user.Edges.Asked[i].Title;
+		askedlist[i].Content = user.Edges.Asked[i].Content;
+		askedlist[i].State = string(user.Edges.Asked[i].State);
+		// get its answerer
+		question, err := ctx.DB().Question.Query().Where(questionp.ID(user.Edges.Asked[i].ID)).WithAnswerer().Only(ctx.Request().Context())
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		askedlist[i].QuestionerID = user.ID;
+		askedlist[i].AnswererID = question.Edges.Answerer.ID;
+	}
+	// answered
+	listlen2 := len(user.Edges.Answered)
+	for i := 0; i < listlen2; i = i + 1 {
+		answeredlist[i].Price = user.Edges.Answered[i].Price;
+		answeredlist[i].Title = user.Edges.Answered[i].Title;
+		answeredlist[i].Content = user.Edges.Answered[i].Content;
+		answeredlist[i].State = string(user.Edges.Answered[i].State);
+		//get its questioner
+		question, err := ctx.DB().Question.Query().Where(questionp.ID(user.Edges.Answered[i].ID)).WithQuestioner().Only(ctx.Request().Context())
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		answeredlist[i].QuestionerID = question.Edges.Questioner.ID;
+		answeredlist[i].AnswererID = user.ID;
+	}
+	return ctx.JSON(http.StatusOK, questionMineResponse{
+		AskedNum: listlen1,
+		AskedList: askedlist[:listlen1],
+		AnsweredNum: listlen2, 
+		AnsweredList: answeredlist[:listlen2], 
+	})
+}
+
+type questionMineRequest struct {
+	Token	string   `header:"authorization" validate:"required"`
+}
+
+type questionMineResponse struct {
+	AskedNum	int	`json:"askednum"`
+	AskedList	[]questionInfoDesplay	`json:"askedlist"`
+	AnsweredNum	int	`json:"answerednum"`
+	AnsweredList	[]questionInfoDesplay	`json:"answeredlist"`
 }
