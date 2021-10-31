@@ -96,7 +96,6 @@ export default {
   },
   methods: {
     onSubmit() {
-      console.log('dian')
       //向后端请求修改数据
       this.$refs['form'].validate((valid) => {
         if (valid) {
