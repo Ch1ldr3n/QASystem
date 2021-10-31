@@ -10,6 +10,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.8
 	github.com/swaggo/echo-swagger v1.1.3
 	github.com/swaggo/swag v1.7.3
+	github.com/tencentyun/tls-sig-api-v2-golang v1.2.0
 	gitlab.secoder.net/bauhinia/qanda-schema v0.0.0-00010101000000-000000000000
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 )

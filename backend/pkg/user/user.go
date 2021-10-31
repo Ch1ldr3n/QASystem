@@ -1,6 +1,7 @@
 package user
 
 import "github.com/labstack/echo/v4"
+import "github.com/tencentyun/tls-sig-api-v2-golang/tencentyun"
 import "gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 import "gitlab.secoder.net/bauhinia/qanda-schema/ent"
 import userp "gitlab.secoder.net/bauhinia/qanda-schema/ent/user"
@@ -14,6 +15,7 @@ func Register(group *echo.Group) {
 	group.GET("/info", info)
 	group.POST("/edit", edit)
 	group.GET("/filter", filter)
+	group.GET("/gensig", gensig)
 }
 
 // @Summary User Register
@@ -104,6 +106,47 @@ type userLoginRequest struct {
 
 type userLoginResponse struct {
 	Token string `json:"token"`
+}
+
+// @Summary User Gensig
+// @Description Gensig of current user
+// @Security token
+// @Produce json
+// @Success 200 {object} userGensigResponse "user gensig response"
+// @Failure 400 {string} string
+// @Router /v1/user/gensig [get]
+func gensig(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(userGensigRequest)
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.Verify(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	user, err := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	sig, err := tencentyun.GenUserSig(1400586942, "'b1c5ac2dd23bc7556ab94e23d2735806641f8d7fb3be28b779b66fe1672e6dd6", user.Username, 86400*180)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.JSON(http.StatusOK, userGensigResponse{
+		Signature: sig,
+	})
+}
+
+type userGensigRequest struct {
+	Token string `header:"authorization" validate:"required"`
+}
+
+type userGensigResponse struct {
+	Signature  string  `json:"signature"`
 }
 
 // @Summary User Info
