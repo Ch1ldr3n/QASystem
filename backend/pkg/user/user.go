@@ -267,6 +267,9 @@ func filter(c echo.Context) error {
 	}
 	// begin Filter
 	users := ctx.DB().User.Query()
+	if u.ID != nil {
+		users = users.Where(userp.ID(*u.ID))
+	}
 	if u.Username != nil {
 		users = users.Where(userp.UsernameContains(*u.Username))
 	}
@@ -312,6 +315,7 @@ func filter(c echo.Context) error {
 }
 
 type userFilterRequest struct {
+	ID         *int     `query:"id"`
 	Username   *string  `query:"username"`
 	Email      *string  `query:"email"`
 	Phone      *string  `query:"phone"`
