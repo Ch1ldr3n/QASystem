@@ -66,6 +66,7 @@ type questionSubmitResponse struct {
 
 // @Summary Question Pay
 // @Description Pay for a question
+// @Security token
 // @Accept json
 // @Param body body questionPayRequest true "question pay request"
 // @Success 200 {object} string "question pay response"
@@ -195,6 +196,7 @@ type questionListResponse struct {
 
 // @Summary Question Mine
 // @Description List of all relevant questions
+// @Security token
 // @Accept json
 // @Produce json
 // @Param body body questionMineRequest true "question mine request"
@@ -275,6 +277,7 @@ type questionMineResponse struct {
 
 // @Summary Question Accept
 // @Description Accept a question
+// @Security token
 // @Accept json
 // @Param body body questionAcceptRequest true "question accept request"
 // @Success 200 {object} string "question accept response"
@@ -334,6 +337,7 @@ type questionAcceptRequest struct {
 
 // @Summary Question Close
 // @Description Close a question; Questioner only
+// @Security token
 // @Accept json
 // @Param body body questionCloseRequest true "question close request"
 // @Success 200 {object} string "question close response"
