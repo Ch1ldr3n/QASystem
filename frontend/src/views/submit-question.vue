@@ -59,6 +59,7 @@ export default {
   },
   methods: {
     onSubmit() {
+      alert(this.qdesc)
       this.$router.push({
         name: 'Pay',
       })
@@ -69,10 +70,10 @@ export default {
         },
         body: JSON.stringify({
           answererid: 0,
-          content: qdesc,
+          content: this.qdesc,
           price: 0,
           questionerid: 0,
-          title: qname,
+          title: this.qname,
         }),
       }).then((resp) => {
         if (!resp.ok) {
