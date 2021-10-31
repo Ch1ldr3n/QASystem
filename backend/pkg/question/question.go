@@ -12,6 +12,7 @@ func Register(group *echo.Group) {
 	group.POST("/submit", submit)
 	group.POST("/pay", pay)
 	group.GET("/:id", query)
+	group.GET("/list", list)
 }
 
 // @Summary Question Submit
@@ -148,4 +149,47 @@ type questionQueryResponse struct {
 	Title	   string	`json:"title"`
 	Content    string	`json:"content"`
 	State	   string	`json:"state"`
+}
+
+// @Summary Question List
+// @Description List of all questions open to all users
+// @Produce json
+// @Success 200 {object} questionListResponse "question list response"
+// @Failure 400 {string} string
+// @Router /v1/question/list [get]
+func list(c echo.Context) error {
+	ctx := c.(*common.Context)
+	const numLimit = 1000
+	var questionlist [numLimit]questionInfoDesplay
+	questions, err := ctx.DB().Question.Query().Limit(numLimit).WithQuestioner().WithAnswerer().All(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	listlen := len(questions)
+	for i := 0; i < listlen; i = i + 1 {
+		questionlist[i].Price = questions[i].Price;
+		questionlist[i].Title = questions[i].Title;
+		questionlist[i].Content = questions[i].Content;
+		questionlist[i].State = string(questions[i].State);
+		questionlist[i].QuestionerID = questions[i].Edges.Questioner.ID;
+		questionlist[i].AnswererID = questions[i].Edges.Answerer.ID;
+	}
+	return ctx.JSON(http.StatusOK, questionListResponse{
+		ResultNum:	listlen,
+		Questionlist:	questionlist[:listlen],
+	})
+}
+
+type questionInfoDesplay struct {
+	Price      float64	`json:"price"`
+	Title	   string	`json:"title"`
+	Content    string	`json:"content"`
+	State	   string	`json:"state"`
+	QuestionerID	int	`json:"questionerid"`
+	AnswererID	int	`json:"answererid"`
+}
+
+type questionListResponse struct {
+	ResultNum	int	`json:"num"`
+	Questionlist	[]questionInfoDesplay	`json:"questionlist"`
 }
