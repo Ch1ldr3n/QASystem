@@ -35,8 +35,12 @@ func submit(c echo.Context) error {
 	if u.QuestionerID == u.AnswererID {
 		return echo.NewHTTPError(http.StatusBadRequest, "error: questioner and answerer being the same person")
 	}
+	answerer, err0 := ctx.DB().User.Query().Where(userp.ID(u.QuestionerID)).Only(ctx.Request().Context())
+	if err0 != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err0.Error())
+	}
 	question, err := ctx.DB().Question.Create().
-		SetPrice(u.Price).
+		SetPrice(answerer.Price).
 		SetTitle(u.Title).
 		SetContent(u.Content).
 		SetCreated(time.Now()).
@@ -53,7 +57,6 @@ func submit(c echo.Context) error {
 }
 
 type questionSubmitRequest struct {
-	Price      float64	`json:"price"`
 	Title	   string	`json:"title"`
 	Content    string	`json:"content"`
 	QuestionerID	int	`json:"questionerid"`
