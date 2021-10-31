@@ -116,6 +116,18 @@ func auxQuestionQuery(e *echo.Echo, t *testing.T, questionid int) *httptest.Resp
 	return rec
 }
 
+func auxQuestionList(e *echo.Echo, t *testing.T) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodGet, "/v1/question/list", nil)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("question list failed")
+	}
+
+	return rec
+}
+
 // test functions
 
 func TestUser(t *testing.T) {
@@ -159,4 +171,5 @@ func TestQuestion(t *testing.T) {
 
 	auxQuestionPay(e, t, 1, resp.Token)
 	auxQuestionQuery(e, t, 1)
+	auxQuestionList(e, t)
 }
