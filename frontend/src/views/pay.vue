@@ -50,7 +50,12 @@ export default {
         name: 'Submit',
       })
     },
-    onSubmit() {},
+    onSubmit() {
+      this.$message({
+        message: '支付成功',
+        type: 'success',
+      })
+    },
   },
 }
 </script>
