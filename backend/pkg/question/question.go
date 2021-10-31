@@ -14,6 +14,7 @@ func Register(group *echo.Group) {
 	group.GET("/:id", query)
 	group.GET("/list", list)
 	group.GET("/mine", mine)
+	group.POST("/accept", accept)
 }
 
 // @Summary Question Submit
@@ -205,7 +206,7 @@ type questionListResponse struct {
 // @Router /v1/question/mine [get]
 func mine(c echo.Context) error {
 	ctx := c.(*common.Context)
-	u := new(questionPayRequest)
+	u := new(questionMineRequest)
 	if err := ctx.Bind(u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -273,4 +274,59 @@ type questionMineResponse struct {
 	AskedList	[]questionInfoDesplay	`json:"askedlist"`
 	AnsweredNum	int	`json:"answerednum"`
 	AnsweredList	[]questionInfoDesplay	`json:"answeredlist"`
+}
+
+// @Summary Question Accept
+// @Description Accept a question
+// @Accept json
+// @Param body body questionAcceptRequest true "question accept request"
+// @Success 200 {object} string "question accept response"
+// @Failure 400 {string} string
+// @Router /v1/question/accept [post]
+func accept(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(questionAcceptRequest)
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithAnswerer().Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if question.State != "paid" {
+		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'paid'")
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.Verify(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	answerer := question.Edges.Answerer
+	if claims.Subject != answerer.Username {
+		return echo.NewHTTPError(http.StatusBadRequest, "current user is not the answerer")
+	}
+	if u.Choice {
+		_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("accepted").Save(ctx.Request().Context())
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		return ctx.JSON(http.StatusOK, "question is accepted")
+	} else {
+		_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("canceled").Save(ctx.Request().Context())
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		return ctx.JSON(http.StatusOK, "question is canceled")
+	}
+}
+
+type questionAcceptRequest struct {
+	QuestionID	int	`json:"questionid"`
+	Choice	bool	`json:"choice"`
+	Token	string   `header:"authorization" validate:"required"`
 }
