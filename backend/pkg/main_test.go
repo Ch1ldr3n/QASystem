@@ -175,6 +175,24 @@ func auxQuestionAccept(e *echo.Echo, t *testing.T, questionid int, choice bool, 
 	return rec
 }
 
+func auxQuestionClose(e *echo.Echo, t *testing.T, questionid int, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/question/close", bytes.NewBufferString(`
+{
+	"questionid": `+strconv.Itoa(questionid)+`
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("question close failed")
+	}
+
+	return rec
+}
+
 // test functions
 
 func TestUser(t *testing.T) {
@@ -211,4 +229,5 @@ func TestQuestion(t *testing.T) {
 	auxQuestionMine(e, t, token1)
 
 	auxQuestionAccept(e, t, 1, true, token2)
+	auxQuestionClose(e, t, 1, token1)
 }
