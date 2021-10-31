@@ -70,5 +70,25 @@ export default {
       return row.tag === value;
     },
   },
+  created() {
+    fetch('/v1/question/list', {
+      method: 'GET',
+      // headers: {}
+    })
+      .then((resp) => {
+        if (!resp.ok) { throw new Error('获取我的问题列表失败！'); }
+        return resp.json;
+      })
+      .then((data) => {
+        this.tableData = data.tableData;
+        console.log(data);
+      })
+      .catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
+  },
 };
 </script>
