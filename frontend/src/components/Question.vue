@@ -12,20 +12,20 @@
 </template>
 
 <script>
-import QuestionList from './QuestionList.vue'
-import MyInfoCard from './MyInfoCard.vue'
+import QuestionList from './QuestionList.vue';
+import MyInfoCard from './MyInfoCard.vue';
 
 export default {
-  name: "question",
+  name: 'question',
   components: {
     QuestionList,
     MyInfoCard,
   },
   data() {
     return {
-    }
+    };
   },
-  methods:{
+  methods: {
   },
 };
 </script>

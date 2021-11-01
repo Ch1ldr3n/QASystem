@@ -8,21 +8,21 @@
 </template>
 
 <script>
-import NavBar from './components/NavBar.vue'
+import NavBar from './components/NavBar.vue';
 
 export default {
-  name: "App",
+  name: 'App',
   data() {
     return {
       navbar: {
         loginDone: false,
-      }
-    }
+      },
+    };
   },
   components: {
     NavBar,
   },
-}
+};
 </script>
 
 <style></style>

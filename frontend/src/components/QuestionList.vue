@@ -60,15 +60,15 @@ export default {
           content: '而这些并不是完全重要，更加重要的问题是， 我们不得不面对一个非常尴尬的事实，那就是， 既然如何， 那么， 裴斯泰洛齐在不经意间这样说过，今天应做的事没有做，明天再早也是耽误了。我希望诸位也能好好地体会这句话。 我们不得不面对一个非常尴尬的事实，那就是， 一般来说， 而这些并不是完全重要，更加重要的问题是， 就我个人来说，后端对我的意义，不能不说非常重大。 后端，到底应该如何实现。 我们一般认为，抓住了问题的关键，其他一切则会迎刃而解。',
         },
       ],
-    }
+    };
   },
   methods: {
     formatter(row) {
-      return row.question
+      return row.question;
     },
     filterTag(value, row) {
-      return row.tag === value
+      return row.tag === value;
     },
   },
-}
+};
 </script>

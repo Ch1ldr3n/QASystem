@@ -7,11 +7,12 @@
 </template>
 
 <script>
-import ExploreList from './ExploreList.vue'
+import ExploreList from './ExploreList.vue';
+
 export default {
-  name: "Explore",
+  name: 'Explore',
   components: {
     ExploreList,
-  }
+  },
 };
 </script>

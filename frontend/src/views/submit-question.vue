@@ -55,14 +55,13 @@ export default {
     return {
       qname: '',
       qdesc: '',
-    }
+    };
   },
   methods: {
     onSubmit() {
-      alert(this.qdesc)
       this.$router.push({
         name: 'Pay',
-      })
+      });
       fetch('/v1/question/summit', {
         method: 'POST',
         headers: {
@@ -77,20 +76,20 @@ export default {
         }),
       }).then((resp) => {
         if (!resp.ok) {
-          throw new Error('修改失败!')
+          throw new Error('修改失败!');
         }
         this.$message({
           message: '修改成功',
           type: 'success',
-        })
-        //跳转到支付页面
+        });
+        // 跳转到支付页面
         this.$router.push({
           name: 'Pay',
-        })
-      })
+        });
+      });
     },
   },
-}
+};
 </script>
 
 <style scoped>

@@ -5,7 +5,7 @@
     :default-sort="{ prop: 'username', order: 'descending' }"
     style="width: 100%"
   >
-    
+
     <el-table-column prop="username" label="姓名" min-width="10%" column-key="name"/>
     <el-table-column prop="price" label="价格" sortable min-width="10%" />
     <el-table-column
@@ -30,43 +30,42 @@
 export default {
   data() {
     return {
-      userlist: []
-    }
+      userlist: [],
+    };
   },
   created() {
-    fetch("/v1/user/filter?answerer=true", {
-      method: "GET",
-      headers: {"authorization": window.localStorage.getItem("token")},
+    fetch('/v1/user/filter?answerer=true', {
+      method: 'GET',
+      headers: { authorization: window.localStorage.getItem('token') },
     })
-    .then(resp => {
-      if (!resp.ok) {
-        throw new Error("获取回答者列表失败")
-      }
-      return resp.json()
-    })
-    .then(data => {
-      this.userlist = data.userlist
-      console.log(data)
-    })
-    .catch(error => {
-      this.$message({
-        message: error,
-        type: "error",
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('获取回答者列表失败');
+        }
+        return resp.json();
       })
-    })
+      .then((data) => {
+        this.userlist = data.userlist;
+      })
+      .catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
   },
   methods: {
     formatter(row) {
-      return row.profession
+      return row.profession;
     },
     filterTag(value, row) {
-      return row.profession === value
+      return row.profession === value;
     },
     ask() {
-        this.$router.push({
-            name: "Submit"
-        })
+      this.$router.push({
+        name: 'Submit',
+      });
     },
   },
-}
+};
 </script>

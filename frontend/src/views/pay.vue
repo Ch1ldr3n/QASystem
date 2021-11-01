@@ -48,16 +48,16 @@ export default {
     quit() {
       this.$router.push({
         name: 'Submit',
-      })
+      });
     },
     onSubmit() {
       this.$message({
         message: '支付成功',
         type: 'success',
-      })
+      });
     },
   },
-}
+};
 </script>
 
 <style scoped>
