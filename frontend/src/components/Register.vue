@@ -30,89 +30,89 @@
 
 <script>
 export default {
-  name: "Register",
+  name: 'Register',
   data() {
     return {
       model: {
-        username: "",
-        password: "",
-        password_confirm: "",
+        username: '',
+        password: '',
+        password_confirm: '',
       },
       rules: {
         username: [
           {
             required: true,
-            message: "请输入用户名",
-            trigger: "blur"
+            message: '请输入用户名',
+            trigger: 'blur',
           },
           {
             min: 5,
-            message: "用户名长度至少为5",
-            trigger: "blur"
-          }
+            message: '用户名长度至少为5',
+            trigger: 'blur',
+          },
         ],
         password: [
           {
             required: true,
-            message: "请输入密码",
-            trigger: "blur"
+            message: '请输入密码',
+            trigger: 'blur',
           },
           {
             pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/,
-            message: "密码长度至少为8，且至少有一个字母和数字",
-            trigger: "blur"
-          }
+            message: '密码长度至少为8，且至少有一个字母和数字',
+            trigger: 'blur',
+          },
         ],
         password_confirm: [
           {
             required: true,
             // eslint-disable-next-line no-unused-vars
             validator: (rule, value) => value == this.model.password,
-            message: "两次输入的密码不一致",
-            trigger: "blur"
-          }
-        ]
+            message: '两次输入的密码不一致',
+            trigger: 'blur',
+          },
+        ],
       },
-    }
+    };
   },
   methods: {
     submit() {
-      this.$refs["form"].validate((valid) => {
+      this.$refs.form.validate((valid) => {
         if (valid) {
-          fetch("/v1/user/register", {
-            method: "POST",
-            headers: {"content-type": "application/json"},
+          fetch('/v1/user/register', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
               username: this.model.username,
               password: this.model.password,
-            })
+            }),
           })
-          .then(resp => {
-            if (!resp.ok) {
-              throw new Error("用户名已被注册")
-            }
-            return resp.json()
-          })
-          .then(data => {
-            window.localStorage.setItem("token", data.token) 
-            this.$message({
-              message: "注册成功",
-              type: "success",
+            .then((resp) => {
+              if (!resp.ok) {
+                throw new Error('用户名已被注册');
+              }
+              return resp.json();
             })
-            this.$router.push({
-              name: "Question",
+            .then((data) => {
+              window.localStorage.setItem('token', data.token);
+              this.$message({
+                message: '注册成功',
+                type: 'success',
+              });
+              this.$router.push({
+                name: 'Question',
+              });
             })
-          })
-          .catch(error => {
-            this.$message({
-              message: error,
-              type: "error",
-            })
-          })
+            .catch((error) => {
+              this.$message({
+                message: error,
+                type: 'error',
+              });
+            });
         } else {
-          return false
+          return false;
         }
-      })
+      });
     },
   },
 };

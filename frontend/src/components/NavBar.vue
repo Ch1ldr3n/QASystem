@@ -13,20 +13,20 @@
 
 <script>
 export default {
-    name: "NavBar",
-    methods: {      
-      logout() {
-        window.localStorage.removeItem("token")
-        this.$message({
-          message: "登出成功",
-          type: "success"
-        })
-        this.$router.push({
-          name: "Explore"
-        })
-      },
-    }
-}
+  name: 'NavBar',
+  methods: {
+    logout() {
+      window.localStorage.removeItem('token');
+      this.$message({
+        message: '登出成功',
+        type: 'success',
+      });
+      this.$router.push({
+        name: 'Explore',
+      });
+    },
+  },
+};
 </script>
 
 <style scoped></style>

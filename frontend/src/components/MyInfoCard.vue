@@ -14,35 +14,35 @@
 
 <script>
 export default {
-    data() {
-        return {
-        answerer: "",
-        username: ""
+  data() {
+    return {
+      answerer: '',
+      username: '',
+    };
+  },
+  created() {
+    fetch('/v1/user/info', {
+      method: 'GET',
+      headers: { authorization: window.localStorage.getItem('token') },
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('获取用户信息失败');
         }
-    },
-    created() {
-    fetch("/v1/user/info", {
-      method: "GET",
-      headers: {"authorization": window.localStorage.getItem("token")},
-    })
-    .then(resp => {
-      if (!resp.ok) {
-        throw new Error("获取用户信息失败")
-      }
-      return resp.json()
-    })
-    .then(data => {
-      this.username = data.username
-      this.answerer = data.answerer ? "回答者" : "提问者"
-      console.log(data)
-    })
-    .catch(error => {
-      this.$message({
-        message: error,
-        type: "error",
+        return resp.json();
       })
-    })
-  }
+      .then((data) => {
+        this.username = data.username;
+        this.answerer = data.answerer ? '回答者' : '提问者';
+        console.log(data);
+      })
+      .catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
+  },
 };
 
 </script>

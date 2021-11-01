@@ -65,7 +65,7 @@ export default {
       model: {
         password1: '',
         password2: '',
-        name: '', //这里和后端那个数据绑定
+        name: '', // 这里和后端那个数据绑定
         answerer: false,
         email: '',
         phone: '',
@@ -92,12 +92,12 @@ export default {
           },
         ],
       },
-    }
+    };
   },
   methods: {
     onSubmit() {
-      //向后端请求修改数据
-      this.$refs['form'].validate((valid) => {
+      // 向后端请求修改数据
+      this.$refs.form.validate((valid) => {
         if (valid) {
           fetch('/v1/user/edit', {
             method: 'POST',
@@ -115,16 +115,16 @@ export default {
             }),
           }).then((resp) => {
             if (!resp.ok) {
-              throw new Error('修改失败!')
+              throw new Error('修改失败!');
             }
             this.$message({
               message: '修改成功',
               type: 'success',
-            })
-            location.reload()
-          })
+            });
+            location.reload();
+          });
         }
-      })
+      });
     },
   },
 
@@ -137,27 +137,27 @@ export default {
     })
       .then((resp) => {
         if (!resp.ok) {
-          throw new Error('用户信息加载失败')
+          throw new Error('用户信息加载失败');
         }
-        return resp.json()
+        return resp.json();
       })
       .then((data) => {
-        console.log(data)
-        this.model.name = data.username
-        this.model.answerer = data.answerer
-        this.model.email = data.email
-        this.model.phone = data.phone
-        this.model.price = data.price
-        this.model.profession = data.profession
+        console.log(data);
+        this.model.name = data.username;
+        this.model.answerer = data.answerer;
+        this.model.email = data.email;
+        this.model.phone = data.phone;
+        this.model.price = data.price;
+        this.model.profession = data.profession;
       })
       .catch((error) => {
         this.$message({
           message: error,
           type: 'error',
-        })
-      })
+        });
+      });
   },
-}
+};
 </script>
 
 <style scoped>
