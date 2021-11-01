@@ -49,7 +49,7 @@ func register(c echo.Context) error {
 	}
 	return ctx.JSON(http.StatusOK, userRegisterResponse{
 		Token: token,
-		ID: user.ID,
+		ID:    user.ID,
 	})
 }
 
@@ -60,7 +60,7 @@ type userRegisterRequest struct {
 
 type userRegisterResponse struct {
 	Token string `json:"token"`
-	ID    int	 `json:"id"`
+	ID    int    `json:"id"`
 }
 
 // @Summary User Login
@@ -98,7 +98,7 @@ func login(c echo.Context) error {
 	}
 	return ctx.JSON(http.StatusOK, userLoginResponse{
 		Token: token,
-		ID: user.ID,
+		ID:    user.ID,
 	})
 }
 
@@ -109,7 +109,7 @@ type userLoginRequest struct {
 
 type userLoginResponse struct {
 	Token string `json:"token"`
-	ID	  int	 `json:"id"`
+	ID    int    `json:"id"`
 }
 
 // @Summary User Gensig
@@ -150,7 +150,7 @@ type userGensigRequest struct {
 }
 
 type userGensigResponse struct {
-	Signature  string  `json:"signature"`
+	Signature string `json:"signature"`
 }
 
 // @Summary User Info
@@ -308,21 +308,21 @@ func filter(c echo.Context) error {
 		userlist[i].Price = candidates[i].Price
 		userlist[i].Profession = candidates[i].Profession
 	}
-	return ctx.JSON(http.StatusOK, userFilterResponse {
-		ResultNum :	listlen,
-		Userlist :	userlist[:listlen],
+	return ctx.JSON(http.StatusOK, userFilterResponse{
+		ResultNum: listlen,
+		Userlist:  userlist[:listlen],
 	})
 }
 
 type userFilterRequest struct {
-	ID         *int     `query:"id"`
-	Username   *string  `query:"username"`
-	Email      *string  `query:"email"`
-	Phone      *string  `query:"phone"`
-	Answerer   *bool    `query:"answerer"`
-	PriceUpperBound      *float64 `query:"priceUpperBound"`
-	PriceLowerBound      *float64 `query:"priceLowerBound"`
-	Profession *string  `query:"profession"`
+	ID              *int     `query:"id"`
+	Username        *string  `query:"username"`
+	Email           *string  `query:"email"`
+	Phone           *string  `query:"phone"`
+	Answerer        *bool    `query:"answerer"`
+	PriceUpperBound *float64 `query:"priceUpperBound"`
+	PriceLowerBound *float64 `query:"priceLowerBound"`
+	Profession      *string  `query:"profession"`
 }
 
 type userInfoDisplay = userInfoResponse
