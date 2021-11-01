@@ -57,14 +57,14 @@ func submit(c echo.Context) error {
 }
 
 type questionSubmitRequest struct {
-	Title	   string	`json:"title"`
-	Content    string	`json:"content"`
-	QuestionerID	int	`json:"questionerid"`
-	AnswererID	int	`json:"answererid"`
+	Title        string `json:"title"`
+	Content      string `json:"content"`
+	QuestionerID int    `json:"questionerid"`
+	AnswererID   int    `json:"answererid"`
 }
 
 type questionSubmitResponse struct {
-	QuestionId int	`json:"questionid"`
+	QuestionId int `json:"questionid"`
 }
 
 // @Summary Question Pay
@@ -117,8 +117,8 @@ func pay(c echo.Context) error {
 }
 
 type questionPayRequest struct {
-	QuestionID	int	`json:"questionid"`
-	Token	string   `header:"authorization" validate:"required"`
+	QuestionID int    `json:"questionid"`
+	Token      string `header:"authorization" validate:"required"`
 }
 
 // @Summary Question Query
@@ -140,22 +140,22 @@ func query(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err1.Error())
 	}
 	return ctx.JSON(http.StatusOK, questionQueryResponse{
-		Price:	question.Price,
-		Title:	question.Title,
-		Content:	question.Content,
-		State:	string(question.State),
+		Price:        question.Price,
+		Title:        question.Title,
+		Content:      question.Content,
+		State:        string(question.State),
 		QuestionerID: question.Edges.Questioner.ID,
-		AnswererID: question.Edges.Answerer.ID,
+		AnswererID:   question.Edges.Answerer.ID,
 	})
 }
 
 type questionQueryResponse struct {
-	Price      float64	`json:"price"`
-	Title	   string	`json:"title"`
-	Content    string	`json:"content"`
-	State	   string	`json:"state"`
-	QuestionerID int    `json:"questionerid"`
-	AnswererID   int    `json:"answererid"`
+	Price        float64 `json:"price"`
+	Title        string  `json:"title"`
+	Content      string  `json:"content"`
+	State        string  `json:"state"`
+	QuestionerID int     `json:"questionerid"`
+	AnswererID   int     `json:"answererid"`
 }
 
 // @Summary Question List
@@ -174,33 +174,33 @@ func list(c echo.Context) error {
 	}
 	listlen := len(questions)
 	for i := 0; i < listlen; i = i + 1 {
-		questionlist[i].ID = questions[i].ID;
-		questionlist[i].Price = questions[i].Price;
-		questionlist[i].Title = questions[i].Title;
-		questionlist[i].Content = questions[i].Content;
-		questionlist[i].State = string(questions[i].State);
-		questionlist[i].QuestionerID = questions[i].Edges.Questioner.ID;
-		questionlist[i].AnswererID = questions[i].Edges.Answerer.ID;
+		questionlist[i].ID = questions[i].ID
+		questionlist[i].Price = questions[i].Price
+		questionlist[i].Title = questions[i].Title
+		questionlist[i].Content = questions[i].Content
+		questionlist[i].State = string(questions[i].State)
+		questionlist[i].QuestionerID = questions[i].Edges.Questioner.ID
+		questionlist[i].AnswererID = questions[i].Edges.Answerer.ID
 	}
 	return ctx.JSON(http.StatusOK, questionListResponse{
-		ResultNum:	listlen,
-		Questionlist:	questionlist[:listlen],
+		ResultNum:    listlen,
+		Questionlist: questionlist[:listlen],
 	})
 }
 
 type questionInfoDesplay struct {
-	ID         int      `json:"id"`
-	Price      float64	`json:"price"`
-	Title	   string	`json:"title"`
-	Content    string	`json:"content"`
-	State	   string	`json:"state"`
-	QuestionerID	int	`json:"questionerid"`
-	AnswererID	int	`json:"answererid"`
+	ID           int     `json:"id"`
+	Price        float64 `json:"price"`
+	Title        string  `json:"title"`
+	Content      string  `json:"content"`
+	State        string  `json:"state"`
+	QuestionerID int     `json:"questionerid"`
+	AnswererID   int     `json:"answererid"`
 }
 
 type questionListResponse struct {
-	ResultNum	int	`json:"num"`
-	Questionlist	[]questionInfoDesplay	`json:"questionlist"`
+	ResultNum    int                   `json:"num"`
+	Questionlist []questionInfoDesplay `json:"questionlist"`
 }
 
 // @Summary Question Mine
@@ -238,52 +238,52 @@ func mine(c echo.Context) error {
 	// asked
 	listlen1 := len(user.Edges.Asked)
 	for i := 0; i < listlen1; i = i + 1 {
-		askedlist[i].ID = user.Edges.Asked[i].ID;
-		askedlist[i].Price = user.Edges.Asked[i].Price;
-		askedlist[i].Title = user.Edges.Asked[i].Title;
-		askedlist[i].Content = user.Edges.Asked[i].Content;
-		askedlist[i].State = string(user.Edges.Asked[i].State);
+		askedlist[i].ID = user.Edges.Asked[i].ID
+		askedlist[i].Price = user.Edges.Asked[i].Price
+		askedlist[i].Title = user.Edges.Asked[i].Title
+		askedlist[i].Content = user.Edges.Asked[i].Content
+		askedlist[i].State = string(user.Edges.Asked[i].State)
 		// get its answerer
 		question, err := ctx.DB().Question.Query().Where(questionp.ID(user.Edges.Asked[i].ID)).WithAnswerer().Only(ctx.Request().Context())
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
-		askedlist[i].QuestionerID = user.ID;
-		askedlist[i].AnswererID = question.Edges.Answerer.ID;
+		askedlist[i].QuestionerID = user.ID
+		askedlist[i].AnswererID = question.Edges.Answerer.ID
 	}
 	// answered
 	listlen2 := len(user.Edges.Answered)
 	for i := 0; i < listlen2; i = i + 1 {
-		answeredlist[i].ID = user.Edges.Answered[i].ID;
-		answeredlist[i].Price = user.Edges.Answered[i].Price;
-		answeredlist[i].Title = user.Edges.Answered[i].Title;
-		answeredlist[i].Content = user.Edges.Answered[i].Content;
-		answeredlist[i].State = string(user.Edges.Answered[i].State);
+		answeredlist[i].ID = user.Edges.Answered[i].ID
+		answeredlist[i].Price = user.Edges.Answered[i].Price
+		answeredlist[i].Title = user.Edges.Answered[i].Title
+		answeredlist[i].Content = user.Edges.Answered[i].Content
+		answeredlist[i].State = string(user.Edges.Answered[i].State)
 		//get its questioner
 		question, err := ctx.DB().Question.Query().Where(questionp.ID(user.Edges.Answered[i].ID)).WithQuestioner().Only(ctx.Request().Context())
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
-		answeredlist[i].QuestionerID = question.Edges.Questioner.ID;
-		answeredlist[i].AnswererID = user.ID;
+		answeredlist[i].QuestionerID = question.Edges.Questioner.ID
+		answeredlist[i].AnswererID = user.ID
 	}
 	return ctx.JSON(http.StatusOK, questionMineResponse{
-		AskedNum: listlen1,
-		AskedList: askedlist[:listlen1],
-		AnsweredNum: listlen2, 
-		AnsweredList: answeredlist[:listlen2], 
+		AskedNum:     listlen1,
+		AskedList:    askedlist[:listlen1],
+		AnsweredNum:  listlen2,
+		AnsweredList: answeredlist[:listlen2],
 	})
 }
 
 type questionMineRequest struct {
-	Token	string   `header:"authorization" validate:"required"`
+	Token string `header:"authorization" validate:"required"`
 }
 
 type questionMineResponse struct {
-	AskedNum	int	`json:"askednum"`
-	AskedList	[]questionInfoDesplay	`json:"askedlist"`
-	AnsweredNum	int	`json:"answerednum"`
-	AnsweredList	[]questionInfoDesplay	`json:"answeredlist"`
+	AskedNum     int                   `json:"askednum"`
+	AskedList    []questionInfoDesplay `json:"askedlist"`
+	AnsweredNum  int                   `json:"answerednum"`
+	AnsweredList []questionInfoDesplay `json:"answeredlist"`
 }
 
 // @Summary Question Accept
@@ -341,9 +341,9 @@ func accept(c echo.Context) error {
 }
 
 type questionAcceptRequest struct {
-	QuestionID	int	`json:"questionid"`
-	Choice	bool	`json:"choice"`
-	Token	string   `header:"authorization" validate:"required"`
+	QuestionID int    `json:"questionid"`
+	Choice     bool   `json:"choice"`
+	Token      string `header:"authorization" validate:"required"`
 }
 
 // @Summary Question Close
@@ -393,6 +393,6 @@ func close(c echo.Context) error {
 }
 
 type questionCloseRequest struct {
-	QuestionID	int	`json:"questionid"`
-	Token	string   `header:"authorization" validate:"required"`
+	QuestionID int    `json:"questionid"`
+	Token      string `header:"authorization" validate:"required"`
 }

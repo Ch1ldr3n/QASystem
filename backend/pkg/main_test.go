@@ -3,12 +3,12 @@ package qanda
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"github.com/labstack/echo/v4"
 	"net/http"
 	"net/http/httptest"
-	"testing"
-	"github.com/labstack/echo/v4"
 	"strconv"
-	"fmt"
+	"testing"
 )
 
 // auxiliary functions for auxiliary functions
@@ -22,7 +22,7 @@ func getTokenFromBody(rec *httptest.ResponseRecorder, t *testing.T) string {
 		t.Fatal(err)
 	}
 	return resp.Token
-} 
+}
 
 // auxiliary functions
 func auxUserRegister(e *echo.Echo, t *testing.T, name string, password string) *httptest.ResponseRecorder {
@@ -160,7 +160,7 @@ func auxQuestionAccept(e *echo.Echo, t *testing.T, questionid int, choice bool, 
 	req := httptest.NewRequest(http.MethodPost, "/v1/question/accept", bytes.NewBufferString(`
 {
 	"questionid": `+strconv.Itoa(questionid)+`,
-	"choice": `+fmt.Sprintf(`%t`,choice)+`
+	"choice": `+fmt.Sprintf(`%t`, choice)+`
 }
     `))
 	req.Header.Add("Content-Type", "application/json")
