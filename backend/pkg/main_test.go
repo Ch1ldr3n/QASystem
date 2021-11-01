@@ -13,6 +13,10 @@ import (
 
 // auxiliary functions for auxiliary functions
 
+func getNewTestEcho(filename string) *echo.Echo {
+	return 	New("/var/empty", "sqlite3", "file:"+filename+"?mode=memory&cache=shared&_fk=1", "super-secret-key")
+}
+
 func getTokenFromBody(rec *httptest.ResponseRecorder, t *testing.T) string {
 	resp := new(struct {
 		Token string `json:"token"`
@@ -70,6 +74,20 @@ func auxUserInfo(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRec
 
 	if t != nil && rec.Result().StatusCode != http.StatusOK {
 		t.Fatal("get user info failed")
+	}
+
+	return rec
+}
+
+func auxUserEdit(e *echo.Echo, t *testing.T, token string, body string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/user/edit", bytes.NewBufferString(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("edit user failed")
 	}
 
 	return rec
@@ -196,17 +214,23 @@ func auxQuestionClose(e *echo.Echo, t *testing.T, questionid int, token string) 
 // test functions
 
 func TestUser(t *testing.T) {
-	e := New("/var/empty", "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1", "super-secret-key")
+	e := getNewTestEcho("ent")
 
 	auxUserRegister(e, t, "testuser", "testpassword")
 	rec := auxUserLogin(e, t, "testuser", "testpassword")
 	token := getTokenFromBody(rec, t)
 	auxUserInfo(e, t, token)
+	auxUserEdit(e, t, token, `
+{
+	"email":"hello@example.com",
+	"price":-100
+}
+	`)
 	auxUserFilter(e, t, "?username=testuser")
 }
 
 func TestQuestion(t *testing.T) {
-	e := New("/var/empty", "sqlite3", "file:ent2?mode=memory&cache=shared&_fk=1", "super-secret-key")
+	e := getNewTestEcho("ent1")
 
 	rec := auxUserRegister(e, t, "user1", "pass")
 	token1 := getTokenFromBody(rec, t)
