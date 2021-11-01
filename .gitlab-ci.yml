@@ -29,9 +29,11 @@ unit-test:
     - apt-get update && apt-get install -y nodejs
     - export GOPROXY=https://goproxy.cn
     - pushd backend && go mod download && go install github.com/swaggo/swag/cmd/swag@latest && swag init -d pkg -o pkg/docs && popd
+    - pushd frontend && npm install -g cnpm --registry=https://registry.npmmirror.com && npm install -g eslint && npm install && popd
 
   script:
     - pushd backend && go test -cover -race -v -coverprofile=./coverage.out -coverpkg ./pkg/... ./... && popd
+    - pushd frontend && eslint --ext vue src/ && popd
   after_script:
     - SUFFIX=$RANDOM
     - curl "http://10.0.0.11/sonar-scanner.tar.gz" -s -o "/tmp/sonar-$SUFFIX.tar.gz"
