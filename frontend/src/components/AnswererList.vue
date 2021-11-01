@@ -46,7 +46,6 @@ export default {
       })
       .then((data) => {
         this.userlist = data.userlist;
-        console.log(data);
       })
       .catch((error) => {
         this.$message({

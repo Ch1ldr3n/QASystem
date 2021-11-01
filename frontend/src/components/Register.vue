@@ -67,7 +67,7 @@ export default {
           {
             required: true,
             // eslint-disable-next-line no-unused-vars
-            validator: (rule, value) => value == this.model.password,
+            validator: (rule, value) => value === this.model.password,
             message: '两次输入的密码不一致',
             trigger: 'blur',
           },
@@ -109,9 +109,9 @@ export default {
                 type: 'error',
               });
             });
-        } else {
-          return false;
+          return true;
         }
+        return false;
       });
     },
   },

@@ -98,9 +98,9 @@ export default {
                 type: 'error',
               });
             });
-        } else {
-          return false;
+          return true;
         }
+        return false;
       });
     },
   },

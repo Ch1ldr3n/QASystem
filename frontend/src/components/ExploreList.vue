@@ -8,13 +8,13 @@
     <el-table-column type="expand">
       <template #default="props">
         <p>{{ props.row.content }}</p>
-		<el-button @click="submit">查看详情</el-button>
+        <el-button @click="submit">查看详情</el-button>
       </template>
     </el-table-column>
     <el-table-column prop="date" label="日期" sortable min-width="20%" column-key="date" />
     <el-table-column prop="question" label="问题" :formatter="formatter" />
     <el-table-column prop="askname" label="提问者" min-width="10%" />
-	<el-table-column prop="quename" label="回答者" min-width="10%" />
+    <el-table-column prop="quename" label="回答者" min-width="10%" />
   </el-table>
 </template>
 

@@ -16,7 +16,7 @@ import AnswererList from './AnswererList.vue';
 import MyInfoCard from './MyInfoCard.vue';
 
 export default {
-  name: 'answerer',
+  name: 'Answerer',
   components: {
     AnswererList,
     MyInfoCard,

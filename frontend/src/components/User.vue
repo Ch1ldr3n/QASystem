@@ -86,7 +86,7 @@ export default {
         ],
         password2: [
           {
-            validator: (rule, value) => value == this.model.password1,
+            validator: (rule, value) => value === this.model.password1,
             message: '两次输入的密码不一致',
             trigger: 'blur',
           },
@@ -121,7 +121,7 @@ export default {
               message: '修改成功',
               type: 'success',
             });
-            location.reload();
+            this.$forceUpdate();
           });
         }
       });
@@ -142,7 +142,6 @@ export default {
         return resp.json();
       })
       .then((data) => {
-        console.log(data);
         this.model.name = data.username;
         this.model.answerer = data.answerer;
         this.model.email = data.email;

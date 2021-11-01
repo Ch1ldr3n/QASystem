@@ -34,7 +34,6 @@ export default {
       .then((data) => {
         this.username = data.username;
         this.answerer = data.answerer ? '回答者' : '提问者';
-        console.log(data);
       })
       .catch((error) => {
         this.$message({
