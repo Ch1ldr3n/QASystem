@@ -8,7 +8,6 @@ import Register from '../components/Register.vue';
 import Pay from '../views/pay.vue';
 import Submit from '../views/submit-question.vue';
 import Answerer from '../components/Answerer.vue';
-import Detail from '../components/QuestionDetail.vue'
 
 const routes = [
   {
@@ -61,11 +60,6 @@ const routes = [
     name: 'Submit',
     component: Submit,
   },
-  {
-    path: '/detail',
-    name: 'Detail',
-    component: Detail,
-  }
 ];
 
 const router = createRouter({

@@ -62,6 +62,14 @@
 </template>
 
 <script>
+import TIM from 'tim-js-sdk';
+
+const options = {
+  SDKAppID: 1400586942,
+};
+const tim = TIM.create(options);
+tim.setLogLevel(0);
+
 export default {
   data() {
     return {
@@ -147,6 +155,28 @@ export default {
       .then((data) => {
         this.tableData = data.questionlist;
         console.log(data);
+      })
+      .catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
+    fetch('/v1/user/gensig', {
+      method: 'GET',
+      headers: {
+        Authorization: window.localStorage.getItem('token'),
+      },
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('获取imsdk签名失败');
+        }
+        return resp.json();
+      })
+      .then((data) => tim.login({ userID: data.userid, userSig: data.signature }))
+      .then((resp) => {
+        console.log(resp);
       })
       .catch((error) => {
         this.$message({
