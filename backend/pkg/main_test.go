@@ -322,6 +322,7 @@ func TestUserFilterX1(t *testing.T) {
 	}
 }
 
+/*
 func TestQuestion(t *testing.T) {
 	e := GetEchoTestEnv("ent1")
 
@@ -347,3 +348,4 @@ func TestQuestion(t *testing.T) {
 	AuxQuestionAccept(e, t, 1, true, token2)
 	AuxQuestionClose(e, t, 1, token1)
 }
+*/
