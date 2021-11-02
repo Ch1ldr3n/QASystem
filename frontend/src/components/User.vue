@@ -42,12 +42,12 @@
               {{ model.balance }}
             </el-form-item>
             <el-form-item label="充值金额">
-              <el-input v-model="recharge"> </el-input>
+              <el-input type="number" v-model="recharge"> </el-input>
             </el-form-item>
             <el-button @click="onSubmit">充值</el-button>
 
             <el-form-item label="价格">
-              <el-input v-model="model.price"></el-input>
+              <el-input type="number" v-model="model.price"></el-input>
             </el-form-item>
 
             <el-form-item label="职业">
@@ -122,7 +122,7 @@ export default {
               price: this.model.price,
               profession: this.model.profession,
               token: window.localStorage.getItem('token'),
-              // balance: this.model.balance + this.recharge,
+              balance: this.model.balance + this.recharge,
             }),
           }).then((resp) => {
             if (!resp.ok) {
@@ -159,8 +159,8 @@ export default {
         this.model.phone = data.phone;
         this.model.price = data.price;
         this.model.profession = data.profession;
-        // this.recharge = 0;
-        // this.model.balance = data.balance;
+        this.recharge = 0;
+        this.model.balance = data.balance;
       })
       .catch((error) => {
         this.$message({
