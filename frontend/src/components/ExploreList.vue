@@ -60,26 +60,26 @@ export default {
     },
     submit() {
       this.$message({
-        message: "登录后查看问题详情！",
-      })
-    }
+        message: '登录后查看问题详情！',
+      });
+    },
   },
   created() {
-    fetch("/v1/question/list", {
-      method: "GET",
-      headers: {}
+    fetch('/v1/question/list', {
+      method: 'GET',
+      headers: {},
     })
-    .then(resp => {
-      if (!resp.ok) {throw new Error("获取知识广场信息失败！")}
-      return resp.json
-    })
-    .then(data => {
-      this.tableData = data.tableData
-      console.log(data)
-    })
-    .catch(error => {
-      this.$message({message: error, type:"error",})
-    })
-  }
+      .then((resp) => {
+        if (!resp.ok) { throw new Error('获取知识广场信息失败！'); }
+        return resp.json;
+      })
+      .then((data) => {
+        this.tableData = data.tableData;
+        console.log(data);
+      })
+      .catch((error) => {
+        this.$message({ message: error, type: 'error' });
+      });
+  },
 };
 </script>
