@@ -19,15 +19,27 @@ func GetEchoTestEnv(filename string) *echo.Echo {
 	return New("/var/empty", "sqlite3", "file:"+filename+"?mode=memory&cache=shared&_fk=1", "super-secret-key")
 }
 
-func GetTokenFromRecorder(rec *httptest.ResponseRecorder, t *testing.T) string {
+func GetIdTokenFromRec(rec *httptest.ResponseRecorder, t *testing.T) (string, int) {
 	resp := new(struct {
 		Token string `json:"token"`
+		ID    int    `json:"id"`
 	})
 	err := json.NewDecoder(rec.Body).Decode(resp)
 	if t != nil && err != nil {
 		t.Fatal(err)
 	}
-	return resp.Token
+	return resp.Token, resp.ID
+}
+
+func GetQuestionIdFromSubmit(rec *httptest.ResponseRecorder, t *testing.T) int {
+	resp := new(struct {
+		QuestionID int `json:"questionid"`
+	})
+	err := json.NewDecoder(rec.Body).Decode(resp)
+	if t != nil && err != nil {
+		t.Fatal(err)
+	}
+	return resp.QuestionID
 }
 
 //
@@ -227,7 +239,7 @@ func TestUser(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	AuxUserRegister(e, t, "user1", "testpassword")
 	rec := AuxUserLogin(e, t, "user1", "testpassword")
-	token := GetTokenFromRecorder(rec, t)
+	token, _ := GetIdTokenFromRec(rec, t)
 	AuxUserInfo(e, t, token)
 	AuxUserEdit(e, t, token, `
 {
@@ -238,7 +250,7 @@ func TestUser(t *testing.T) {
 	"profession":"Geschichte"
 }
 	`)
-	AuxUserFilter(e, t, "?username=user1&email=&phone=&answerer=&price=-100&profession=")
+	AuxUserFilter(e, t, "?username=user1&email=&phone=&answerer=&priceUpperBound=1000&priceLowerBound=-1000&profession=")
 }
 
 // Register: bad json
@@ -292,7 +304,7 @@ func TestUserLoginX3(t *testing.T) {
 // Info: token verification
 func TestUserInfoX1(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
-	token := GetTokenFromRecorder(AuxUserLogin(e, t, "user1", "testpassword"), t)
+	token, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "testpassword"), t)
 	if rec := AuxUserInfo(e, nil, token+"qwerty"); rec.Result().StatusCode != http.StatusForbidden {
 		t.Fatal("user info allows incorrect token")
 	}
@@ -302,7 +314,7 @@ func TestUserInfoX1(t *testing.T) {
 func TestUserInfoX2(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	e1 := GetEchoTestEnv("entTestUserInfoX2")
-	token := GetTokenFromRecorder(AuxUserRegister(e1, t, "user1X", "testpassword"), t)
+	token, _ := GetIdTokenFromRec(AuxUserRegister(e1, t, "user1X", "testpassword"), t)
 	if rec := AuxUserInfo(e, nil, token); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user info allows inexistent user")
 	}
@@ -311,7 +323,7 @@ func TestUserInfoX2(t *testing.T) {
 // Edit: bad json
 func TestUserEditX1(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
-	token := GetTokenFromRecorder(AuxUserLogin(e, t, "user1", "testpassword"), t)
+	token, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "testpassword"), t)
 	if rec := AuxUserEdit(e, nil, token, "{\"}"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user edit allows bad json")
 	}
@@ -332,57 +344,48 @@ func TestQuestion(t *testing.T) {
 
 	// Create 2 users
 	rec := AuxUserRegister(e, t, "user1", "pass")
-	userid1 := 1	// default pattern
-	token1 := GetTokenFromRecorder(rec, t)
+	token1, userid1 := GetIdTokenFromRec(rec, t)
 	rec = AuxUserRegister(e, t, "user2", "pass")
-	userid2 := 2	// default pattern
-	token2 := GetTokenFromRecorder(rec, t)
+	token2, userid2 := GetIdTokenFromRec(rec, t)
 
+	AuxUserEdit(e, t, token1, `
+{
+	"answerer":true,
+	"price":100
+}
+	`)
 	AuxUserEdit(e, t, token2, `
 {
 	"answerer":true,
-	"price":-100
+	"price":-10
 }
 	`)
 
 	// Create 3 questions
-	resp := new(struct {
-		QuestionID int `json:"questionid"`
-	})
-
 	rec = AuxQuestionSubmit(e, t, token1, `
 {
-	"title": "test title 1",
-	"content":"test content 1",
+	"title": "test title1",
+	"content":"test content1",
 	"answererid":`+strconv.Itoa(userid2)+`
 }
 	`)
-	if err := json.NewDecoder(rec.Body).Decode(resp); err != nil {
-		t.Fatal(err)
-	}
-	questionid1 := resp.QuestionID
+	questionid1 := GetQuestionIdFromSubmit(rec, t)
 	rec = AuxQuestionSubmit(e, t, token1, `
 {
-	"title": "test title 2",
-	"content":"test content 2",
+	"title": "test title2",
+	"content":"test content2",
 	"answererid":`+strconv.Itoa(userid2)+`
 }
 	`)
-	if err := json.NewDecoder(rec.Body).Decode(resp); err != nil {
-		t.Fatal(err)
-	}
-	questionid2 := resp.QuestionID
+	questionid2 := GetQuestionIdFromSubmit(rec, t)
 	rec = AuxQuestionSubmit(e, t, token2, `
 {
-	"title": "test title 3",
-	"content":"test content 3",
+	"title": "test title3",
+	"content":"test content3",
 	"answererid":`+strconv.Itoa(userid1)+`
 }
 	`)
-	if err := json.NewDecoder(rec.Body).Decode(resp); err != nil {
-		t.Fatal(err)
-	}
-	// questionid3 := resp.QuestionID
+	// questionid3 := GetQuestionIdFromSubmit(rec, t)
 
 	// Launch some global queries
 	AuxQuestionQuery(e, t, questionid1)
@@ -399,4 +402,76 @@ func TestQuestion(t *testing.T) {
 
 	// Close question no.1
 	AuxQuestionClose(e, t, questionid1, token1)
+}
+
+func TestQuestionX1(t *testing.T) {
+	e := GetEchoTestEnv("entQuestion")
+	token3, userid3 := GetIdTokenFromRec(AuxUserRegister(e, t, "user3", "testpassword"), t)
+	AuxUserEdit(e, t, token3, `
+{
+	"answerer":true
+}
+	`)
+
+	// Submit: questioning oneself
+	if rec := AuxQuestionSubmit(e, nil, token3, `
+{
+	"title": "test titleX",
+	"content":"test contentX",
+	"answererid":`+strconv.Itoa(userid3)+`
+}
+	`); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question submit allows questioning oneself")
+	}
+
+	// Pay: repeated payment
+	_, userid2 := GetIdTokenFromRec(AuxUserLogin(e, t, "user2", "pass"), t)
+	questionid4 := GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token3, `
+{
+	"title": "test title4",
+	"content":"test content4",
+	"answererid":`+strconv.Itoa(userid2)+`
+}
+	`), t)
+	AuxQuestionPay(e, t, questionid4, token3)
+	if rec := AuxQuestionPay(e, nil, questionid4, token3); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question pay allows repeated payment")
+	}
+
+	// Pay: cannot afford question
+	token1, userid1 := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "pass"), t)
+	questionid5 := GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token3, `
+{
+	"title": "test title5",
+	"content":"test content5",
+	"answererid":`+strconv.Itoa(userid1)+`
+}
+	`), t)
+	if rec := AuxQuestionPay(e, nil, questionid5, token3); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question pay allows illegal payment")
+	}
+
+	// Pay: paying another person's question
+	token4, _ := GetIdTokenFromRec(AuxUserRegister(e, t, "user4", "pass"), t)
+	if rec := AuxQuestionPay(e, nil, questionid5, token4); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question pay allows paying others' questions")
+	}
+
+	// Accept: status not 'paid'
+	if rec := AuxQuestionAccept(e, nil, questionid5, true, token1); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question accept allows wrong status")
+	}
+
+	// Close: status not 'accepted'
+	if rec := AuxQuestionClose(e, nil, questionid5, token1); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question close allows wrong status")
+	}
+}
+
+// Query: inexistent question
+func TestQuestionQueryX1(t *testing.T) {
+	e := GetEchoTestEnv("entQuestion")
+	if rec := AuxQuestionQuery(e, nil, -1); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question query allows inexistent question")
+	}
 }
