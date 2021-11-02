@@ -4,7 +4,7 @@
         <el-image :src="'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png'"/>
         </div>
         <div>
-        <el-descriptions column="1">
+        <el-descriptions :column="1">
             <el-descriptions-item label="用户名">{{username}}</el-descriptions-item>
             <el-descriptions-item label="称号"><el-tag size="small">{{answerer}}</el-tag></el-descriptions-item>
         </el-descriptions>
