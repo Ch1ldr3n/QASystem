@@ -194,6 +194,7 @@ func info(c echo.Context) error {
 		Phone:      user.Phone,
 		Answerer:   user.Answerer,
 		Price:      user.Price,
+		Balance:    user.Balance,
 		Profession: user.Profession,
 	})
 }
@@ -209,6 +210,7 @@ type userInfoResponse struct {
 	Phone      string  `json:"phone"`
 	Answerer   bool    `json:"answerer"`
 	Price      float64 `json:"price"`
+	Balance	   float64 `json:"balance"`
 	Profession string  `json:"profession"`
 }
 
@@ -320,6 +322,7 @@ func filter(c echo.Context) error {
 		userlist[i].Phone = candidates[i].Phone
 		userlist[i].Answerer = candidates[i].Answerer
 		userlist[i].Price = candidates[i].Price
+		userlist[i].Balance = candidates[i].Balance
 		userlist[i].Profession = candidates[i].Profession
 	}
 	return ctx.JSON(http.StatusOK, userFilterResponse{
