@@ -327,27 +327,76 @@ func TestUserFilterX1(t *testing.T) {
 
 // Question:
 
-func TestQuestion1(t *testing.T) {
+func TestQuestion(t *testing.T) {
 	e := GetEchoTestEnv("entQuestion")
 
+	// Create 2 users
 	rec := AuxUserRegister(e, t, "user1", "pass")
+	userid1 := 1	// default pattern
 	token1 := GetTokenFromRecorder(rec, t)
 	rec = AuxUserRegister(e, t, "user2", "pass")
+	userid2 := 2	// default pattern
 	token2 := GetTokenFromRecorder(rec, t)
 
-	AuxQuestionSubmit(e, t, token1, `
+	AuxUserEdit(e, t, token2, `
 {
-	"title": "test title",
-	"content":"test content",
-	"answererid":2
+	"answerer":true,
+	"price":-100
 }
 	`)
 
-	AuxQuestionPay(e, t, 1, token1)
-	AuxQuestionQuery(e, t, 1)
+	// Create 3 questions
+	resp := new(struct {
+		QuestionID int `json:"questionid"`
+	})
+
+	rec = AuxQuestionSubmit(e, t, token1, `
+{
+	"title": "test title 1",
+	"content":"test content 1",
+	"answererid":`+strconv.Itoa(userid2)+`
+}
+	`)
+	if err := json.NewDecoder(rec.Body).Decode(resp); err != nil {
+		t.Fatal(err)
+	}
+	questionid1 := resp.QuestionID
+	rec = AuxQuestionSubmit(e, t, token1, `
+{
+	"title": "test title 2",
+	"content":"test content 2",
+	"answererid":`+strconv.Itoa(userid2)+`
+}
+	`)
+	if err := json.NewDecoder(rec.Body).Decode(resp); err != nil {
+		t.Fatal(err)
+	}
+	questionid2 := resp.QuestionID
+	rec = AuxQuestionSubmit(e, t, token2, `
+{
+	"title": "test title 3",
+	"content":"test content 3",
+	"answererid":`+strconv.Itoa(userid1)+`
+}
+	`)
+	if err := json.NewDecoder(rec.Body).Decode(resp); err != nil {
+		t.Fatal(err)
+	}
+	// questionid3 := resp.QuestionID
+
+	// Launch some global queries
+	AuxQuestionQuery(e, t, questionid1)
 	AuxQuestionList(e, t)
 	AuxQuestionMine(e, t, token1)
 
-	AuxQuestionAccept(e, t, 1, true, token2)
-	AuxQuestionClose(e, t, 1, token1)
+	// Accept question no.1
+	AuxQuestionPay(e, t, questionid1, token1)
+	AuxQuestionAccept(e, t, questionid1, true, token2)
+
+	// Reject question no.2
+	AuxQuestionPay(e, t, questionid2, token1)
+	AuxQuestionAccept(e, t, questionid2, false, token2)
+
+	// Close question no.1
+	AuxQuestionClose(e, t, questionid1, token1)
 }
