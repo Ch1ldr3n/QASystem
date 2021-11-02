@@ -1,13 +1,13 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router'
 
-import Explore from '../components/Explore.vue';
-import User from '../components/User.vue';
-import Question from '../components/Question.vue';
-import Login from '../components/Login.vue';
-import Register from '../components/Register.vue';
-import Pay from '../views/pay.vue';
-import Submit from '../views/submit-question.vue';
-import Answerer from '../components/Answerer.vue';
+import Explore from '../components/Explore.vue'
+import User from '../components/User.vue'
+import Question from '../components/Question.vue'
+import Login from '../components/Login.vue'
+import Register from '../components/Register.vue'
+import Pay from '../views/pay.vue'
+import Submit from '../views/submit-question.vue'
+import Answerer from '../components/Answerer.vue'
 
 const routes = [
   {
@@ -60,22 +60,32 @@ const routes = [
     name: 'Submit',
     component: Submit,
   },
-];
+  {
+    path: '/admin',
+    name: 'AdminLogin',
+    component: AdminLogin,
+  },
+  {
+    path: '/admin/question',
+    name: 'AdminQuestion',
+    component: AdminQuestion,
+  },
+]
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
-});
+})
 router.beforeEach((to, from, next) => {
   if (!to.matched.some((record) => record.meta.public)) {
     if (window.localStorage.getItem('token') == null) {
-      next({ name: 'Login' });
+      next({ name: 'Login' })
     } else {
-      next();
+      next()
     }
   } else {
-    next();
+    next()
   }
-});
+})
 
-export default router;
+export default router
