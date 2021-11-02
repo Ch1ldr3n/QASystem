@@ -19,7 +19,7 @@ func GetEchoTestEnv(filename string) *echo.Echo {
 	return New("/var/empty", "sqlite3", "file:"+filename+"?mode=memory&cache=shared&_fk=1", "super-secret-key")
 }
 
-func GetTokenFromBody(rec *httptest.ResponseRecorder, t *testing.T) string {
+func GetTokenFromRecorder(rec *httptest.ResponseRecorder, t *testing.T) string {
 	resp := new(struct {
 		Token string `json:"token"`
 	})
@@ -110,9 +110,10 @@ func AuxUserFilter(e *echo.Echo, t *testing.T, query string) *httptest.ResponseR
 	return rec
 }
 
-func AuxQuestionSubmit(e *echo.Echo, t *testing.T, body string) *httptest.ResponseRecorder {
+func AuxQuestionSubmit(e *echo.Echo, t *testing.T, token string, body string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(http.MethodPost, "/v1/question/submit", bytes.NewBufferString(body))
 	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
 
@@ -220,11 +221,13 @@ func AuxQuestionClose(e *echo.Echo, t *testing.T, questionid int, token string) 
 // test functions
 //
 
+// User:
+
 func TestUser(t *testing.T) {
-	e := GetEchoTestEnv("ent")
+	e := GetEchoTestEnv("entUser")
 	AuxUserRegister(e, t, "user1", "testpassword")
 	rec := AuxUserLogin(e, t, "user1", "testpassword")
-	token := GetTokenFromBody(rec, t)
+	token := GetTokenFromRecorder(rec, t)
 	AuxUserInfo(e, t, token)
 	AuxUserEdit(e, t, token, `
 {
@@ -240,7 +243,7 @@ func TestUser(t *testing.T) {
 
 // Register: bad json
 func TestUserRegisterX1(t *testing.T) {
-	e := GetEchoTestEnv("ent")
+	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserRegister(e, nil, "userX\"!!", "testpassword"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user register allows bad json")
 	}
@@ -248,7 +251,7 @@ func TestUserRegisterX1(t *testing.T) {
 
 // Register: no password
 func TestUserRegisterX2(t *testing.T) {
-	e := GetEchoTestEnv("ent")
+	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserRegister(e, nil, "userX\"}", ""); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user register allows no password")
 	}
@@ -256,7 +259,7 @@ func TestUserRegisterX2(t *testing.T) {
 
 // Register: repeated register
 func TestUserRegisterX3(t *testing.T) {
-	e := GetEchoTestEnv("ent")
+	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserRegister(e, nil, "user1", "testpassword"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user register allows repeated register")
 	}
@@ -264,7 +267,7 @@ func TestUserRegisterX3(t *testing.T) {
 
 // Login: bad json
 func TestUserLoginX1(t *testing.T) {
-	e := GetEchoTestEnv("ent")
+	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserLogin(e, nil, "user1\"!!", "testpassword"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user login allows bad json")
 	}
@@ -272,7 +275,7 @@ func TestUserLoginX1(t *testing.T) {
 
 // Login: no password
 func TestUserLoginX2(t *testing.T) {
-	e := GetEchoTestEnv("ent")
+	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserLogin(e, nil, "user1\"}", "testpassword"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user login allows no password")
 	}
@@ -280,7 +283,7 @@ func TestUserLoginX2(t *testing.T) {
 
 // Login: incorrect password
 func TestUserLoginX3(t *testing.T) {
-	e := GetEchoTestEnv("ent")
+	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserLogin(e, nil, "user1", "hello"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user login allows incorrect password")
 	}
@@ -288,8 +291,8 @@ func TestUserLoginX3(t *testing.T) {
 
 // Info: token verification
 func TestUserInfoX1(t *testing.T) {
-	e := GetEchoTestEnv("ent")
-	token := GetTokenFromBody(AuxUserLogin(e, t, "user1", "testpassword"), t)
+	e := GetEchoTestEnv("entUser")
+	token := GetTokenFromRecorder(AuxUserLogin(e, t, "user1", "testpassword"), t)
 	if rec := AuxUserInfo(e, nil, token+"qwerty"); rec.Result().StatusCode != http.StatusForbidden {
 		t.Fatal("user info allows incorrect token")
 	}
@@ -297,9 +300,9 @@ func TestUserInfoX1(t *testing.T) {
 
 // Info: inexistent user
 func TestUserInfoX2(t *testing.T) {
-	e := GetEchoTestEnv("ent")
+	e := GetEchoTestEnv("entUser")
 	e1 := GetEchoTestEnv("entTestUserInfoX2")
-	token := GetTokenFromBody(AuxUserRegister(e1, t, "user1X", "testpassword"), t)
+	token := GetTokenFromRecorder(AuxUserRegister(e1, t, "user1X", "testpassword"), t)
 	if rec := AuxUserInfo(e, nil, token); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user info allows inexistent user")
 	}
@@ -307,8 +310,8 @@ func TestUserInfoX2(t *testing.T) {
 
 // Edit: bad json
 func TestUserEditX1(t *testing.T) {
-	e := GetEchoTestEnv("ent")
-	token := GetTokenFromBody(AuxUserLogin(e, t, "user1", "testpassword"), t)
+	e := GetEchoTestEnv("entUser")
+	token := GetTokenFromRecorder(AuxUserLogin(e, t, "user1", "testpassword"), t)
 	if rec := AuxUserEdit(e, nil, token, "{\"}"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user edit allows bad json")
 	}
@@ -316,26 +319,26 @@ func TestUserEditX1(t *testing.T) {
 
 // Filter: bad query
 func TestUserFilterX1(t *testing.T) {
-	e := GetEchoTestEnv("ent")
+	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserFilter(e, nil, "?answerer=trualse"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user filter allows bad query")
 	}
 }
 
-/*
-func TestQuestion(t *testing.T) {
-	e := GetEchoTestEnv("ent1")
+// Question:
+
+func TestQuestion1(t *testing.T) {
+	e := GetEchoTestEnv("entQuestion")
 
 	rec := AuxUserRegister(e, t, "user1", "pass")
-	token1 := GetTokenFromBody(rec, t)
+	token1 := GetTokenFromRecorder(rec, t)
 	rec = AuxUserRegister(e, t, "user2", "pass")
-	token2 := GetTokenFromBody(rec, t)
+	token2 := GetTokenFromRecorder(rec, t)
 
-	AuxQuestionSubmit(e, t, `
+	AuxQuestionSubmit(e, t, token1, `
 {
 	"title": "test title",
 	"content":"test content",
-	"questionerid":1,
 	"answererid":2
 }
 	`)
@@ -348,4 +351,3 @@ func TestQuestion(t *testing.T) {
 	AuxQuestionAccept(e, t, 1, true, token2)
 	AuxQuestionClose(e, t, 1, token1)
 }
-*/
