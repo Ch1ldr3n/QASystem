@@ -230,6 +230,24 @@ func AuxQuestionClose(e *echo.Echo, t *testing.T, questionid int, token string) 
 	return rec
 }
 
+func AuxQuestionCancel(e *echo.Echo, t *testing.T, questionid int, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/question/cancel", bytes.NewBufferString(`
+{
+	"questionid": `+strconv.Itoa(questionid)+`
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("question cancel failed")
+	}
+
+	return rec
+}
+
 //
 // test functions
 //
@@ -382,14 +400,22 @@ func TestQuestion(t *testing.T) {
 }
 	`)
 	questionid2 := GetQuestionIdFromSubmit(rec, t)
-	rec = AuxQuestionSubmit(e, t, token2, `
+	rec = AuxQuestionSubmit(e, t, token1, `
 {
 	"title": "test title3",
 	"content":"test content3",
+	"answererid":`+strconv.Itoa(userid2)+`
+}
+	`)
+	questionid3 := GetQuestionIdFromSubmit(rec, t)
+	rec = AuxQuestionSubmit(e, t, token2, `
+{
+	"title": "test title4",
+	"content":"test content4",
 	"answererid":`+strconv.Itoa(userid1)+`
 }
 	`)
-	// questionid3 := GetQuestionIdFromSubmit(rec, t)
+	// questionid4 := GetQuestionIdFromSubmit(rec, t)
 
 	// Launch some global queries
 	AuxQuestionQuery(e, t, questionid1)
@@ -403,6 +429,10 @@ func TestQuestion(t *testing.T) {
 	// Reject question no.2
 	AuxQuestionPay(e, t, questionid2, token1)
 	AuxQuestionAccept(e, t, questionid2, false, token2)
+
+	// Cancel question no.3
+	AuxQuestionPay(e, t, questionid3, token1)
+	AuxQuestionCancel(e, t, questionid3, token1)
 
 	// Close question no.1
 	AuxQuestionClose(e, t, questionid1, token1)
@@ -469,6 +499,12 @@ func TestQuestionX1(t *testing.T) {
 	// Close: status not 'accepted'
 	if rec := AuxQuestionClose(e, nil, questionid5, token1); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("question close allows wrong status")
+	}
+
+	// Cancel: double canceling
+	AuxQuestionCancel(e, nil, questionid5, token1)
+	if rec := AuxQuestionCancel(e, nil, questionid5, token1); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question cancel allows wrong status")
 	}
 }
 

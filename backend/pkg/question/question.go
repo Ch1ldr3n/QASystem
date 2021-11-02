@@ -16,6 +16,7 @@ func Register(group *echo.Group) {
 	group.GET("/mine", mine)
 	group.POST("/accept", accept)
 	group.POST("/close", close)
+	group.POST("/cancel", cancel)
 }
 
 // @Summary Question Submit
@@ -429,6 +430,58 @@ func close(c echo.Context) error {
 }
 
 type questionCloseRequest struct {
+	QuestionID int    `json:"questionid"`
+	Token      string `header:"authorization" validate:"required"`
+}
+
+// @Summary Question Cancel
+// @Description Cancel a question; Questioner or answerer only
+// @Security token
+// @Accept json
+// @Param body body questionCancelRequest true "question cancel request"
+// @Success 200 {object} string "question cancel response"
+// @Failure 400 {string} string
+// @Router /v1/question/cancel [post]
+func cancel(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(questionCancelRequest)
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.Verify(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	questioner, answerer := question.Edges.Questioner, question.Edges.Answerer
+	if claims.Subject != questioner.Username && claims.Subject != answerer.Username{
+		return echo.NewHTTPError(http.StatusBadRequest, "current user is not either the questioner or the answerer")
+	}
+	if question.State == "paid" || question.State == "accepted" {
+		_, err = ctx.DB().User.Update().Where(userp.ID(answerer.ID)).SetBalance(answerer.Balance + question.Price).Save(ctx.Request().Context())
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+	} else if question.State != "created" {
+		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'created', 'paid' or 'accepted'")
+	}
+	_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("canceled").Save(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.JSON(http.StatusOK, "question is canceled")
+}
+
+type questionCancelRequest struct {
 	QuestionID int    `json:"questionid"`
 	Token      string `header:"authorization" validate:"required"`
 }
