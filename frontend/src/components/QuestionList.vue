@@ -182,16 +182,18 @@ export default {
   },
   created() {
     // TODO: filter question related to user
-    fetch('/v1/question/list', {
+    fetch('/v1/question/mine', {
       method: 'GET',
-      // headers: {}
+      headers: {
+        authorization: window.localStorage.getItem('token'),
+      },
     })
       .then((resp) => {
         if (!resp.ok) { throw new Error('获取我的问题列表失败！'); }
         return resp.json();
       })
       .then((data) => {
-        this.tableData = data.questionlist;
+        this.tableData = [...data.answeredlist, ...data.askedlist];
         console.log(data);
       })
       .catch((error) => {
