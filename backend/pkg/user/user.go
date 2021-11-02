@@ -43,6 +43,14 @@ func register(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
+	err = ctx.RequestTIM("im_open_login_svc", "account_import", struct {
+		Identifier string `json:"Identifier"`
+	}{
+		Identifier: strconv.Itoa(user.ID),
+	})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
 	token, err := ctx.Sign(user.Username)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -151,7 +159,7 @@ type userGensigRequest struct {
 }
 
 type userGensigResponse struct {
-	Userid     string  `json:"userid"`
+	Userid    string `json:"userid"`
 	Signature string `json:"signature"`
 }
 
