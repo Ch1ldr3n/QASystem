@@ -38,8 +38,16 @@
               <el-input v-model="model.phone"> </el-input>
             </el-form-item>
 
-            <el-form-item label="账户余额">
-              {{ model.price }}
+            <el-form-item label="钱包余额">
+              {{ model.balance }}
+            </el-form-item>
+            <el-form-item label="充值金额">
+              <el-input v-model="recharge"> </el-input>
+            </el-form-item>
+            <el-button @click="onSubmit">充值</el-button>
+
+            <el-form-item label="价格">
+              <el-input v-model="model.price"></el-input>
             </el-form-item>
 
             <el-form-item label="职业">
@@ -62,15 +70,17 @@ export default {
   name: 'User',
   data() {
     return {
+      recharge: 0,
       model: {
         password1: '',
         password2: '',
-        name: '', // 这里和后端那个数据绑定
+        name: '',
         answerer: false,
         email: '',
         phone: '',
         price: 0,
         profession: '',
+        balance: 0,
       },
       rules: {
         password1: [
@@ -112,6 +122,7 @@ export default {
               price: this.model.price,
               profession: this.model.profession,
               token: window.localStorage.getItem('token'),
+              // balance: this.model.balance + this.recharge,
             }),
           }).then((resp) => {
             if (!resp.ok) {
@@ -148,6 +159,8 @@ export default {
         this.model.phone = data.phone;
         this.model.price = data.price;
         this.model.profession = data.profession;
+        // this.recharge = 0;
+        // this.model.balance = data.balance;
       })
       .catch((error) => {
         this.$message({
