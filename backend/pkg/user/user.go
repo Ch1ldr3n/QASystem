@@ -1,7 +1,6 @@
 package user
 
 import "github.com/labstack/echo/v4"
-import "github.com/tencentyun/tls-sig-api-v2-golang/tencentyun"
 import "gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 import "gitlab.secoder.net/bauhinia/qanda-schema/ent"
 import userp "gitlab.secoder.net/bauhinia/qanda-schema/ent/user"
@@ -137,7 +136,7 @@ func gensig(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	sig, err := tencentyun.GenUserSig(1400586942, "b1c5ac2dd23bc7556ab94e23d2735806641f8d7fb3be28b779b66fe1672e6dd6", strconv.Itoa(user.ID), 86400*180)
+	sig, err := ctx.Gensig(strconv.Itoa(user.ID))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}

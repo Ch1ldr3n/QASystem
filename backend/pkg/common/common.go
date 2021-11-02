@@ -4,6 +4,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 	"gitlab.secoder.net/bauhinia/qanda-schema/ent"
+	"github.com/tencentyun/tls-sig-api-v2-golang/tencentyun"
 )
 
 type Context struct {
@@ -28,4 +29,8 @@ func (c *Context) Verify(token string) (*jwt.RegisteredClaims, error) {
 		return nil, err
 	}
 	return parsed.Claims.(*jwt.RegisteredClaims), nil
+}
+
+func (c *Context) Gensig(id string) (string, error) {
+	return tencentyun.GenUserSig(1400586942, "b1c5ac2dd23bc7556ab94e23d2735806641f8d7fb3be28b779b66fe1672e6dd6", id, 86400*180)
 }
