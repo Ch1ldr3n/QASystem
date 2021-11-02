@@ -239,7 +239,7 @@ func TestUser(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	AuxUserRegister(e, t, "user1", "testpassword")
 	rec := AuxUserLogin(e, t, "user1", "testpassword")
-	token, _ := GetIdTokenFromRec(rec, t)
+	token, userid := GetIdTokenFromRec(rec, t)
 	AuxUserInfo(e, t, token)
 	AuxUserEdit(e, t, token, `
 {
@@ -250,7 +250,7 @@ func TestUser(t *testing.T) {
 	"profession":"Geschichte"
 }
 	`)
-	AuxUserFilter(e, t, "?username=user1&email=&phone=&answerer=&priceUpperBound=1000&priceLowerBound=-1000&profession=")
+	AuxUserFilter(e, t, "?id="+strconv.Itoa(userid)+"&username=user1&email=hello@example&phone=12345678&answerer=true&priceUpperBound=1000&priceLowerBound=-1000&profession=Geschichte")
 }
 
 // Register: bad json
