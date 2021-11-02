@@ -22,7 +22,11 @@
         >
       </template>
     </el-table-column>
-    <el-table-column min-width="10%" ><el-button @click="ask">向他提问</el-button></el-table-column>
+    <el-table-column min-width="10%" >
+      <template #default="scope">
+        <el-button @click="ask(scope.row.id)">向他提问</el-button>
+      </template>
+    </el-table-column>
   </el-table>
 </template>
 
@@ -61,9 +65,10 @@ export default {
     filterTag(value, row) {
       return row.profession === value;
     },
-    ask() {
+    ask(id) {
       this.$router.push({
         name: 'Submit',
+        query: { id },
       });
     },
   },
