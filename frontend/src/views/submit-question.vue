@@ -14,13 +14,12 @@
             <div>
               <el-descriptions column="1">
                 <el-descriptions-item label="用户名"
-                  >测试回答者</el-descriptions-item
+                  >{{aname}}</el-descriptions-item
                 >
-                <!-- <el-descriptions-item label="专业方向">信息科学</el-descriptions-item> -->
                 <el-descriptions-item label="专业方向"
-                  ><el-tag size="small">信息科学</el-tag></el-descriptions-item
+                  ><el-tag size="small">{{aprof}}</el-tag></el-descriptions-item
                 >
-                <el-descriptions-item label="价格">100</el-descriptions-item>
+                <el-descriptions-item label="价格">{{price}}</el-descriptions-item>
               </el-descriptions>
             </div>
           </el-card>
@@ -55,10 +54,34 @@ export default {
     return {
       qname: '',
       qdesc: '',
+      aname: '',
+      aprof: '',
+      price: '',
     };
   },
   created() {
-
+    const param = new URLSearchParams({ id: parseInt(this.$route.query.id, 10) });
+    fetch(`/v1/user/filter?${param}`, {
+      method: 'GET',
+      headers: { authorization: window.localStorage.getItem('token') },
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('获取用户信息失败');
+        }
+        return resp.json();
+      })
+      .then((data) => {
+        this.aname = data.userlist[0].username;
+        this.aprof = data.userlist[0].profession;
+        this.price = data.userlist[0].price;
+      })
+      .catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
   },
   methods: {
     onSubmit() {
