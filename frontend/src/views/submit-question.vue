@@ -38,7 +38,7 @@
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="onSubmit">提交问题</el-button>
-              <el-button>取消提问</el-button>
+              <el-button @click="$router.go(-1)">取消提问</el-button>
             </el-form-item>
           </el-form>
         </el-container>
