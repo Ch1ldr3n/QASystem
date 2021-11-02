@@ -12,28 +12,28 @@
         <el-button type="primary" @click="openChat(props.row)">开始聊天</el-button>
       </template>
     </el-table-column>
-    <el-table-column prop="date" label="日期" sortable min-width="20%" column-key="date" />
     <el-table-column prop="title" label="问题"/>
-    <el-table-column prop="name" label="昵称" min-width="10%" />
     <el-table-column prop="price" label="金额" sortable min-width="10%" />
+    <el-table-column prop="ausername" label="回答者" min-width="10%" />
+    <el-table-column prop="qusername" label="提问者" min-width="10%" />
     <el-table-column prop="state" label="状态" sortable min-width="10%" />
 
     <el-table-column
-      prop="tag"
-      label="Tag"
+      prop="asked"
+      label="类型"
       min-width="10%"
       :filters="[
-        { text: '我提的问题', value: 'ask' },
-        { text: '别人问我的问题', value: 'que' },
+        { text: '我提出的', value: true },
+        { text: '我回答的', value: false },
       ]"
       :filter-method="filterTag"
       filter-placemeidnt="bottom-end"
     >
       <template #default="scope">
         <el-tag
-          :type="scope.row.tag === 'ask' ? 'warning' : 'success'"
+          :type="scope.row.asked ? 'warning' : 'success'"
           disable-transitions
-          >{{ scope.row.tag }}</el-tag
+          >{{ scope.row.asked ? '我提出的' : '我回答的' }}</el-tag
         >
       </template>
     </el-table-column>
@@ -77,8 +77,6 @@ export default {
       participants: [
       ],
       messageList: [
-        { type: 'text', author: 'me', data: { text: 'Say yes!' } },
-        { type: 'text', author: 'user1', data: { text: 'No.' } },
       ], // the list of the messages to show, can be paginated and adjusted dynamically
       newMessagesCount: 0,
       isChatOpen: false, // to determine whether the chat window should be open or closed
@@ -122,7 +120,7 @@ export default {
       this.participants = [
         {
           id: 'other',
-          name: row.answererid,
+          name: row.asked ? row.ausername : row.qusername,
         },
       ];
       tim.getMessageList({ conversationID: `GROUP${row.id}`, count: 15 }).then((imResponse) => {
@@ -193,7 +191,7 @@ export default {
         return resp.json();
       })
       .then((data) => {
-        this.tableData = [...data.answeredlist, ...data.askedlist];
+        this.tableData = [...(data.answeredlist.map((v) => Object.assign(v, { asked: false }))), ...(data.askedlist.map((v) => Object.assign(v, { asked: true })))];
         console.log(data);
       })
       .catch((error) => {
