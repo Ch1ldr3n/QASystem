@@ -275,8 +275,12 @@ func filter(c echo.Context) error {
 	if err := ctx.Validate(u); err != nil {
 		return err
 	}
+	claims, err := ctx.Verify(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
 	// begin Filter
-	users := ctx.DB().User.Query()
+	users := ctx.DB().User.Query().Where(userp.UsernameNEQ(claims.Subject))
 	if u.ID != nil {
 		users = users.Where(userp.ID(*u.ID))
 	}
@@ -325,6 +329,7 @@ func filter(c echo.Context) error {
 }
 
 type userFilterRequest struct {
+	Token           string   `header:"authorization" validate:"required"`
 	ID              *int     `query:"id"`
 	Username        *string  `query:"username"`
 	Email           *string  `query:"email"`
