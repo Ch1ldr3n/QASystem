@@ -12,8 +12,8 @@
 </template>
 
 <script>
-import AdminQuestionList from './AdminQuestionList.vue'
-import MyInfoCard from './MyInfoCard.vue'
+import AdminQuestionList from './AdminQuestionList.vue';
+import MyInfoCard from './MyInfoCard.vue';
 
 export default {
   name: 'AdminQuestion',
@@ -21,9 +21,9 @@ export default {
     AdminQuestionList,
     MyInfoCard,
   },
-  data () {
+  data() {
     return {
-    }
+    };
   },
   methods: {
   },

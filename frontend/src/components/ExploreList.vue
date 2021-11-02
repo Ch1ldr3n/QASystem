@@ -8,13 +8,32 @@
     <el-table-column type="expand">
       <template #default="props">
         <p>{{ props.row.content }}</p>
-        <el-button @click="submit">查看详情</el-button>
+        <el-button @click="submit">
+          查看详情
+        </el-button>
       </template>
     </el-table-column>
-    <el-table-column prop="date" label="日期" sortable min-width="20%" column-key="date" />
-    <el-table-column prop="title" label="问题" />
-    <el-table-column prop="questionerid" label="提问者" min-width="10%" />
-    <el-table-column prop="answererid" label="回答者" min-width="10%" />
+    <el-table-column
+      prop="date"
+      label="日期"
+      sortable
+      min-width="20%"
+      column-key="date"
+    />
+    <el-table-column
+      prop="title"
+      label="问题"
+    />
+    <el-table-column
+      prop="questionerid"
+      label="提问者"
+      min-width="10%"
+    />
+    <el-table-column
+      prop="answererid"
+      label="回答者"
+      min-width="10%"
+    />
   </el-table>
 </template>
 
@@ -24,13 +43,6 @@ export default {
     return {
       tableData: [],
     };
-  },
-  methods: {
-    submit() {
-      this.$message({
-        message: '登录后查看问题详情！',
-      });
-    },
   },
   created() {
     // TODO: ask backend to return more related information
@@ -49,6 +61,13 @@ export default {
       .catch((error) => {
         this.$message({ message: error, type: 'error' });
       });
+  },
+  methods: {
+    submit() {
+      this.$message({
+        message: '登录后查看问题详情！',
+      });
+    },
   },
 };
 </script>

@@ -13,28 +13,37 @@
           </el-col>
         </el-row>
 
-        <el-row :gutter="2" class="paybox" justify="center">
+        <el-row
+          :gutter="2"
+          class="paybox"
+          justify="center"
+        >
           <el-col :span="5">
             <el-image
               style="width: 100; height: 100"
               :src="require('../assets/pay-demo.png')"
               :fit="fill"
-            >
-            </el-image>
+            />
           </el-col>
-          <el-col :span="3"></el-col>
+          <el-col :span="3" />
           <el-col :span="5">
             <el-image
               style="width: 100; height: 100"
               :src="require('../assets/pay-qrscan.png')"
               :fit="fill"
-            >
-            </el-image>
+            />
           </el-col>
         </el-row>
         <el-row justify="center">
-          <el-button type="primary" @click="onSubmit">完成支付</el-button>
-          <el-button @click="quit">取消支付</el-button>
+          <el-button
+            type="primary"
+            @click="onSubmit"
+          >
+            完成支付
+          </el-button>
+          <el-button @click="quit">
+            取消支付
+          </el-button>
         </el-row>
       </el-main>
     </el-container>
@@ -43,7 +52,7 @@
 
 <script>
 export default {
-  name: 'pay',
+  name: 'Pay',
   methods: {
     quit() {
       this.$router.go(-1);

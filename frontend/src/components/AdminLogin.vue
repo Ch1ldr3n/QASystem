@@ -7,9 +7,16 @@
             <h2>登录</h2>
           </div>
           <div>
-            <el-form :model="model" :rules="rules" ref="form">
+            <el-form
+              ref="form"
+              :model="model"
+              :rules="rules"
+            >
               <el-form-item prop="username">
-                <el-input v-model="model.username" placeholder="用户名" />
+                <el-input
+                  v-model="model.username"
+                  placeholder="用户名"
+                />
               </el-form-item>
               <el-form-item prop="password">
                 <el-input
@@ -19,7 +26,12 @@
                 />
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="submit">登录</el-button>
+                <el-button
+                  type="primary"
+                  @click="submit"
+                >
+                  登录
+                </el-button>
               </el-form-item>
             </el-form>
           </div>
@@ -32,7 +44,7 @@
 <script>
 export default {
   name: 'AdminLogin',
-  data () {
+  data() {
     return {
       model: {
         username: '',
@@ -54,10 +66,10 @@ export default {
           },
         ],
       },
-    }
+    };
   },
   methods: {
-    submit () {
+    submit() {
       this.$refs.form.validate((valid) => {
         if (valid) {
           fetch('/v1/admin/login', {
@@ -67,30 +79,30 @@ export default {
           })
             .then((resp) => {
               if (!resp.ok) {
-                throw new Error('用户名或密码错误')
+                throw new Error('用户名或密码错误');
               }
-              return resp.json()
+              return resp.json();
             })
             .then((data) => {
-              window.localStorage.setItem('token', data.token)
+              window.localStorage.setItem('token', data.token);
               this.$message({
                 message: '管理员登录成功',
                 type: 'success',
-              })
+              });
               this.$router.push({
                 name: 'AdminQuestion',
-              })
+              });
             })
             .catch((error) => {
               this.$message({
                 message: error,
                 type: 'error',
-              })
-            })
-          return true
+              });
+            });
+          return true;
         }
-        return false
-      })
+        return false;
+      });
     },
   },
 };
