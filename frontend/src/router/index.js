@@ -8,6 +8,7 @@ import Register from '../components/Register.vue';
 import Pay from '../views/pay.vue';
 import Submit from '../views/submit-question.vue';
 import Answerer from '../components/Answerer.vue';
+import Income from '../components/Income.vue';
 
 const routes = [
   {
@@ -59,6 +60,11 @@ const routes = [
     path: '/submit',
     name: 'Submit',
     component: Submit,
+  },
+  {
+    path: '/income',
+    name: 'Income',
+    component: Income,
   },
 ];
 
