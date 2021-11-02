@@ -31,7 +31,7 @@
 
 <script>
 export default {
-  name: 'Login',
+  name: 'AdminLogin',
   data () {
     return {
       model: {

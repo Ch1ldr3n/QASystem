@@ -8,6 +8,8 @@ import Register from '../components/Register.vue'
 import Pay from '../views/pay.vue'
 import Submit from '../views/submit-question.vue'
 import Answerer from '../components/Answerer.vue'
+import AdminLogin from '../components/AdminLogin.vue'
+import AdminQuestion from '../components/AdminQuestion.vue'
 
 const routes = [
   {

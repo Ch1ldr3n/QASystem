@@ -16,7 +16,7 @@ import AdminQuestionList from './AdminQuestionList.vue'
 import MyInfoCard from './MyInfoCard.vue'
 
 export default {
-  name: 'question',
+  name: 'AdminQuestion',
   components: {
     AdminQuestionList,
     MyInfoCard,

@@ -51,6 +51,7 @@
 
 <script>
 export default {
+  name: 'AdminQuestionList',
   data () {
     return {
       questionlist: []
