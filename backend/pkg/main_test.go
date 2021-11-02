@@ -110,8 +110,9 @@ func AuxUserEdit(e *echo.Echo, t *testing.T, token string, body string) *httptes
 	return rec
 }
 
-func AuxUserFilter(e *echo.Echo, t *testing.T, query string) *httptest.ResponseRecorder {
+func AuxUserFilter(e *echo.Echo, t *testing.T, token string, query string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(http.MethodGet, "/v1/user/filter"+query, nil)
+	req.Header.Add("Authorization", token)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
 
@@ -239,9 +240,11 @@ func TestUser(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	AuxUserRegister(e, t, "user1", "testpassword")
 	rec := AuxUserLogin(e, t, "user1", "testpassword")
-	token, userid := GetIdTokenFromRec(rec, t)
-	AuxUserInfo(e, t, token)
-	AuxUserEdit(e, t, token, `
+	token1, _ := GetIdTokenFromRec(rec, t)
+	rec = AuxUserRegister(e, t, "user2", "testpassword")
+	token2, userid2 := GetIdTokenFromRec(rec, t)
+	AuxUserInfo(e, t, token1)
+	AuxUserEdit(e, t, token1, `
 {
 	"email":"hello@example",
 	"phone":"12345678",
@@ -250,7 +253,7 @@ func TestUser(t *testing.T) {
 	"profession":"Geschichte"
 }
 	`)
-	AuxUserFilter(e, t, "?id="+strconv.Itoa(userid)+"&username=user1&email=hello@example&phone=12345678&answerer=true&priceUpperBound=1000&priceLowerBound=-1000&profession=Geschichte")
+	AuxUserFilter(e, t, token2, "?id="+strconv.Itoa(userid2)+"&username=user1&email=hello@example&phone=12345678&answerer=true&priceUpperBound=1000&priceLowerBound=-1000&profession=Geschichte")
 }
 
 // Register: bad json
@@ -332,7 +335,7 @@ func TestUserEditX1(t *testing.T) {
 // Filter: bad query
 func TestUserFilterX1(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
-	if rec := AuxUserFilter(e, nil, "?answerer=trualse"); rec.Result().StatusCode != http.StatusBadRequest {
+	if rec := AuxUserFilter(e, nil, "", "?answerer=trualse"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user filter allows bad query")
 	}
 }
