@@ -11,9 +11,11 @@
           <p>{{ props.row.content }}</p>
           <el-button
             type="primary"
-            @click="openChat(props.row)"
           >
-            开始聊天
+            审核通过
+          </el-button>
+          <el-button>
+            拒绝通过
           </el-button>
         </template>
       </el-table-column>
@@ -28,44 +30,13 @@
         prop="title"
         label="问题"
       />
-      <el-table-column
-        prop="name"
-        label="昵称"
-        min-width="10%"
-      />
-      <el-table-column
-        prop="price"
-        label="金额"
-        sortable
-        min-width="10%"
-      />
+
       <el-table-column
         prop="state"
         label="状态"
         sortable
         min-width="10%"
       />
-
-      <el-table-column
-        prop="tag"
-        label="Tag"
-        min-width="10%"
-        :filters="[
-          { text: '我提的问题', value: 'ask' },
-          { text: '别人问我的问题', value: 'que' },
-        ]"
-        :filter-method="filterTag"
-        filter-placemeidnt="bottom-end"
-      >
-        <template #default="scope">
-          <el-tag
-            :type="scope.row.tag === 'ask' ? 'warning' : 'success'"
-            disable-transitions
-          >
-            {{ scope.row.tag }}
-          </el-tag>
-        </template>
-      </el-table-column>
     </el-table>
   </el-container>
 </template>
@@ -84,7 +55,9 @@ export default {
       // headers: {}
     })
       .then((resp) => {
-        if (!resp.ok) { throw new Error('获取管理员问题列表失败！'); }
+        if (!resp.ok) {
+          throw new Error('获取管理员问题列表失败！');
+        }
         return resp.json();
       })
       .then((data) => {
