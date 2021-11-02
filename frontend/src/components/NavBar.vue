@@ -6,7 +6,8 @@
     <el-sub-menu index="3">
       <template #title>更多</template>
       <el-menu-item index="4" :route="{ name: 'User' }">用户资料</el-menu-item>
-      <el-menu-item index="5" @click="logout">退出登录</el-menu-item>
+      <el-menu-item index="5" :route="{ name: 'Income' }">收入统计</el-menu-item>
+      <el-menu-item index="6" @click="logout">退出登录</el-menu-item>
     </el-sub-menu>
   </el-menu>
 </template>
