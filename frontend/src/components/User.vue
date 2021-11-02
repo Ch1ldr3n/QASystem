@@ -41,10 +41,6 @@
             <el-form-item label="钱包余额">
               {{ model.balance }}
             </el-form-item>
-            <el-form-item label="充值金额">
-              <el-input type="number" v-model="recharge"> </el-input>
-            </el-form-item>
-            <el-button @click="onSubmit">充值</el-button>
 
             <el-form-item label="价格">
               <el-input type="number" v-model="model.price"></el-input>
@@ -70,7 +66,6 @@ export default {
   name: 'User',
   data() {
     return {
-      recharge: 0,
       model: {
         password1: '',
         password2: '',
@@ -119,10 +114,9 @@ export default {
               answerer: this.model.answerer,
               email: this.model.email,
               phone: this.model.phone,
-              price: this.model.price,
+              price: parseFloat(this.model.price),
               profession: this.model.profession,
               token: window.localStorage.getItem('token'),
-              balance: this.model.balance + this.recharge,
             }),
           }).then((resp) => {
             if (!resp.ok) {
@@ -159,7 +153,6 @@ export default {
         this.model.phone = data.phone;
         this.model.price = data.price;
         this.model.profession = data.profession;
-        this.recharge = 0;
         this.model.balance = data.balance;
       })
       .catch((error) => {

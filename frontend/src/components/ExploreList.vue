@@ -11,7 +11,13 @@
         <el-button @click="submit">查看详情</el-button>
       </template>
     </el-table-column>
-    <el-table-column prop="date" label="日期" sortable min-width="20%" column-key="date" />
+    <el-table-column
+      prop="date"
+      label="日期"
+      sortable
+      min-width="20%"
+      column-key="date"
+    />
     <el-table-column prop="title" label="问题" />
     <el-table-column prop="questionerid" label="提问者" min-width="10%" />
     <el-table-column prop="answererid" label="回答者" min-width="10%" />
@@ -28,7 +34,7 @@ export default {
   methods: {
     submit() {
       this.$message({
-        message: '登录后查看问题详情！',
+        message: '尚未实现！',
       });
     },
   },
@@ -39,7 +45,9 @@ export default {
       headers: {},
     })
       .then((resp) => {
-        if (!resp.ok) { throw new Error('获取知识广场信息失败！'); }
+        if (!resp.ok) {
+          throw new Error('获取知识广场信息失败！');
+        }
         return resp.json();
       })
       .then((data) => {

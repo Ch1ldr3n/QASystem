@@ -15,7 +15,9 @@
         <el-descriptions-item label="称号"
           ><el-tag size="small">{{ answerer }}</el-tag></el-descriptions-item
         >
-        <el-descriptions-item label="账户余额">{{}}</el-descriptions-item>
+        <el-descriptions-item label="账户余额">{{
+          balance
+        }}</el-descriptions-item>
       </el-descriptions>
     </div>
   </el-card>
@@ -27,6 +29,7 @@ export default {
     return {
       answerer: '',
       username: '',
+      balance: '',
     };
   },
   created() {
@@ -43,6 +46,7 @@ export default {
       .then((data) => {
         this.username = data.username;
         this.answerer = data.answerer ? '回答者' : '提问者';
+        this.balance = data.balance;
       })
       .catch((error) => {
         this.$message({
