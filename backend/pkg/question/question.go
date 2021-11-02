@@ -20,6 +20,7 @@ func Register(group *echo.Group) {
 
 // @Summary Question Submit
 // @Description Submit a question towards the specified answerer
+// @Security token
 // @Accept json
 // @Produce json
 // @Param body body questionSubmitRequest true "question submit request"
@@ -32,10 +33,24 @@ func submit(c echo.Context) error {
 	if err := ctx.Bind(u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	if u.QuestionerID == u.AnswererID {
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.Verify(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	questioner, err := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if questioner.ID == u.AnswererID {
 		return echo.NewHTTPError(http.StatusBadRequest, "error: questioner and answerer being the same person")
 	}
-	answerer, err0 := ctx.DB().User.Query().Where(userp.ID(u.QuestionerID)).Only(ctx.Request().Context())
+	answerer, err0 := ctx.DB().User.Query().Where(userp.ID(u.AnswererID)).Only(ctx.Request().Context())
 	if err0 != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err0.Error())
 	}
@@ -45,8 +60,8 @@ func submit(c echo.Context) error {
 		SetContent(u.Content).
 		SetCreated(time.Now()).
 		SetState("created").
-		SetQuestionerID(u.QuestionerID).
-		SetAnswererID(u.AnswererID).
+		SetQuestionerID(questioner.ID).
+		SetAnswererID(answerer.ID).
 		Save(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -57,10 +72,10 @@ func submit(c echo.Context) error {
 }
 
 type questionSubmitRequest struct {
-	Title        string `json:"title"`
-	Content      string `json:"content"`
-	QuestionerID int    `json:"questionerid"`
-	AnswererID   int    `json:"answererid"`
+	Token      string `header:"authorization" validate:"required"`
+	Title      string `json:"title" validate:"required"`
+	Content    string `json:"content" validate:"required"`
+	AnswererID int    `json:"answererid" validate:"required"`
 }
 
 type questionSubmitResponse struct {

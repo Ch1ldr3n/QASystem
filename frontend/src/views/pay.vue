@@ -46,9 +46,7 @@ export default {
   name: 'pay',
   methods: {
     quit() {
-      this.$router.push({
-        name: 'Submit',
-      });
+      this.$router.go(-1);
     },
     onSubmit() {
       this.$message({

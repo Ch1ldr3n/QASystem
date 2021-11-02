@@ -16,7 +16,7 @@ import (
 //
 
 func GetEchoTestEnv(filename string) *echo.Echo {
-	return 	New("/var/empty", "sqlite3", "file:"+filename+"?mode=memory&cache=shared&_fk=1", "super-secret-key")
+	return New("/var/empty", "sqlite3", "file:"+filename+"?mode=memory&cache=shared&_fk=1", "super-secret-key")
 }
 
 func GetTokenFromBody(rec *httptest.ResponseRecorder, t *testing.T) string {
@@ -322,6 +322,7 @@ func TestUserFilterX1(t *testing.T) {
 	}
 }
 
+/*
 func TestQuestion(t *testing.T) {
 	e := GetEchoTestEnv("ent1")
 
@@ -347,3 +348,4 @@ func TestQuestion(t *testing.T) {
 	AuxQuestionAccept(e, t, 1, true, token2)
 	AuxQuestionClose(e, t, 1, token1)
 }
+*/
