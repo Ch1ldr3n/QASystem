@@ -59,32 +59,35 @@ export default {
   },
   methods: {
     onSubmit() {
-      this.$router.push({
-        name: 'Pay',
-      });
-      fetch('/v1/question/summit', {
+      fetch('/v1/question/submit', {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
+          authorization: window.localStorage.getItem('token'),
         },
         body: JSON.stringify({
-          answererid: 0,
+          answererid: parseInt(this.$route.query.id, 10),
           content: this.qdesc,
-          price: 0,
-          questionerid: 0,
           title: this.qname,
         }),
       }).then((resp) => {
         if (!resp.ok) {
-          throw new Error('修改失败!');
+          throw new Error('提交失败!');
         }
+        return resp.json();
+      }).then((resp) => {
         this.$message({
-          message: '修改成功',
+          message: '提交成功',
           type: 'success',
         });
-        // 跳转到支付页面
         this.$router.push({
           name: 'Pay',
+          query: { id: resp.questionid },
+        });
+      }).catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
         });
       });
     },

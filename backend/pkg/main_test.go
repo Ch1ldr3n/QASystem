@@ -16,7 +16,7 @@ import (
 //
 
 func GetEchoTestEnv(filename string) *echo.Echo {
-	return 	New("/var/empty", "sqlite3", "file:"+filename+"?mode=memory&cache=shared&_fk=1", "super-secret-key")
+	return New("/var/empty", "sqlite3", "file:"+filename+"?mode=memory&cache=shared&_fk=1", "super-secret-key")
 }
 
 func GetTokenFromBody(rec *httptest.ResponseRecorder, t *testing.T) string {
