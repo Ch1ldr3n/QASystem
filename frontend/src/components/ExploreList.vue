@@ -27,7 +27,7 @@ export default {
   methods: {
     submit() {
       this.$message({
-        message: '登录后查看问题详情！',
+        message: '尚未实现！',
       });
     },
   },
@@ -38,7 +38,9 @@ export default {
       headers: {},
     })
       .then((resp) => {
-        if (!resp.ok) { throw new Error('获取知识广场信息失败！'); }
+        if (!resp.ok) {
+          throw new Error('获取知识广场信息失败！');
+        }
         return resp.json();
       })
       .then((data) => {
