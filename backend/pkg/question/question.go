@@ -66,6 +66,24 @@ func submit(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
+	err = ctx.RequestTIM("group_open_http_svc", "create_group", struct {
+		Type       string `json:"Type"`
+		GroupId    string `json:"GroupId"`
+		Name       string `json:"Name"`
+		MemberList []struct {
+			Member_Account string `json:"Member_Account"`
+		} `json:"MemberList"`
+	}{
+		Type:    "Private",
+		GroupId: strconv.Itoa(question.ID),
+		Name:    "qanda",
+		MemberList: []struct {
+			Member_Account string `json:"Member_Account"`
+		}{{Member_Account: strconv.Itoa(questioner.ID)}, {Member_Account: strconv.Itoa(answerer.ID)}},
+	})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
 	return ctx.JSON(http.StatusOK, questionSubmitResponse{
 		QuestionId: question.ID,
 	})

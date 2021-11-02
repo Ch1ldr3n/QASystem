@@ -56,6 +56,7 @@
     :colors="colors"
     :alwaysScrollToBottom="false"
     :disableUserListToggle="true"
+    @scrollToTop="handleScrollToTop"
     :messageStyling="true"
     />
   </el-container>
@@ -107,6 +108,9 @@ export default {
         },
       },
       tableData: [],
+      nextReqMessageID: '',
+      isCompleted: false,
+      chatid: 0,
     };
   },
   methods: {
@@ -117,29 +121,63 @@ export default {
       console.log(row);
       this.participants = [
         {
-          id: row.answererid,
-          name: 'username', // TODO
+          id: 'other',
+          name: row.answererid,
         },
       ];
+      tim.getMessageList({ conversationID: `GROUP${row.id}`, count: 15 }).then((imResponse) => {
+        this.messageList = imResponse.data.messageList.map((x) => ({
+          type: 'text',
+          author: x.flow === 'in' ? 'other' : 'me',
+          data: { text: x.payload.text },
+        }));
+        this.chatid = row.id;
+        console.log(imResponse.data.messageList);
+        this.nextReqMessageID = imResponse.data.nextReqMessageID;
+        this.isCompleted = imResponse.data.isCompleted;
+      });
       this.isChatOpen = true;
       this.newMessagesCount = 0;
     },
-    sendMessage(text) {
-      if (text.length > 0) {
-        this.newMessagesCount = this.isChatOpen ? this.newMessagesCount : this.newMessagesCount + 1;
-        this.onMessageWasSent({ author: 'support', type: 'text', data: { text } });
-      }
-    },
     onMessageWasSent(message) {
-      // called when the user sends a message
-      this.messageList = [...this.messageList, message];
+      console.log(this.chatid);
+      const msg = tim.createTextMessage({
+        to: `${this.chatid}`,
+        conversationType: TIM.TYPES.CONV_GROUP,
+        payload: {
+          text: message.data.text,
+        },
+      });
+      tim.sendMessage(msg).then((resp) => {
+        console.log(resp);
+        this.messageList = [...this.messageList, message];
+      }).catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
     },
     closeChat() {
       this.isChatOpen = false;
     },
+    onMessageReceived(event) {
+      event.data.forEach((msg) => {
+        if (msg.conversationID === `GROUP${this.chatid}`) {
+          this.messageList = [...this.messageList, { type: 'text', author: msg.flow === 'in' ? 'other' : 'me', data: { text: msg.payload.text } }];
+        }
+      });
+    },
     handleScrollToTop() {
-      // called when the user scrolls message list to top
-      // leverage pagination for loading another page of messages
+      tim.getMessageList({ conversationID: `GROUP${this.chatid}`, count: 15, nextReqMessageID: this.nextReqMessageID }).then((imResponse) => {
+        this.messageList = [...imResponse.data.messageList.map((x) => ({
+          type: 'text',
+          author: x.flow === 'in' ? 'other' : 'me',
+          data: { text: x.payload.text },
+        })), ...this.messageList];
+        this.nextReqMessageID = imResponse.data.nextReqMessageID;
+        this.isCompleted = imResponse.data.isCompleted;
+      });
     },
   },
   created() {
@@ -162,6 +200,7 @@ export default {
           type: 'error',
         });
       });
+    tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived);
     fetch('/v1/user/gensig', {
       method: 'GET',
       headers: {
