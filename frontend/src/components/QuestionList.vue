@@ -1,4 +1,5 @@
 <template>
+  <el-container>
   <el-table
     ref="filterTable"
     :data="tableData"
@@ -8,6 +9,7 @@
     <el-table-column type="expand">
       <template #default="props">
         <p>{{ props.row.content }}</p>
+        <el-button type="primary" @click="openChat(props.row)">开始聊天</el-button>
       </template>
     </el-table-column>
     <el-table-column prop="date" label="日期" sortable min-width="20%" column-key="date" />
@@ -25,7 +27,7 @@
         { text: '别人问我的问题', value: 'que' },
       ]"
       :filter-method="filterTag"
-      filter-placement="bottom-end"
+      filter-placemeidnt="bottom-end"
     >
       <template #default="scope">
         <el-tag
@@ -36,18 +38,146 @@
       </template>
     </el-table-column>
   </el-table>
+  <beautiful-chat
+    style="z-index: 1000;"
+    :participants="participants"
+    :onMessageWasSent="onMessageWasSent"
+    :messageList="messageList"
+    :newMessagesCount="newMessagesCount"
+    :isOpen="isChatOpen"
+    :close="closeChat"
+    :showEmoji="false"
+    :open="() => {}"
+    :showFile="false"
+    :showEdition="false"
+    :showDeletion="false"
+    :showLauncher="false"
+    :showCloseButton="true"
+    :colors="colors"
+    :alwaysScrollToBottom="false"
+    :disableUserListToggle="true"
+    @scrollToTop="handleScrollToTop"
+    :messageStyling="true"
+    />
+  </el-container>
 </template>
 
 <script>
+import TIM from 'tim-js-sdk';
+
+const options = {
+  SDKAppID: 1400586942,
+};
+const tim = TIM.create(options);
+tim.setLogLevel(0);
+
 export default {
   data() {
     return {
+      participants: [
+      ],
+      messageList: [
+        { type: 'text', author: 'me', data: { text: 'Say yes!' } },
+        { type: 'text', author: 'user1', data: { text: 'No.' } },
+      ], // the list of the messages to show, can be paginated and adjusted dynamically
+      newMessagesCount: 0,
+      isChatOpen: false, // to determine whether the chat window should be open or closed
+      showTypingIndicator: '', // when set to a value matching the participant.id it shows the typing indicator for the specific user
+      colors: {
+        header: {
+          bg: '#4e8cff',
+          text: '#ffffff',
+        },
+        launcher: {
+          bg: '#4e8cff',
+        },
+        messageList: {
+          bg: '#ffffff',
+        },
+        sentMessage: {
+          bg: '#4e8cff',
+          text: '#ffffff',
+        },
+        receivedMessage: {
+          bg: '#eaeaea',
+          text: '#222222',
+        },
+        userInput: {
+          bg: '#f4f7f9',
+          text: '#565867',
+        },
+      },
       tableData: [],
+      nextReqMessageID: '',
+      isCompleted: false,
+      chatid: 0,
     };
   },
   methods: {
     filterTag(value, row) {
       return row.tag === value;
+    },
+    openChat(row) {
+      console.log(row);
+      this.participants = [
+        {
+          id: 'other',
+          name: row.answererid,
+        },
+      ];
+      tim.getMessageList({ conversationID: `GROUP${row.id}`, count: 15 }).then((imResponse) => {
+        this.messageList = imResponse.data.messageList.map((x) => ({
+          type: 'text',
+          author: x.flow === 'in' ? 'other' : 'me',
+          data: { text: x.payload.text },
+        }));
+        this.chatid = row.id;
+        console.log(imResponse.data.messageList);
+        this.nextReqMessageID = imResponse.data.nextReqMessageID;
+        this.isCompleted = imResponse.data.isCompleted;
+      });
+      this.isChatOpen = true;
+      this.newMessagesCount = 0;
+    },
+    onMessageWasSent(message) {
+      console.log(this.chatid);
+      const msg = tim.createTextMessage({
+        to: `${this.chatid}`,
+        conversationType: TIM.TYPES.CONV_GROUP,
+        payload: {
+          text: message.data.text,
+        },
+      });
+      tim.sendMessage(msg).then((resp) => {
+        console.log(resp);
+        this.messageList = [...this.messageList, message];
+      }).catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
+    },
+    closeChat() {
+      this.isChatOpen = false;
+    },
+    onMessageReceived(event) {
+      event.data.forEach((msg) => {
+        if (msg.conversationID === `GROUP${this.chatid}`) {
+          this.messageList = [...this.messageList, { type: 'text', author: msg.flow === 'in' ? 'other' : 'me', data: { text: msg.payload.text } }];
+        }
+      });
+    },
+    handleScrollToTop() {
+      tim.getMessageList({ conversationID: `GROUP${this.chatid}`, count: 15, nextReqMessageID: this.nextReqMessageID }).then((imResponse) => {
+        this.messageList = [...imResponse.data.messageList.map((x) => ({
+          type: 'text',
+          author: x.flow === 'in' ? 'other' : 'me',
+          data: { text: x.payload.text },
+        })), ...this.messageList];
+        this.nextReqMessageID = imResponse.data.nextReqMessageID;
+        this.isCompleted = imResponse.data.isCompleted;
+      });
     },
   },
   created() {
@@ -63,6 +193,29 @@ export default {
       .then((data) => {
         this.tableData = data.questionlist;
         console.log(data);
+      })
+      .catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
+    tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived);
+    fetch('/v1/user/gensig', {
+      method: 'GET',
+      headers: {
+        Authorization: window.localStorage.getItem('token'),
+      },
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('获取imsdk签名失败');
+        }
+        return resp.json();
+      })
+      .then((data) => tim.login({ userID: data.userid, userSig: data.signature }))
+      .then((resp) => {
+        console.log(resp);
       })
       .catch((error) => {
         this.$message({

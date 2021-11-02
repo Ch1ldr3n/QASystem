@@ -1,13 +1,13 @@
 package user
 
 import "github.com/labstack/echo/v4"
-import "github.com/tencentyun/tls-sig-api-v2-golang/tencentyun"
 import "gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 import "gitlab.secoder.net/bauhinia/qanda-schema/ent"
 import userp "gitlab.secoder.net/bauhinia/qanda-schema/ent/user"
 import "net/http"
 import "golang.org/x/crypto/bcrypt"
 import "encoding/hex"
+import "strconv"
 
 func Register(group *echo.Group) {
 	group.POST("/register", register)
@@ -40,6 +40,14 @@ func register(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	user, err := ctx.DB().User.Create().SetUsername(u.Username).SetPassword(hex.EncodeToString(password)).Save(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	err = ctx.RequestTIM("im_open_login_svc", "account_import", struct {
+		Identifier string `json:"Identifier"`
+	}{
+		Identifier: strconv.Itoa(user.ID),
+	})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -136,11 +144,12 @@ func gensig(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	sig, err := tencentyun.GenUserSig(1400586942, "'b1c5ac2dd23bc7556ab94e23d2735806641f8d7fb3be28b779b66fe1672e6dd6", user.Username, 86400*180)
+	sig, err := ctx.Gensig(strconv.Itoa(user.ID))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return ctx.JSON(http.StatusOK, userGensigResponse{
+		Userid:    strconv.Itoa(user.ID),
 		Signature: sig,
 	})
 }
@@ -150,6 +159,7 @@ type userGensigRequest struct {
 }
 
 type userGensigResponse struct {
+	Userid    string `json:"userid"`
 	Signature string `json:"signature"`
 }
 

@@ -11,9 +11,11 @@
     "axios": "^0.23.0",
     "core-js": "^3.6.5",
     "element-plus": "^1.1.0-beta.19",
+    "tim-js-sdk": "^2.15.0",
     "vue": "^3.0.0",
     "vue-axios": "^3.3.7",
-    "vue-router": "^4.0.0-beta.13"
+    "vue-router": "^4.0.0-beta.13",
+    "vue3-beautiful-chat": "^3.1.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

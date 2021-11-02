@@ -55,7 +55,6 @@ const routes = [
     name: 'Pay',
     component: Pay,
   },
-
   {
     path: '/submit',
     name: 'Submit',
