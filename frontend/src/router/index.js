@@ -51,7 +51,6 @@ const routes = [
     name: 'Answerer',
     component: Answerer,
   },
-
   {
     path: '/pay',
     name: 'Pay',
@@ -66,11 +65,17 @@ const routes = [
     path: '/admin',
     name: 'AdminLogin',
     component: AdminLogin,
+    meta: {
+      public: true,
+    },
   },
   {
     path: '/admin/question',
     name: 'AdminQuestion',
     component: AdminQuestion,
+    meta: {
+      public: true,
+    },
   },
 ];
 
