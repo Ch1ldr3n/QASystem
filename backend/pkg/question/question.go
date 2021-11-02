@@ -173,23 +173,18 @@ func query(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err1.Error())
 	}
 	return ctx.JSON(http.StatusOK, questionQueryResponse{
-		Price:        question.Price,
-		Title:        question.Title,
-		Content:      question.Content,
-		State:        string(question.State),
-		QuestionerID: question.Edges.Questioner.ID,
-		AnswererID:   question.Edges.Answerer.ID,
+		Price:              question.Price,
+		Title:              question.Title,
+		Content:            question.Content,
+		State:              string(question.State),
+		QuestionerID:       question.Edges.Questioner.ID,
+		AnswererID:         question.Edges.Answerer.ID,
+		QuestionerUsername: question.Edges.Questioner.Username,
+		AnswererUsername:   question.Edges.Answerer.Username,
 	})
 }
 
-type questionQueryResponse struct {
-	Price        float64 `json:"price"`
-	Title        string  `json:"title"`
-	Content      string  `json:"content"`
-	State        string  `json:"state"`
-	QuestionerID int     `json:"questionerid"`
-	AnswererID   int     `json:"answererid"`
-}
+type questionQueryResponse = questionInfoDesplay
 
 // @Summary Question List
 // @Description List of all questions open to all users
@@ -214,6 +209,8 @@ func list(c echo.Context) error {
 		questionlist[i].State = string(questions[i].State)
 		questionlist[i].QuestionerID = questions[i].Edges.Questioner.ID
 		questionlist[i].AnswererID = questions[i].Edges.Answerer.ID
+		questionlist[i].QuestionerUsername = questions[i].Edges.Questioner.Username
+		questionlist[i].AnswererUsername = questions[i].Edges.Answerer.Username
 	}
 	return ctx.JSON(http.StatusOK, questionListResponse{
 		ResultNum:    listlen,
@@ -222,13 +219,15 @@ func list(c echo.Context) error {
 }
 
 type questionInfoDesplay struct {
-	ID           int     `json:"id"`
-	Price        float64 `json:"price"`
-	Title        string  `json:"title"`
-	Content      string  `json:"content"`
-	State        string  `json:"state"`
-	QuestionerID int     `json:"questionerid"`
-	AnswererID   int     `json:"answererid"`
+	ID                 int     `json:"id"`
+	Price              float64 `json:"price"`
+	Title              string  `json:"title"`
+	Content            string  `json:"content"`
+	State              string  `json:"state"`
+	QuestionerID       int     `json:"questionerid"`
+	AnswererID         int     `json:"answererid"`
+	QuestionerUsername string  `json:"qusername"`
+	AnswererUsername   string  `json:"ausername"`
 }
 
 type questionListResponse struct {
@@ -262,7 +261,7 @@ func mine(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	}
 	const numLimit = 1000
-	var askedlist [numLimit]questionInfoDesplay
+	var askedlist    [numLimit]questionInfoDesplay
 	var answeredlist [numLimit]questionInfoDesplay
 	user, err1 := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).WithAsked().WithAnswered().Only(ctx.Request().Context())
 	if err1 != nil {
@@ -283,6 +282,8 @@ func mine(c echo.Context) error {
 		}
 		askedlist[i].QuestionerID = user.ID
 		askedlist[i].AnswererID = question.Edges.Answerer.ID
+		askedlist[i].QuestionerUsername = user.Username
+		askedlist[i].AnswererUsername = question.Edges.Answerer.Username
 	}
 	// answered
 	listlen2 := len(user.Edges.Answered)
@@ -299,6 +300,8 @@ func mine(c echo.Context) error {
 		}
 		answeredlist[i].QuestionerID = question.Edges.Questioner.ID
 		answeredlist[i].AnswererID = user.ID
+		answeredlist[i].QuestionerUsername = question.Edges.Questioner.Username
+		answeredlist[i].AnswererUsername = user.Username
 	}
 	return ctx.JSON(http.StatusOK, questionMineResponse{
 		AskedNum:     listlen1,
