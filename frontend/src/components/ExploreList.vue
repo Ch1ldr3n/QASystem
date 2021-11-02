@@ -11,10 +11,9 @@
         <el-button @click="submit">查看详情</el-button>
       </template>
     </el-table-column>
-    <el-table-column prop="date" label="日期" sortable min-width="20%" column-key="date" />
     <el-table-column prop="title" label="问题" />
-    <el-table-column prop="questionerid" label="提问者" min-width="10%" />
-    <el-table-column prop="answererid" label="回答者" min-width="10%" />
+    <el-table-column prop="qusername" label="提问者" min-width="10%" />
+    <el-table-column prop="ausername" label="回答者" min-width="10%" />
   </el-table>
 </template>
 
