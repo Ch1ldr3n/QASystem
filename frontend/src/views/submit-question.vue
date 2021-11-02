@@ -57,6 +57,9 @@ export default {
       qdesc: '',
     };
   },
+  created() {
+
+  },
   methods: {
     onSubmit() {
       fetch('/v1/question/submit', {
