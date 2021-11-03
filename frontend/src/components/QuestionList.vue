@@ -199,25 +199,22 @@ export default {
           choice,
           questionid: id,
         }),
-      })
-        .then((resp) => {
-          if (!resp.ok) {
-            throw new Error('确认失败!');
-          }
-        })
-        .then(() => {
-          this.$message({
-            message: '确认成功',
-            type: 'success',
-          });
-          // TODO: refresh page
-        })
-        .catch((error) => {
-          this.$message({
-            message: error,
-            type: 'error',
-          });
+      }).then((resp) => {
+        if (!resp.ok) {
+          throw new Error('确认失败!');
+        }
+      }).then(() => {
+        this.$message({
+          message: '确认成功',
+          type: 'success',
         });
+        this.refresh();
+      }).catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
     },
     done(id) {
       fetch('/v1/question/close', {
@@ -229,25 +226,22 @@ export default {
         body: JSON.stringify({
           questionid: id,
         }),
-      })
-        .then((resp) => {
-          if (!resp.ok) {
-            throw new Error('确认失败!');
-          }
-        })
-        .then(() => {
-          this.$message({
-            message: '确认成功',
-            type: 'success',
-          });
-          // TODO: refresh page
-        })
-        .catch((error) => {
-          this.$message({
-            message: error,
-            type: 'error',
-          });
+      }).then((resp) => {
+        if (!resp.ok) {
+          throw new Error('确认失败!');
+        }
+      }).then(() => {
+        this.$message({
+          message: '确认成功',
+          type: 'success',
         });
+        this.refresh();
+      }).catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
     },
     cancel(id) {
       fetch('/v1/question/cancel', {
@@ -259,25 +253,22 @@ export default {
         body: JSON.stringify({
           questionid: id,
         }),
-      })
-        .then((resp) => {
-          if (!resp.ok) {
-            throw new Error('取消失败!');
-          }
-        })
-        .then(() => {
-          this.$message({
-            message: '取消成功',
-            type: 'success',
-          });
-          // TODO: refresh page
-        })
-        .catch((error) => {
-          this.$message({
-            message: error,
-            type: 'error',
-          });
+      }).then((resp) => {
+        if (!resp.ok) {
+          throw new Error('取消失败!');
+        }
+      }).then(() => {
+        this.$message({
+          message: '取消成功',
+          type: 'success',
         });
+        this.refresh();
+      }).catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
     },
     openChat(row) {
       console.log(row);
@@ -362,34 +353,31 @@ export default {
           this.isCompleted = imResponse.data.isCompleted;
         });
     },
+    refresh() {
+      fetch('/v1/question/mine', {
+        method: 'GET',
+        headers: {
+          authorization: window.localStorage.getItem('token'),
+        },
+      })
+        .then((resp) => {
+          if (!resp.ok) { throw new Error('获取我的问题列表失败！'); }
+          return resp.json();
+        })
+        .then((data) => {
+          this.tableData = [...(data.answeredlist.map((v) => Object.assign(v, { asked: false }))), ...(data.askedlist.map((v) => Object.assign(v, { asked: true })))];
+          console.log(data);
+        })
+        .catch((error) => {
+          this.$message({
+            message: error,
+            type: 'error',
+          });
+        });
+    },
   },
   created() {
-    // TODO: filter question related to user
-    fetch('/v1/question/mine', {
-      method: 'GET',
-      headers: {
-        authorization: window.localStorage.getItem('token'),
-      },
-    })
-      .then((resp) => {
-        if (!resp.ok) {
-          throw new Error('获取我的问题列表失败！');
-        }
-        return resp.json();
-      })
-      .then((data) => {
-        this.tableData = [
-          ...data.answeredlist.map((v) => Object.assign(v, { asked: false })),
-          ...data.askedlist.map((v) => Object.assign(v, { asked: true })),
-        ];
-        console.log(data);
-      })
-      .catch((error) => {
-        this.$message({
-          message: error,
-          type: 'error',
-        });
-      });
+    this.refresh();
     tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived);
     fetch('/v1/user/gensig', {
       method: 'GET',
