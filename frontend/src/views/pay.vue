@@ -49,9 +49,32 @@ export default {
       this.$router.go(-1);
     },
     onSubmit() {
-      this.$message({
-        message: '支付成功',
-        type: 'success',
+      fetch('/v1/question/pay', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: window.localStorage.getItem('token'),
+        },
+        body: JSON.stringify({
+          questionid: parseInt(this.$route.query.id, 10),
+        }),
+      }).then((resp) => {
+        if (!resp.ok) {
+          throw new Error('支付失败!');
+        }
+      }).then(() => {
+        this.$message({
+          message: '支付成功',
+          type: 'success',
+        });
+        this.$router.push({
+          name: 'Question',
+        });
+      }).catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
       });
     },
   },
