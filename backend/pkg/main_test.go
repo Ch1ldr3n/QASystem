@@ -82,6 +82,19 @@ func AuxUserLogin(e *echo.Echo, t *testing.T, name string, password string) *htt
 	return rec
 }
 
+func AuxUserGensig(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodGet, "/v1/user/gensig", nil)
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("user signature generation failed")
+	}
+
+	return rec
+}
+
 func AuxUserInfo(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(http.MethodGet, "/v1/user/info", nil)
 	req.Header.Add("Content-Type", "application/json")
@@ -263,6 +276,7 @@ func TestUser(t *testing.T) {
 	token2, _ := GetIdTokenFromRec(rec, t)
 	
 	AuxUserInfo(e, t, token1)
+	AuxUserGensig(e, t, token1)
 	AuxUserEdit(e, t, token1, `
 {
 	"email":"hello",
