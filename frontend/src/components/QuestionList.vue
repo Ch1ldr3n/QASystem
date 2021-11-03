@@ -9,7 +9,14 @@
     <el-table-column type="expand">
       <template #default="props">
         <p>{{ props.row.content }}</p>
-        <el-button type="primary" @click="openChat(props.row)">开始聊天</el-button>
+        <el-button @click="pay(props.row.id)" v-if="props.row.asked && props.row.state === 'created'">去支付</el-button>
+        <el-button disabled v-if="!props.row.asked && props.row.state === 'created'">等待对方支付</el-button>
+        <el-button disabled v-if="props.row.asked && props.row.state === 'paid'">等待对方接单</el-button>
+        <el-button type="success" @click="accept(props.row.id, true)" v-if="!props.row.asked && props.row.state === 'paid'">接受提问</el-button>
+        <el-button type="danger" @click="accept(props.row.id, false)" v-if="!props.row.asked && props.row.state === 'paid'">拒绝提问</el-button>
+        <el-button type="primary" @click="openChat(props.row)" v-if="props.row.state === 'accepted'">开始聊天</el-button>
+        <el-button type="primary" @click="done(props.row.id)" v-if="props.row.state === 'accepted'">完成问答</el-button>
+        <el-button type="danger" @click="cancel(props.row.id)" v-if="props.row.asked && !['accepted','done','canceled'].includes(props.row.state)">取消提问</el-button>
       </template>
     </el-table-column>
     <el-table-column prop="title" label="问题"/>
@@ -114,6 +121,94 @@ export default {
   methods: {
     filterTag(value, row) {
       return row.tag === value;
+    },
+    pay(id) {
+      this.$router.push({
+        name: 'Pay',
+        query: { id },
+      });
+    },
+    accept(id, choice) {
+      fetch('/v1/question/accept', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: window.localStorage.getItem('token'),
+        },
+        body: JSON.stringify({
+          choice,
+          questionid: id,
+        }),
+      }).then((resp) => {
+        if (!resp.ok) {
+          throw new Error('确认失败!');
+        }
+      }).then(() => {
+        this.$message({
+          message: '确认成功',
+          type: 'success',
+        });
+        // TODO: refresh page
+      }).catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
+    },
+    done(id) {
+      fetch('/v1/question/close', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: window.localStorage.getItem('token'),
+        },
+        body: JSON.stringify({
+          questionid: id,
+        }),
+      }).then((resp) => {
+        if (!resp.ok) {
+          throw new Error('确认失败!');
+        }
+      }).then(() => {
+        this.$message({
+          message: '确认成功',
+          type: 'success',
+        });
+        // TODO: refresh page
+      }).catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
+    },
+    cancel(id) {
+      fetch('/v1/question/cancel', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: window.localStorage.getItem('token'),
+        },
+        body: JSON.stringify({
+          questionid: id,
+        }),
+      }).then((resp) => {
+        if (!resp.ok) {
+          throw new Error('取消失败!');
+        }
+      }).then(() => {
+        this.$message({
+          message: '取消成功',
+          type: 'success',
+        });
+        // TODO: refresh page
+      }).catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
     },
     openChat(row) {
       console.log(row);
