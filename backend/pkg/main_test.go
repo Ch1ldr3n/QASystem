@@ -82,6 +82,19 @@ func AuxUserLogin(e *echo.Echo, t *testing.T, name string, password string) *htt
 	return rec
 }
 
+func AuxUserGensig(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodGet, "/v1/user/gensig", nil)
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("user signature generation failed")
+	}
+
+	return rec
+}
+
 func AuxUserInfo(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(http.MethodGet, "/v1/user/info", nil)
 	req.Header.Add("Content-Type", "application/json")
@@ -263,6 +276,7 @@ func TestUser(t *testing.T) {
 	token2, _ := GetIdTokenFromRec(rec, t)
 	
 	AuxUserInfo(e, t, token1)
+	AuxUserGensig(e, t, token1)
 	AuxUserEdit(e, t, token1, `
 {
 	"email":"hello",
@@ -440,7 +454,7 @@ func TestQuestion(t *testing.T) {
 
 func TestQuestionX1(t *testing.T) {
 	e := GetEchoTestEnv("entQuestion")
-	token3, userid3 := GetIdTokenFromRec(AuxUserRegister(e, t, "user3", "testpassword"), t)
+	token3, userid3 := GetIdTokenFromRec(AuxUserRegister(e, t, "user3", "pass"), t)
 	AuxUserEdit(e, t, token3, `
 {
 	"answerer":true
@@ -505,6 +519,38 @@ func TestQuestionX1(t *testing.T) {
 	AuxQuestionCancel(e, nil, questionid5, token1)
 	if rec := AuxQuestionCancel(e, nil, questionid5, token1); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("question cancel allows wrong status")
+	}
+}
+
+func TestQuestionX2(t *testing.T) {
+	e := GetEchoTestEnv("entQuestion")
+	token1, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "pass"), t)
+	token2, userid2 := GetIdTokenFromRec(AuxUserLogin(e, t, "user2", "pass"), t)
+	token3, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user3", "pass"), t)
+	rec := AuxQuestionSubmit(e, t, token1, `
+{
+	"title": "test title6",
+	"content":"test content6",
+	"answererid":`+strconv.Itoa(userid2)+`
+}
+	`)
+	questionid6 := GetQuestionIdFromSubmit(rec, t)
+	AuxQuestionPay(e, t, questionid6, token1)
+	
+	// Accept: foreign interference
+	if rec := AuxQuestionAccept(e, nil, questionid6, true, token3); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question accept allows foreign interference")
+	}
+
+	// Close: foreign interference
+	AuxQuestionAccept(e, t, questionid6, true, token2)
+	if rec := AuxQuestionAccept(e, nil, questionid6, true, token3); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question close allows foreign interference")
+	}
+
+	// Cancel: foreign interference
+	if rec := AuxQuestionCancel(e, nil, questionid6, token3); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question cancel allows foreign interference")
 	}
 }
 

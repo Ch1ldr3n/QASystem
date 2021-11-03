@@ -415,8 +415,8 @@ func close(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	}
 	questioner, answerer := question.Edges.Questioner, question.Edges.Answerer
-	if claims.Subject != questioner.Username {
-		return echo.NewHTTPError(http.StatusBadRequest, "current user is not the questioner")
+	if claims.Subject != questioner.Username && claims.Subject != answerer.Username{
+		return echo.NewHTTPError(http.StatusBadRequest, "current user is neither the questioner nor the answerer")
 	}
 	_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("done").Save(ctx.Request().Context())
 	if err != nil {
@@ -464,7 +464,7 @@ func cancel(c echo.Context) error {
 	}
 	questioner, answerer := question.Edges.Questioner, question.Edges.Answerer
 	if claims.Subject != questioner.Username && claims.Subject != answerer.Username{
-		return echo.NewHTTPError(http.StatusBadRequest, "current user is not either the questioner or the answerer")
+		return echo.NewHTTPError(http.StatusBadRequest, "current user is neither the questioner nor the answerer")
 	}
 	if question.State == "paid" || question.State == "accepted" {
 		_, err = ctx.DB().User.Update().Where(userp.ID(answerer.ID)).SetBalance(answerer.Balance + question.Price).Save(ctx.Request().Context())
