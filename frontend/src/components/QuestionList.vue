@@ -39,7 +39,7 @@
           <el-button
             type="primary"
             @click="openChat(props.row)"
-            v-if="props.row.state === 'accepted'"
+            v-if="['accepted', 'done'].includes(props.row.state)"
             >开始聊天</el-button
           >
           <el-button
