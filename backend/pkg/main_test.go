@@ -393,7 +393,7 @@ func TestQuestion(t *testing.T) {
 	AuxUserEdit(e, t, token2, `
 {
 	"answerer":true,
-	"price":-10
+	"price":10
 }
 	`)
 
@@ -486,7 +486,7 @@ func TestQuestionX1(t *testing.T) {
 		t.Fatal("question pay allows repeated payment")
 	}
 
-	// Pay: cannot afford question
+	// Pay: cannot afford question	(abandoned)
 	token1, userid1 := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "pass"), t)
 	questionid5 := GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token3, `
 {
@@ -495,9 +495,9 @@ func TestQuestionX1(t *testing.T) {
 	"answererid":`+strconv.Itoa(userid1)+`
 }
 	`), t)
-	if rec := AuxQuestionPay(e, nil, questionid5, token3); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("question pay allows illegal payment")
-	}
+	// if rec := AuxQuestionPay(e, nil, questionid5, token3); rec.Result().StatusCode != http.StatusBadRequest {
+	// 	t.Fatal("question pay allows illegal payment")
+	// }
 
 	// Pay: paying another person's question
 	token4, _ := GetIdTokenFromRec(AuxUserRegister(e, t, "user4", "pass"), t)
@@ -559,5 +559,17 @@ func TestQuestionQueryX1(t *testing.T) {
 	e := GetEchoTestEnv("entQuestion")
 	if rec := AuxQuestionQuery(e, nil, -1); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("question query allows inexistent question")
+	}
+}
+
+// Query: ill-formed ID
+func TestQuestionQueryX2(t *testing.T) {
+	e := GetEchoTestEnv("entQuestion")
+	req := httptest.NewRequest(http.MethodGet, "/v1/question/123abc", nil)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question query allows ill-formed ID")
 	}
 }

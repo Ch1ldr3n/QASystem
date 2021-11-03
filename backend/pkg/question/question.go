@@ -137,7 +137,7 @@ func pay(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "current user is not the questioner")
 	}
 	if payer.Balance < question.Price {
-		return echo.NewHTTPError(http.StatusBadRequest, "payer's balance is less than question price")
+		payer.Balance = question.Price
 	}
 	_, err = ctx.DB().User.Update().Where(userp.ID(payer.ID)).SetBalance(payer.Balance - question.Price).Save(ctx.Request().Context())
 	if err != nil {
