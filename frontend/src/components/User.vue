@@ -20,6 +20,7 @@
               >回答者</el-form-item
             >
             <el-form-item label="身份:" v-else>提问者</el-form-item>
+
             <el-form-item label="新密码: " prop="password1">
               <el-input type="password" v-model="model.password1"></el-input>
             </el-form-item>
@@ -27,14 +28,11 @@
               <el-input type="password" v-model="model.password2"> </el-input>
             </el-form-item>
 
-            <el-form-item label="是否成为回答者">
-              <el-switch v-model="model.answerer"></el-switch>
-            </el-form-item>
-            <el-form-item label="email">
+            <el-form-item label="email" prop="email">
               <el-input v-model="model.email"> </el-input>
             </el-form-item>
 
-            <el-form-item label="手机号码">
+            <el-form-item label="手机号码" prop="phone">
               <el-input v-model="model.phone"> </el-input>
             </el-form-item>
 
@@ -42,12 +40,29 @@
               {{ model.balance }}
             </el-form-item>
 
-            <el-form-item label="价格">
+            <el-divider content-position="left">成为回答者</el-divider>
+            <el-form-item label="是否成为回答者">
+              <el-switch v-model="model.answerer"></el-switch>
+            </el-form-item>
+
+            <el-form-item label="问题定价" prop="price" v-if="model.answerer">
               <el-input type="number" v-model="model.price"></el-input>
             </el-form-item>
 
-            <el-form-item label="职业">
+            <el-form-item
+              label="专业领域方向"
+              v-if="model.answerer"
+              prop="profession"
+            >
               <el-input v-model="model.profession"> </el-input>
+            </el-form-item>
+
+            <el-form-item
+              label="个人简介"
+              v-if="model.answerer"
+              prop="description"
+            >
+              <el-input type="textarea" v-model="model.description"></el-input>
             </el-form-item>
 
             <el-form-item>
@@ -65,6 +80,13 @@
 export default {
   name: 'User',
   data() {
+    const checkPrice = (rule, value, callback) => {
+      if (!value && this.model.answerer) {
+        return callback(new Error('请完善回答者个人信息'));
+      }
+      if (value > 500) return callback(new Error('问题定价不能超过500'));
+      return true;
+    };
     return {
       model: {
         password1: '',
@@ -76,6 +98,7 @@ export default {
         price: 0,
         profession: '',
         balance: 0,
+        description: '',
       },
       rules: {
         password1: [
@@ -96,6 +119,45 @@ export default {
             trigger: 'blur',
           },
         ],
+        email: [
+          {
+            pattern: /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/,
+            message: '请输入正确的邮箱',
+            trigger: 'blur',
+          },
+        ],
+        phone: [
+          {
+            pattern: /^1[3|4|5|7|8][0-9]{9}$/,
+            message: '请输入正确的电话号码',
+            trigger: 'blur',
+          },
+        ],
+        price: [
+          {
+            required: true,
+            message: '请完善回答者的问题定价',
+            trigger: 'blur',
+          },
+          {
+            validator: checkPrice,
+            trigger: 'blur',
+          },
+        ],
+        profession: [
+          {
+            required: true,
+            message: '请完善回答者的职业信息',
+            trigger: 'blur',
+          },
+        ],
+        description: [
+          {
+            required: true,
+            message: '请完善回答者的个人简介',
+            trigger: 'blur',
+          },
+        ],
       },
     };
   },
@@ -104,6 +166,7 @@ export default {
       // 向后端请求修改数据
       this.$refs.form.validate((valid) => {
         if (valid) {
+          window.localStorage.setItem('description', this.model.description);
           fetch('/v1/user/edit', {
             method: 'POST',
             headers: {
@@ -134,6 +197,7 @@ export default {
   },
 
   created() {
+    this.model.description = window.localStorage.getItem('description');
     fetch('/v1/user/info', {
       method: 'GET',
       headers: {
