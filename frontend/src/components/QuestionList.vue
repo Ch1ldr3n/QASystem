@@ -120,7 +120,7 @@ export default {
   },
   methods: {
     filterTag(value, row) {
-      return row.tag === value;
+      return row.asked === value;
     },
     pay(id) {
       this.$router.push({
