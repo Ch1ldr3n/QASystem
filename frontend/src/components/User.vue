@@ -67,7 +67,7 @@
 
             <el-form-item>
               <el-button type="primary" @click="onSubmit">保存</el-button>
-              <el-button>返回</el-button>
+              <el-button @click="quit">返回</el-button>
             </el-form-item>
           </el-form>
         </el-card>
@@ -162,6 +162,9 @@ export default {
     };
   },
   methods: {
+    quit() {
+      this.$router.go(-1);
+    },
     onSubmit() {
       // 向后端请求修改数据
       this.$refs.form.validate((valid) => {
