@@ -422,7 +422,7 @@ func close(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	_, err = ctx.DB().User.Update().Where(userp.ID(answerer.ID)).SetBalance(questioner.Balance + question.Price).Save(ctx.Request().Context())
+	_, err = ctx.DB().User.Update().Where(userp.ID(answerer.ID)).SetBalance(answerer.Balance + question.Price).Save(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -467,7 +467,7 @@ func cancel(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "current user is neither the questioner nor the answerer")
 	}
 	if question.State == "paid" || question.State == "accepted" {
-		_, err = ctx.DB().User.Update().Where(userp.ID(answerer.ID)).SetBalance(answerer.Balance + question.Price).Save(ctx.Request().Context())
+		_, err = ctx.DB().User.Update().Where(userp.ID(questioner.ID)).SetBalance(questioner.Balance + question.Price).Save(ctx.Request().Context())
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
