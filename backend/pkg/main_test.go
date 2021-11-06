@@ -573,3 +573,60 @@ func TestQuestionQueryX2(t *testing.T) {
 		t.Fatal("question query allows ill-formed ID")
 	}
 }
+
+// Unified test for bad json and invalid token verification
+// 
+// - the first string parameter of 'af' is its json item, the second its token
+// - it's better to make sure that validation of json and token is done at the beginning of the api function, 
+// - which means the 'Bind - BindHeaders - Validate - Verify' procedure
+//
+
+func AuxTestVerificationX(name string, t *testing.T, af func (*echo.Echo, *testing.T, string, string) *httptest.ResponseRecorder) {
+	e := GetEchoTestEnv("entVerificationX"+name)
+	e1 := GetEchoTestEnv("entVerificationX1"+name)
+	token1, _ := GetIdTokenFromRec(AuxUserRegister(e, t, "userX", "pass"), t)
+	token2, _ := GetIdTokenFromRec(AuxUserRegister(e1, t, "userXX", "pass"), t)
+
+	// Bad json
+	if rec := af(e, nil, ",***", token1); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("api allows bad json")
+	}
+
+	// No token
+	if rec := af(e, nil, "", ""); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("api allows no token")
+	}
+
+	// Not verifiable
+	if rec := af(e, nil, "", token1 + "qwerty"); rec.Result().StatusCode != http.StatusForbidden {
+		t.Fatal("api allows bad verification")
+	}
+
+	// inexistent user
+	if rec := af(e, nil, "", token2); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("api allows inexistent user")
+	}
+}
+
+// func TestUserEditXv(t *testing.T) {
+// 	AuxTestVerificationX("UserEdit", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
+// 		return AuxUserEdit(e, t, token, "{"+jsonitem+"}")
+// 	})
+// }
+func TestQuestionSubmitXv(t *testing.T) {
+	AuxTestVerificationX("QuestionSubmit", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
+		return AuxQuestionSubmit(e, t, token, `
+		{
+			"title": "test title1",
+			"content":"test content1",
+			"answererid":-1
+			`+jsonitem+`
+		}
+			`)
+	})
+}
+func TestQuestionPayXv(t *testing.T) {
+	AuxTestVerificationX("QuestionPay", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
+		return AuxQuestionPay(e, t, -1, token)
+	})
+}
