@@ -11,7 +11,7 @@ import Answerer from '../components/Answerer.vue';
 import AdminLogin from '../components/AdminLogin.vue';
 import AdminHomepage from '../components/AdminHomepage.vue';
 import Income from '../components/Income.vue';
-
+import Review from '../components/Review.vue';
 
 const routes = [
   {
@@ -90,32 +90,32 @@ const routes = [
     component: Review,
     meta: {
       public: true,
-    }
+    },
   },
-  {
-    path: '/admin/adminlist',
-    name: 'AdminList',
-    component: AdminList,
-    meta: {
-      public: true,
-    }
-  },
-  {
-    path: '/admin/adminpasswordchange',
-    name: 'AdminPasswordChange',
-    component: AdminPasswordChange,
-    meta: {
-      public: true,
-    }
-  },
-  {
-    path: '/admin/sysconfig',
-    name: 'SystemConfig',
-    component: SystemConfig,
-    meta: {
-      public: true,
-    }
-  },
+  // {
+  //   path: '/admin/adminlist',
+  //   name: 'AdminList',
+  //   component: AdminList,
+  //   meta: {
+  //     public: true,
+  //   }
+  // },
+  // {
+  //   path: '/admin/adminpasswordchange',
+  //   name: 'AdminPasswordChange',
+  //   component: AdminPasswordChange,
+  //   meta: {
+  //     public: true,
+  //   }
+  // },
+  // {
+  //   path: '/admin/sysconfig',
+  //   name: 'SystemConfig',
+  //   component: SystemConfig,
+  //   meta: {
+  //     public: true,
+  //   }
+  // },
 ];
 
 const router = createRouter({
