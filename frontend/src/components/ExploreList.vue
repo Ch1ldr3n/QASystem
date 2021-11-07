@@ -13,9 +13,20 @@
         </el-button>
       </template>
     </el-table-column>
-    <el-table-column prop="title" label="问题" />
-    <el-table-column prop="qusername" label="提问者" min-width="10%" />
-    <el-table-column prop="ausername" label="回答者" min-width="10%" />
+    <el-table-column
+      prop="title"
+      label="问题"
+    />
+    <el-table-column
+      prop="qusername"
+      label="提问者"
+      min-width="10%"
+    />
+    <el-table-column
+      prop="ausername"
+      label="回答者"
+      min-width="10%"
+    />
   </el-table>
 </template>
 
@@ -25,13 +36,6 @@ export default {
     return {
       tableData: [],
     };
-  },
-  methods: {
-    submit() {
-      this.$message({
-        message: '尚未实现！',
-      });
-    },
   },
   created() {
     // TODO: ask backend to return more related information
@@ -56,7 +60,7 @@ export default {
   methods: {
     submit() {
       this.$message({
-        message: '登录后查看问题详情！',
+        message: '尚未实现！',
       });
     },
   },

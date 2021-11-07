@@ -22,10 +22,7 @@
               v-if="model.answerer"
               label="身份:"
             >
-            <el-form-item label="身份:" v-else>提问者</el-form-item>
-
-            <el-form-item label="新密码: " prop="password1">
-              <el-input type="password" v-model="model.password1"></el-input>
+              回答者
             </el-form-item>
             <el-form-item
               v-else
@@ -33,6 +30,7 @@
             >
               提问者
             </el-form-item>
+
             <el-form-item
               label="新密码: "
               prop="password1"
@@ -52,11 +50,17 @@
               />
             </el-form-item>
 
-            <el-form-item label="email" prop="email">
-              <el-input v-model="model.email"> </el-input>
+            <el-form-item
+              label="email"
+              prop="email"
+            >
+              <el-input v-model="model.email" />
             </el-form-item>
 
-            <el-form-item label="手机号码" prop="phone">
+            <el-form-item
+              label="手机号码"
+              prop="phone"
+            >
               <el-input v-model="model.phone" />
             </el-form-item>
 
@@ -64,29 +68,41 @@
               {{ model.balance }}
             </el-form-item>
 
-            <el-divider content-position="left">成为回答者</el-divider>
+            <el-divider content-position="left">
+              成为回答者
+            </el-divider>
             <el-form-item label="是否成为回答者">
-              <el-switch v-model="model.answerer"></el-switch>
-            </el-form-item>
-
-            <el-form-item label="问题定价" prop="price" v-if="model.answerer">
-              <el-input type="number" v-model="model.price"></el-input>
+              <el-switch v-model="model.answerer" />
             </el-form-item>
 
             <el-form-item
-              label="专业领域方向"
               v-if="model.answerer"
+              label="问题定价"
+              prop="price"
+            >
+              <el-input
+                v-model="model.price"
+                type="number"
+              />
+            </el-form-item>
+
+            <el-form-item
+              v-if="model.answerer"
+              label="专业领域方向"
               prop="profession"
             >
               <el-input v-model="model.profession" />
             </el-form-item>
 
             <el-form-item
-              label="个人简介"
               v-if="model.answerer"
+              label="个人简介"
               prop="description"
             >
-              <el-input type="textarea" v-model="model.description"></el-input>
+              <el-input
+                v-model="model.description"
+                type="textarea"
+              />
             </el-form-item>
 
             <el-form-item>
@@ -96,7 +112,9 @@
               >
                 保存
               </el-button>
-              <el-button @click="quit">返回</el-button>
+              <el-button @click="quit">
+                返回
+              </el-button>
             </el-form-item>
           </el-form>
         </el-card>
@@ -192,6 +210,7 @@ export default {
   },
 
   created() {
+    this.model.description = window.localStorage.getItem('description');
     fetch('/v1/user/info', {
       method: 'GET',
       headers: {
@@ -211,6 +230,7 @@ export default {
         this.model.phone = data.phone;
         this.model.price = data.price;
         this.model.profession = data.profession;
+        this.model.balance = data.balance;
       })
       .catch((error) => {
         this.$message({
@@ -255,37 +275,6 @@ export default {
         }
       });
     },
-  },
-
-  created() {
-    this.model.description = window.localStorage.getItem('description');
-    fetch('/v1/user/info', {
-      method: 'GET',
-      headers: {
-        Authorization: window.localStorage.getItem('token'),
-      },
-    })
-      .then((resp) => {
-        if (!resp.ok) {
-          throw new Error('用户信息加载失败');
-        }
-        return resp.json();
-      })
-      .then((data) => {
-        this.model.name = data.username;
-        this.model.answerer = data.answerer;
-        this.model.email = data.email;
-        this.model.phone = data.phone;
-        this.model.price = data.price;
-        this.model.profession = data.profession;
-        this.model.balance = data.balance;
-      })
-      .catch((error) => {
-        this.$message({
-          message: error,
-          type: 'error',
-        });
-      });
   },
 };
 </script>

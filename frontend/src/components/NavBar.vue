@@ -33,6 +33,12 @@
       </el-menu-item>
       <el-menu-item
         index="5"
+        :route="{ name: 'Income' }"
+      >
+        收入统计
+      </el-menu-item>
+      <el-menu-item
+        index="6"
         @click="logout"
       >
         退出登录

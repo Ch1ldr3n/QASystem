@@ -2,7 +2,7 @@
   <el-main>
     <el-container>
       <el-aside width="unset">
-        <MyInfoCard/>
+        <MyInfoCard />
       </el-aside>
       <el-container style="margin-left: 50px; margin-top: 20px;">
         <el-table
@@ -11,9 +11,19 @@
           :default-sort="{ prop: 'date', order: 'descending' }"
           style="width: 100%"
         >
-          <el-table-column prop="month" label="月份" sortable min-width="10%" column-key="month" />
-          <el-table-column prop="income" label="收入" sortable min-width="20%" />
-
+          <el-table-column
+            prop="month"
+            label="月份"
+            sortable
+            min-width="10%"
+            column-key="month"
+          />
+          <el-table-column
+            prop="income"
+            label="收入"
+            sortable
+            min-width="20%"
+          />
         </el-table>
       </el-container>
     </el-container>
@@ -24,7 +34,7 @@
 import MyInfoCard from './MyInfoCard.vue';
 
 export default {
-  name: 'income',
+  name: 'Income',
   components: {
     MyInfoCard,
   },

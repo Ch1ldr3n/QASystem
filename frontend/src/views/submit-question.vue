@@ -47,7 +47,9 @@
               >
                 提交问题
               </el-button>
-              <el-button @click="$router.go(-1)">取消提问</el-button>
+              <el-button @click="$router.go(-1)">
+                取消提问
+              </el-button>
             </el-form-item>
           </el-form>
         </el-container>
