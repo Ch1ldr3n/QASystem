@@ -8,6 +8,8 @@ import Register from '../components/Register.vue';
 import Pay from '../views/pay.vue';
 import Submit from '../views/submit-question.vue';
 import Answerer from '../components/Answerer.vue';
+import AdminLogin from '../components/AdminLogin.vue';
+import AdminQuestion from '../components/AdminQuestion.vue';
 import Income from '../components/Income.vue';
 
 const routes = [
@@ -50,7 +52,6 @@ const routes = [
     name: 'Answerer',
     component: Answerer,
   },
-
   {
     path: '/pay',
     name: 'Pay',
@@ -60,6 +61,22 @@ const routes = [
     path: '/submit',
     name: 'Submit',
     component: Submit,
+  },
+  {
+    path: '/admin',
+    name: 'AdminLogin',
+    component: AdminLogin,
+    meta: {
+      public: true,
+    },
+  },
+  {
+    path: '/admin/question',
+    name: 'AdminQuestion',
+    component: AdminQuestion,
+    meta: {
+      public: true,
+    },
   },
   {
     path: '/income',

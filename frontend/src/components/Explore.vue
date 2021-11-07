@@ -1,7 +1,7 @@
 <template>
   <el-main>
     <el-container>
-      <ExploreList/>
+      <ExploreList />
     </el-container>
   </el-main>
 </template>

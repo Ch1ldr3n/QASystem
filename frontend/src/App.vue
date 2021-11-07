@@ -1,9 +1,9 @@
 <template>
   <el-container>
     <el-header>
-      <NavBar :loginDone="navbar.loginDone"/>
+      <NavBar :login-done="navbar.loginDone" />
     </el-header>
-    <router-view/>
+    <router-view />
   </el-container>
 </template>
 
@@ -12,15 +12,15 @@ import NavBar from './components/NavBar.vue';
 
 export default {
   name: 'App',
+  components: {
+    NavBar,
+  },
   data() {
     return {
       navbar: {
         loginDone: false,
       },
     };
-  },
-  components: {
-    NavBar,
   },
 };
 </script>

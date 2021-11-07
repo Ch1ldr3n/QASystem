@@ -162,6 +162,50 @@ export default {
       chatid: 0,
     };
   },
+  created() {
+    // TODO: filter question related to user
+    fetch('/v1/question/list', {
+      method: 'GET',
+      // headers: {}
+    })
+      .then((resp) => {
+        if (!resp.ok) { throw new Error('获取我的问题列表失败！'); }
+        return resp.json();
+      })
+      .then((data) => {
+        this.tableData = data.questionlist;
+        console.log(data);
+      })
+      .catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
+    tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived);
+    fetch('/v1/user/gensig', {
+      method: 'GET',
+      headers: {
+        Authorization: window.localStorage.getItem('token'),
+      },
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('获取imsdk签名失败');
+        }
+        return resp.json();
+      })
+      .then((data) => tim.login({ userID: data.userid, userSig: data.signature }))
+      .then((resp) => {
+        console.log(resp);
+      })
+      .catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
+  },
   methods: {
     stateFormat(row) {
       switch (row.state) {

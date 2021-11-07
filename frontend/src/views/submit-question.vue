@@ -13,13 +13,17 @@
             </div>
             <div>
               <el-descriptions :column="1">
-                <el-descriptions-item label="用户名"
-                  >{{aname}}</el-descriptions-item
-                >
-                <el-descriptions-item label="专业方向"
-                  ><el-tag size="small">{{aprof}}</el-tag></el-descriptions-item
-                >
-                <el-descriptions-item label="价格">{{price}}</el-descriptions-item>
+                <el-descriptions-item label="用户名">
+                  {{ aname }}
+                </el-descriptions-item>
+                <el-descriptions-item label="专业方向">
+                  <el-tag size="small">
+                    {{ aprof }}
+                  </el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="价格">
+                  {{ price }}
+                </el-descriptions-item>
               </el-descriptions>
             </div>
           </el-card>
@@ -27,17 +31,22 @@
         <el-container style="margin-left: 50px; margin-top: 50px;">
           <el-form>
             <el-form-item label="问题名称">
-              <el-input v-model="qname"></el-input>
+              <el-input v-model="qname" />
             </el-form-item>
             <el-form-item label="问题描述">
               <el-input
+                v-model="qdesc"
                 type="textarea"
                 :autosize="{ minRows: 6, maxRows: 10 }"
-                v-model="qdesc"
-              ></el-input>
+              />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="onSubmit">提交问题</el-button>
+              <el-button
+                type="primary"
+                @click="onSubmit"
+              >
+                提交问题
+              </el-button>
               <el-button @click="$router.go(-1)">取消提问</el-button>
             </el-form-item>
           </el-form>
@@ -49,7 +58,7 @@
 
 <script>
 export default {
-  name: 'pay',
+  name: 'Pay',
   data() {
     return {
       qname: '',

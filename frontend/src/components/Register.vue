@@ -7,18 +7,38 @@
             <h2>注册</h2>
           </div>
           <div>
-            <el-form :model="model" :rules="rules" ref="form">
+            <el-form
+              ref="form"
+              :model="model"
+              :rules="rules"
+            >
               <el-form-item prop="username">
-                <el-input v-model="model.username" placeholder="用户名"/>
+                <el-input
+                  v-model="model.username"
+                  placeholder="用户名"
+                />
               </el-form-item>
               <el-form-item prop="password">
-                <el-input v-model="model.password" placeholder="密码" type="password"/>
+                <el-input
+                  v-model="model.password"
+                  placeholder="密码"
+                  type="password"
+                />
               </el-form-item>
               <el-form-item prop="password_confirm">
-                <el-input v-model="model.password_confirm" placeholder="确认密码" type="password"/>
+                <el-input
+                  v-model="model.password_confirm"
+                  placeholder="确认密码"
+                  type="password"
+                />
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="submit">注册</el-button>
+                <el-button
+                  type="primary"
+                  @click="submit"
+                >
+                  注册
+                </el-button>
               </el-form-item>
             </el-form>
           </div>

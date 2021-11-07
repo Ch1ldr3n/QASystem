@@ -8,7 +8,9 @@
     <el-table-column type="expand">
       <template #default="props">
         <p>{{ props.row.content }}</p>
-        <el-button @click="submit">查看详情</el-button>
+        <el-button @click="submit">
+          查看详情
+        </el-button>
       </template>
     </el-table-column>
     <el-table-column prop="title" label="问题" />
@@ -50,6 +52,13 @@ export default {
       .catch((error) => {
         this.$message({ message: error, type: 'error' });
       });
+  },
+  methods: {
+    submit() {
+      this.$message({
+        message: '登录后查看问题详情！',
+      });
+    },
   },
 };
 </script>
