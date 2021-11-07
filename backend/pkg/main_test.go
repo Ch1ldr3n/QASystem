@@ -625,39 +625,7 @@ func TestQuestionX1(t *testing.T) {
 		t.Fatal("question cancel allows wrong status")
 	}
 }
-/*
-func TestQuestionX2(t *testing.T) {
-	e := GetEchoTestEnv("entQuestion")
-	token1, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "pass"), t)
-	token2, userid2 := GetIdTokenFromRec(AuxUserLogin(e, t, "user2", "pass"), t)
-	token3, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user3", "pass"), t)
-	rec := AuxQuestionSubmit(e, t, token1, `
-{
-	"title": "test title6",
-	"content":"test content6",
-	"answererid":`+strconv.Itoa(userid2)+`
-}
-	`)
-	questionid6 := GetQuestionIdFromSubmit(rec, t)
-	AuxQuestionPay(e, t, questionid6, token1)
 
-	// Accept: foreign interference
-	if rec := AuxQuestionAccept(e, nil, questionid6, true, token3); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("question accept allows foreign interference")
-	}
-
-	// Close: foreign interference
-	AuxQuestionAccept(e, t, questionid6, true, token2)
-	if rec := AuxQuestionAccept(e, nil, questionid6, true, token3); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("question close allows foreign interference")
-	}
-
-	// Cancel: foreign interference
-	if rec := AuxQuestionCancel(e, nil, questionid6, token3); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("question cancel allows foreign interference")
-	}
-}
-*/
 // Query: inexistent question
 func TestQuestionQueryX1(t *testing.T) {
 	e := GetEchoTestEnv("entQuestion")
@@ -680,82 +648,86 @@ func TestQuestionQueryX2(t *testing.T) {
 
 // Unified test for bad json and invalid token verification
 //
-// - the first string parameter of 'af' is its json item, the second its token
+// - the string parameter of 'af' is  its token
 // - it's better to make sure that validation of json and token is done at the beginning of the api function,
 // - which means the 'Bind - BindHeaders - Validate - Verify' procedure
 //
 
-func AuxTestVerificationX(name string, t *testing.T, af func(*echo.Echo, *testing.T, string, string) *httptest.ResponseRecorder) {
+func AuxTestVerificationX(name string, t *testing.T, af func(*echo.Echo, *testing.T, string) *httptest.ResponseRecorder) {
 	e := GetEchoTestEnv("entVerificationX" + name)
 	e1 := GetEchoTestEnv("entVerificationX1" + name)
 	token1, _ := GetIdTokenFromRec(AuxUserRegister(e, t, "userX", "pass"), t)
-	token2, _ := GetIdTokenFromRec(AuxUserRegister(e1, t, "userXX", "pass"), t)
-
-	// Bad json
-	if rec := af(e, nil, ",***", token1); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("api allows bad json")
-	}
+	token2, _ := GetIdTokenFromRec(AuxUserRegister(e1, t, "userX1", "pass"), t)
 
 	// No token
-	if rec := af(e, nil, "", ""); rec.Result().StatusCode != http.StatusBadRequest {
+	if rec := af(e, nil, ""); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("api allows no token")
 	}
 
 	// Not verifiable
-	if rec := af(e, nil, "", token1+"qwerty"); rec.Result().StatusCode != http.StatusForbidden {
+	if rec := af(e, nil, token1+"qwerty"); rec.Result().StatusCode != http.StatusForbidden {
 		t.Fatal("api allows bad verification")
 	}
 
 	// inexistent user
-	if rec := af(e, nil, "", token2); rec.Result().StatusCode != http.StatusBadRequest {
+	if rec := af(e, nil, token2); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("api allows inexistent user")
 	}
 }
 
 // func TestUserEditXv(t *testing.T) {
-// 	AuxTestVerificationX("UserEdit", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
-// 		return AuxUserEdit(e, t, token, "{"+jsonitem+"}")
+// 	AuxTestVerificationX("UserEdit", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+// 		return AuxUserEdit(e, t, token, "{}")
 // 	})
 // }
-// func TestUserInfoXv(t *testing.T) {
-// 	AuxTestVerificationX("UserInfo", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
-// 		return AuxUserInfo(e, t, token)
-// 	})
-// }
-// func TestUserGensigXv(t *testing.T) {
-// 	AuxTestVerificationX("UserGensig", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
-// 		return AuxUserGensig(e, t, token)
+func TestUserInfoXv(t *testing.T) {
+	AuxTestVerificationX("UserInfo", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+		return AuxUserInfo(e, t, token)
+	})
+}
+func TestUserGensigXv(t *testing.T) {
+	AuxTestVerificationX("UserGensig", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+		return AuxUserGensig(e, t, token)
+	})
+}
+// func TestUserFilterXv(t *testing.T) {
+// 	AuxTestVerificationX("UserFilter", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+// 		return AuxUserFilter(e, t, token, "")
 // 	})
 // }
 func TestQuestionSubmitXv(t *testing.T) {
-	AuxTestVerificationX("QuestionSubmit", t, func(e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder {
+	AuxTestVerificationX("QuestionSubmit", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxQuestionSubmit(e, t, token, `
-		{
-			"title": "test title1",
-			"content":"test content1",
-			"answererid":-1
-			`+jsonitem+`
-		}
-			`)
+{
+	"title":"titleX",
+	"content":"contentX",
+	"answererid":-1
+}
+		`)
 	})
 }
 func TestQuestionPayXv(t *testing.T) {
-	AuxTestVerificationX("QuestionPay", t, func(e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder {
+	AuxTestVerificationX("QuestionPay", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxQuestionPay(e, t, -1, token)
 	})
 }
+func TestQuestionMineXv(t *testing.T) {
+	AuxTestVerificationX("QuestionMine", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxQuestionMine(e, t, token)
+	})
+}
 func TestQuestionAcceptXv(t *testing.T) {
-	AuxTestVerificationX("QuestionAccept", t, func(e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder {
+	AuxTestVerificationX("QuestionAccept", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxQuestionAccept(e, t, -1, true, token)
 	})
 }
 func TestQuestionCloseXv(t *testing.T) {
-	AuxTestVerificationX("QuestionClose", t, func(e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder {
+	AuxTestVerificationX("QuestionClose", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxQuestionClose(e, t, -1, token)
 	})
 }
 func TestQuestionCancelXv(t *testing.T) {
-	AuxTestVerificationX("QuestionCancel", t, func(e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder {
+	AuxTestVerificationX("QuestionCancel", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxQuestionCancel(e, t, -1, token)
 	})
 }
