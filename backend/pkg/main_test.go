@@ -58,7 +58,7 @@ func AuxUserRegister(e *echo.Echo, t *testing.T, name string, password string) *
 	e.ServeHTTP(rec, req)
 
 	if t != nil && rec.Result().StatusCode != http.StatusOK {
-		t.Fatal("register failed")
+		t.Fatal("user register failed")
 	}
 
 	return rec
@@ -76,7 +76,7 @@ func AuxUserLogin(e *echo.Echo, t *testing.T, name string, password string) *htt
 	e.ServeHTTP(rec, req)
 
 	if t != nil && rec.Result().StatusCode != http.StatusOK {
-		t.Fatal("login failed")
+		t.Fatal("user login failed")
 	}
 
 	return rec
@@ -256,6 +256,54 @@ func AuxQuestionCancel(e *echo.Echo, t *testing.T, questionid int, token string)
 
 	if t != nil && rec.Result().StatusCode != http.StatusOK {
 		t.Fatal("question cancel failed")
+	}
+
+	return rec
+}
+
+func AuxAdminLogin(e *echo.Echo, t *testing.T, name string, password string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/admin/login", bytes.NewBufferString(`
+{
+	"username": "`+name+`",
+	"password": "`+password+`"
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("admin login failed")
+	}
+
+	return rec
+}
+
+func AuxAdminAdd(e *echo.Echo, t *testing.T, token string, username string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/admin/add", bytes.NewBufferString(`
+{
+	"username": "`+username+`"
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("admin add failed")
+	}
+
+	return rec
+}
+
+func AuxAdminList(e *echo.Echo, t *testing.T) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodGet, "/v1/admin/list", nil)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("admin list failed")
 	}
 
 	return rec
