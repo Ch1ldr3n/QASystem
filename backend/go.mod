@@ -8,6 +8,7 @@ require (
 	github.com/labstack/echo/v4 v4.6.1
 	github.com/lib/pq v1.10.2
 	github.com/mattn/go-sqlite3 v1.14.8
+	github.com/sethvargo/go-password v0.2.0
 	github.com/swaggo/echo-swagger v1.1.3
 	github.com/swaggo/swag v1.7.3
 	github.com/tencentyun/tls-sig-api-v2-golang v1.2.0

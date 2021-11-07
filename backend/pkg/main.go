@@ -11,6 +11,7 @@ import (
 	"github.com/swaggo/echo-swagger"
 	"gitlab.secoder.net/bauhinia/qanda-schema/ent"
 	adminp "gitlab.secoder.net/bauhinia/qanda-schema/ent/admin"
+	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/admin"
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 	_ "gitlab.secoder.net/bauhinia/qanda/backend/pkg/docs"
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/question"
@@ -39,7 +40,7 @@ func (v *Validator) Validate(i interface{}) error {
 // @securityDefinitions.apikey token
 // @in header
 // @name Authorization
-func New(serve string, storage string, database string, key string) *echo.Echo {
+func New(serve string, storage string, database string, key string, adminKey string) *echo.Echo {
 	e := echo.New()
 	e.Validator = &Validator{validator: validator.New()}
 	db, err := ent.Open(storage, database)
@@ -65,7 +66,7 @@ func New(serve string, storage string, database string, key string) *echo.Echo {
 	}
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			cc := &common.Context{Context: c, DBField: db, Key: []byte(key)}
+			cc := &common.Context{Context: c, DBField: db, Key: []byte(key), AdminKey: []byte(adminKey)}
 			return next(cc)
 		}
 	})
@@ -76,5 +77,6 @@ func New(serve string, storage string, database string, key string) *echo.Echo {
 	v1 := e.Group("/v1")
 	user.Register(v1.Group("/user"))
 	question.Register(v1.Group("/question"))
+	admin.Register(v1.Group("/admin"))
 	return e
 }
