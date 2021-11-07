@@ -374,7 +374,7 @@ func TestUserFilterX1(t *testing.T) {
 }
 
 // Question:
-
+/*
 func TestQuestion(t *testing.T) {
 	e := GetEchoTestEnv("entQuestion")
 
@@ -640,3 +640,4 @@ func TestQuestionPayXv(t *testing.T) {
 		return AuxQuestionPay(e, t, -1, token)
 	})
 }
+*/
