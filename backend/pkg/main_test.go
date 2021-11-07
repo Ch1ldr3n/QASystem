@@ -421,6 +421,18 @@ func TestUserFilterX1(t *testing.T) {
 	}
 }
 
+// Admin:
+
+func TestAdmin(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+
+	rec := AuxAdminLogin(e, t, "admin", "admin")
+	token, _ := GetIdTokenFromRec(rec, t)
+
+	AuxAdminAdd(e, t, token, "reviewer1")
+	AuxAdminList(e, t)
+}
+
 // Question:
 /*
 func TestQuestion(t *testing.T) {
