@@ -12,6 +12,7 @@ import AdminLogin from '../components/AdminLogin.vue';
 import AdminQuestion from '../components/AdminQuestion.vue';
 import Income from '../components/Income.vue';
 
+
 const routes = [
   {
     path: '/',
@@ -82,6 +83,38 @@ const routes = [
     path: '/income',
     name: 'Income',
     component: Income,
+  },
+  {
+    path: '/admin/review',
+    name: 'Review',
+    component: Review,
+    meta: {
+      public: true,
+    }
+  },
+  {
+    path: '/admin/adminlist',
+    name: 'AdminList',
+    component: AdminList,
+    meta: {
+      public: true,
+    }
+  },
+  {
+    path: '/admin/adminpasswordchange',
+    name: 'AdminPasswordChange',
+    component: AdminPasswordChange,
+    meta: {
+      public: true,
+    }
+  },
+  {
+    path: '/admin/sysconfig',
+    name: 'SystemConfig',
+    component: SystemConfig,
+    meta: {
+      public: true,
+    }
   },
 ];
 

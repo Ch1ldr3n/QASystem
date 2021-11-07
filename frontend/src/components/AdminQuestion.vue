@@ -8,11 +8,13 @@
 
 <script>
 import AdminQuestionList from './AdminQuestionList.vue';
+import AdminNavBar from './AdminNavBar.vue';
 
 export default {
   name: 'AdminQuestion',
   components: {
     AdminQuestionList,
+    AdminNavBar,
   },
   data() {
     return {};

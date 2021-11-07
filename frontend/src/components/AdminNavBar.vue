@@ -5,13 +5,13 @@
   >
     <el-menu-item
       index="0"
-      :route="{ name: 'ToReview' }"
+      :route="{ name: 'Review' }"
     >
       待审核问题
     </el-menu-item>
     <el-menu-item
       index="1"
-      :route="{ name: 'Admins' }"
+      :route="{ name: 'AdminList' }"
     >
       管理员目录
     </el-menu-item>
