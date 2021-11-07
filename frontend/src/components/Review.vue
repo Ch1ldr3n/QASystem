@@ -20,22 +20,17 @@
         </template>
       </el-table-column>
       <el-table-column
-        prop="date"
-        label="日期"
-        sortable
-        min-width="20%"
-        column-key="date"
-      />
-      <el-table-column
         prop="title"
         label="问题"
       />
+      <el-table-column
+        prop="question"
+        label="提问者"
+      />
 
       <el-table-column
-        prop="state"
-        label="状态"
-        sortable
-        min-width="10%"
+        prop="answer"
+        label="回答者"
       />
     </el-table>
   </el-container>
@@ -43,7 +38,7 @@
 
 <script>
 export default {
-  name: 'AdminQuestionList',
+  name: 'Review',
   data() {
     return {
       questionlist: [],
@@ -56,7 +51,7 @@ export default {
     })
       .then((resp) => {
         if (!resp.ok) {
-          throw new Error('获取管理员问题列表失败！');
+          throw new Error('获取待审核问题列表失败！');
         }
         return resp.json();
       })

@@ -1,20 +1,18 @@
 <template>
   <el-main>
     <el-container style="margin-left: 50px; margin-top: 20px; margin-right: 50px;">
-      <AdminQuestionList />
+      <Review />
     </el-container>
   </el-main>
 </template>
 
 <script>
-import AdminQuestionList from './AdminQuestionList.vue';
-import AdminNavBar from './AdminNavBar.vue';
+import Review from './Review.vue';
 
 export default {
-  name: 'AdminQuestion',
+  name: 'AdminHomepage',
   components: {
-    AdminQuestionList,
-    AdminNavBar,
+    Review,
   },
   data() {
     return {};

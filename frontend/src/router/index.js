@@ -9,7 +9,7 @@ import Pay from '../views/pay.vue';
 import Submit from '../views/submit-question.vue';
 import Answerer from '../components/Answerer.vue';
 import AdminLogin from '../components/AdminLogin.vue';
-import AdminQuestion from '../components/AdminQuestion.vue';
+import AdminHomepage from '../components/AdminHomepage.vue';
 import Income from '../components/Income.vue';
 
 
@@ -72,9 +72,9 @@ const routes = [
     },
   },
   {
-    path: '/admin/question',
-    name: 'AdminQuestion',
-    component: AdminQuestion,
+    path: '/admin/homepage',
+    name: 'AdminHomepage',
+    component: AdminHomepage,
     meta: {
       public: true,
     },
