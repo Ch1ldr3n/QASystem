@@ -118,19 +118,19 @@ func pay(c echo.Context) error {
 	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	if question.State != "created" {
-		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'created'")
-	}
 	if err := ctx.Validate(u); err != nil {
 		return err
 	}
 	claims, err := ctx.Verify(u.Token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if question.State != "created" {
+		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'created'")
 	}
 	payer, _ := question.Edges.Questioner, question.Edges.Answerer
 	if claims.Subject != payer.Username {
