@@ -344,8 +344,8 @@ func accept(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	if question.State != "paid" {
-		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'paid'")
+	if question.State != "reviewed" {
+		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'reviewed'")
 	}
 	if err := ctx.Validate(u); err != nil {
 		return err
@@ -466,13 +466,13 @@ func cancel(c echo.Context) error {
 	if claims.Subject != questioner.Username && claims.Subject != answerer.Username{
 		return echo.NewHTTPError(http.StatusBadRequest, "current user is neither the questioner nor the answerer")
 	}
-	if question.State == "paid" || question.State == "accepted" {
+	if question.State == "paid" || question.State == "reviewed" || question.State == "accepted" {
 		_, err = ctx.DB().User.Update().Where(userp.ID(questioner.ID)).SetBalance(questioner.Balance + question.Price).Save(ctx.Request().Context())
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 	} else if question.State != "created" {
-		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'created', 'paid' or 'accepted'")
+		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'created', 'paid', 'reviewed' or 'accepted'")
 	}
 	_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("canceled").Save(ctx.Request().Context())
 	if err != nil {
