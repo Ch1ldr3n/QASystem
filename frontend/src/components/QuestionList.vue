@@ -22,20 +22,26 @@
             等待对方支付
           </el-button>
           <el-button
-            v-if="props.row.asked && props.row.state === 'paid'"
+            v-if="props.row.state === 'paid'"
+            disabled
+          >
+            审核中
+          </el-button>
+          <el-button
+            v-if="props.row.asked && props.row.state === 'reviewed'"
             disabled
           >
             等待对方接单
           </el-button>
           <el-button
-            v-if="!props.row.asked && props.row.state === 'paid'"
+            v-if="!props.row.asked && props.row.state === 'reviewed'"
             type="success"
             @click="accept(props.row.id, true)"
           >
             接受提问
           </el-button>
           <el-button
-            v-if="!props.row.asked && props.row.state === 'paid'"
+            v-if="!props.row.asked && props.row.state === 'reviewed'"
             type="danger"
             @click="accept(props.row.id, false)"
           >
@@ -219,6 +225,8 @@ export default {
         case 'created':
           return '未支付';
         case 'paid':
+          return '等待审核';
+        case 'reviewed':
           return '等待接单';
         case 'accepted':
           return '进行中';
