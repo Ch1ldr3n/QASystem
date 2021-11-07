@@ -613,6 +613,16 @@ func AuxTestVerificationX(name string, t *testing.T, af func (*echo.Echo, *testi
 // 		return AuxUserEdit(e, t, token, "{"+jsonitem+"}")
 // 	})
 // }
+// func TestUserInfoXv(t *testing.T) {
+// 	AuxTestVerificationX("UserInfo", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
+// 		return AuxUserInfo(e, t, token)
+// 	})
+// }
+// func TestUserGensigXv(t *testing.T) {
+// 	AuxTestVerificationX("UserGensig", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
+// 		return AuxUserGensig(e, t, token)
+// 	})
+// }
 func TestQuestionSubmitXv(t *testing.T) {
 	AuxTestVerificationX("QuestionSubmit", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
 		return AuxQuestionSubmit(e, t, token, `
