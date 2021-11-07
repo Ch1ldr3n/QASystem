@@ -17,5 +17,10 @@ module.exports = {
   rules: {
     'max-len': 'off',
     'vue/multi-word-component-names': 'off',
+    'linebreak-style': [
+      "error",
+      "windows"
+    ],
+  },
   },
 };
