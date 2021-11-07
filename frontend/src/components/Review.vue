@@ -5,6 +5,8 @@
       :data="tableData"
       :default-sort="{ prop: 'date', order: 'descending' }"
       style="width: 100%"
+      border
+      stripe
     >
       <el-table-column type="expand">
         <template #default="props">
@@ -26,11 +28,13 @@
       <el-table-column
         prop="question"
         label="提问者"
+        width="180"
       />
 
       <el-table-column
         prop="answer"
         label="回答者"
+        width="180"
       />
     </el-table>
   </el-container>
@@ -41,11 +45,11 @@ export default {
   name: 'Review',
   data() {
     return {
-      questionlist: [],
+      reviewlist: [],
     };
   },
   created() {
-    fetch('/v1/question/list', {
+    fetch('/v1/question/reviewlist', {
       method: 'GET',
       // headers: {}
     })
@@ -56,7 +60,7 @@ export default {
         return resp.json();
       })
       .then((data) => {
-        this.tableData = data.questionlist;
+        this.tableData = data.reviewlist;
         console.log(data);
       })
       .catch((error) => {
