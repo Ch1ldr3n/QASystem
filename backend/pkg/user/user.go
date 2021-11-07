@@ -210,7 +210,7 @@ type userInfoResponse struct {
 	Phone      string  `json:"phone"`
 	Answerer   bool    `json:"answerer"`
 	Price      float64 `json:"price"`
-	Balance	   float64 `json:"balance"`
+	Balance    float64 `json:"balance"`
 	Profession string  `json:"profession"`
 }
 

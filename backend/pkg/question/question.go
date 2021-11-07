@@ -262,7 +262,7 @@ func mine(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	}
 	const numLimit = 1000
-	var askedlist    [numLimit]questionInfoDesplay
+	var askedlist [numLimit]questionInfoDesplay
 	var answeredlist [numLimit]questionInfoDesplay
 	user, err1 := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).WithAsked().WithAnswered().Only(ctx.Request().Context())
 	if err1 != nil {
@@ -415,7 +415,7 @@ func close(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	}
 	questioner, answerer := question.Edges.Questioner, question.Edges.Answerer
-	if claims.Subject != questioner.Username && claims.Subject != answerer.Username{
+	if claims.Subject != questioner.Username && claims.Subject != answerer.Username {
 		return echo.NewHTTPError(http.StatusBadRequest, "current user is neither the questioner nor the answerer")
 	}
 	_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("done").Save(ctx.Request().Context())
@@ -463,7 +463,7 @@ func cancel(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	}
 	questioner, answerer := question.Edges.Questioner, question.Edges.Answerer
-	if claims.Subject != questioner.Username && claims.Subject != answerer.Username{
+	if claims.Subject != questioner.Username && claims.Subject != answerer.Username {
 		return echo.NewHTTPError(http.StatusBadRequest, "current user is neither the questioner nor the answerer")
 	}
 	if question.State == "paid" || question.State == "reviewed" || question.State == "accepted" {

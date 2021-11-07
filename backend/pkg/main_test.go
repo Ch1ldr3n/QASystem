@@ -274,7 +274,7 @@ func TestUser(t *testing.T) {
 	token1, userid1 := GetIdTokenFromRec(rec, t)
 	rec = AuxUserRegister(e, t, "user2", "testpassword")
 	token2, _ := GetIdTokenFromRec(rec, t)
-	
+
 	AuxUserInfo(e, t, token1)
 	AuxUserGensig(e, t, token1)
 	AuxUserEdit(e, t, token1, `
@@ -536,7 +536,7 @@ func TestQuestionX2(t *testing.T) {
 	`)
 	questionid6 := GetQuestionIdFromSubmit(rec, t)
 	AuxQuestionPay(e, t, questionid6, token1)
-	
+
 	// Accept: foreign interference
 	if rec := AuxQuestionAccept(e, nil, questionid6, true, token3); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("question accept allows foreign interference")
@@ -575,15 +575,15 @@ func TestQuestionQueryX2(t *testing.T) {
 }
 
 // Unified test for bad json and invalid token verification
-// 
+//
 // - the first string parameter of 'af' is its json item, the second its token
-// - it's better to make sure that validation of json and token is done at the beginning of the api function, 
+// - it's better to make sure that validation of json and token is done at the beginning of the api function,
 // - which means the 'Bind - BindHeaders - Validate - Verify' procedure
 //
 
-func AuxTestVerificationX(name string, t *testing.T, af func (*echo.Echo, *testing.T, string, string) *httptest.ResponseRecorder) {
-	e := GetEchoTestEnv("entVerificationX"+name)
-	e1 := GetEchoTestEnv("entVerificationX1"+name)
+func AuxTestVerificationX(name string, t *testing.T, af func(*echo.Echo, *testing.T, string, string) *httptest.ResponseRecorder) {
+	e := GetEchoTestEnv("entVerificationX" + name)
+	e1 := GetEchoTestEnv("entVerificationX1" + name)
 	token1, _ := GetIdTokenFromRec(AuxUserRegister(e, t, "userX", "pass"), t)
 	token2, _ := GetIdTokenFromRec(AuxUserRegister(e1, t, "userXX", "pass"), t)
 
@@ -598,7 +598,7 @@ func AuxTestVerificationX(name string, t *testing.T, af func (*echo.Echo, *testi
 	}
 
 	// Not verifiable
-	if rec := af(e, nil, "", token1 + "qwerty"); rec.Result().StatusCode != http.StatusForbidden {
+	if rec := af(e, nil, "", token1+"qwerty"); rec.Result().StatusCode != http.StatusForbidden {
 		t.Fatal("api allows bad verification")
 	}
 
@@ -624,7 +624,7 @@ func AuxTestVerificationX(name string, t *testing.T, af func (*echo.Echo, *testi
 // 	})
 // }
 func TestQuestionSubmitXv(t *testing.T) {
-	AuxTestVerificationX("QuestionSubmit", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
+	AuxTestVerificationX("QuestionSubmit", t, func(e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder {
 		return AuxQuestionSubmit(e, t, token, `
 		{
 			"title": "test title1",
@@ -636,7 +636,7 @@ func TestQuestionSubmitXv(t *testing.T) {
 	})
 }
 func TestQuestionPayXv(t *testing.T) {
-	AuxTestVerificationX("QuestionPay", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
+	AuxTestVerificationX("QuestionPay", t, func(e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder {
 		return AuxQuestionPay(e, t, -1, token)
 	})
 }
