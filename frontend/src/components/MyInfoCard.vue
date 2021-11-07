@@ -9,15 +9,21 @@
     </div>
     <div>
       <el-descriptions :column="1">
-        <el-descriptions-item label="用户名">{{
-          username
-        }}</el-descriptions-item>
-        <el-descriptions-item label="称号"
-          ><el-tag size="small">{{ answerer }}</el-tag></el-descriptions-item
-        >
-        <el-descriptions-item label="账户余额">{{
-          balance
-        }}</el-descriptions-item>
+        <el-descriptions-item label="用户名">
+          {{
+            username
+          }}
+        </el-descriptions-item>
+        <el-descriptions-item label="称号">
+          <el-tag size="small">
+            {{ answerer }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="账户余额">
+          {{
+            balance
+          }}
+        </el-descriptions-item>
       </el-descriptions>
     </div>
   </el-card>

@@ -10,59 +10,83 @@
         <template #default="props">
           <p>{{ props.row.content }}</p>
           <el-button
-            @click="pay(props.row.id)"
             v-if="props.row.asked && props.row.state === 'created'"
-            >去支付</el-button
+            @click="pay(props.row.id)"
           >
+            去支付
+          </el-button>
           <el-button
-            disabled
             v-if="!props.row.asked && props.row.state === 'created'"
-            >等待对方支付</el-button
-          >
-          <el-button
             disabled
-            v-if="props.row.asked && props.row.state === 'paid'"
-            >等待对方接单</el-button
           >
+            等待对方支付
+          </el-button>
           <el-button
+            v-if="props.row.asked && props.row.state === 'paid'"
+            disabled
+          >
+            等待对方接单
+          </el-button>
+          <el-button
+            v-if="!props.row.asked && props.row.state === 'paid'"
             type="success"
             @click="accept(props.row.id, true)"
-            v-if="!props.row.asked && props.row.state === 'paid'"
-            >接受提问</el-button
           >
+            接受提问
+          </el-button>
           <el-button
+            v-if="!props.row.asked && props.row.state === 'paid'"
             type="danger"
             @click="accept(props.row.id, false)"
-            v-if="!props.row.asked && props.row.state === 'paid'"
-            >拒绝提问</el-button
           >
+            拒绝提问
+          </el-button>
           <el-button
+            v-if="['accepted', 'done'].includes(props.row.state)"
             type="primary"
             @click="openChat(props.row)"
-            v-if="['accepted', 'done'].includes(props.row.state)"
-            >开始聊天</el-button
           >
+            开始聊天
+          </el-button>
           <el-button
+            v-if="props.row.state === 'accepted'"
             type="primary"
             @click="done(props.row.id)"
-            v-if="props.row.state === 'accepted'"
-            >完成问答</el-button
           >
+            完成问答
+          </el-button>
           <el-button
-            type="danger"
-            @click="cancel(props.row.id)"
             v-if="
               props.row.asked &&
-              !['accepted', 'done', 'canceled'].includes(props.row.state)
+                !['accepted', 'done', 'canceled'].includes(props.row.state)
             "
-            >取消提问</el-button
+            type="danger"
+            @click="cancel(props.row.id)"
           >
+            取消提问
+          </el-button>
         </template>
       </el-table-column>
-      <el-table-column prop="title" label="问题" />
-      <el-table-column prop="price" label="金额" sortable min-width="10%" />
-      <el-table-column prop="ausername" label="回答者" min-width="10%" />
-      <el-table-column prop="qusername" label="提问者" min-width="10%" />
+      <el-table-column
+        prop="title"
+        label="问题"
+      />
+      <el-table-column
+        prop="price"
+        label="金额"
+        sortable
+        min-width="10%"
+      />
+      <el-table-column
+        prop="ausername"
+        label="回答者"
+        min-width="10%"
+      />
+      <el-table-column
+        prop="qusername"
+        label="提问者"
+        min-width="10%"
+      />
       <el-table-column
         prop="state"
         label="状态"
@@ -86,31 +110,32 @@
           <el-tag
             :type="scope.row.asked ? 'warning' : 'success'"
             disable-transitions
-            >{{ scope.row.asked ? "我提出的" : "我回答的" }}</el-tag
           >
+            {{ scope.row.asked ? "我提出的" : "我回答的" }}
+          </el-tag>
         </template>
       </el-table-column>
     </el-table>
     <beautiful-chat
       style="z-index: 1000"
       :participants="participants"
-      :onMessageWasSent="onMessageWasSent"
-      :messageList="messageList"
-      :newMessagesCount="newMessagesCount"
-      :isOpen="isChatOpen"
+      :on-message-was-sent="onMessageWasSent"
+      :message-list="messageList"
+      :new-messages-count="newMessagesCount"
+      :is-open="isChatOpen"
       :close="closeChat"
-      :showEmoji="false"
+      :show-emoji="false"
       :open="() => {}"
-      :showFile="false"
-      :showEdition="false"
-      :showDeletion="false"
-      :showLauncher="false"
-      :showCloseButton="true"
+      :show-file="false"
+      :show-edition="false"
+      :show-deletion="false"
+      :show-launcher="false"
+      :show-close-button="true"
       :colors="colors"
-      :alwaysScrollToBottom="false"
-      :disableUserListToggle="true"
+      :always-scroll-to-bottom="false"
+      :disable-user-list-toggle="true"
+      :message-styling="true"
       @scrollToTop="handleScrollToTop"
-      :messageStyling="true"
     />
   </el-container>
 </template>
@@ -163,25 +188,7 @@ export default {
     };
   },
   created() {
-    // TODO: filter question related to user
-    fetch('/v1/question/list', {
-      method: 'GET',
-      // headers: {}
-    })
-      .then((resp) => {
-        if (!resp.ok) { throw new Error('获取我的问题列表失败！'); }
-        return resp.json();
-      })
-      .then((data) => {
-        this.tableData = data.questionlist;
-        console.log(data);
-      })
-      .catch((error) => {
-        this.$message({
-          message: error,
-          type: 'error',
-        });
-      });
+    this.refresh();
     tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived);
     fetch('/v1/user/gensig', {
       method: 'GET',
@@ -419,32 +426,6 @@ export default {
           });
         });
     },
-  },
-  created() {
-    this.refresh();
-    tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived);
-    fetch('/v1/user/gensig', {
-      method: 'GET',
-      headers: {
-        Authorization: window.localStorage.getItem('token'),
-      },
-    })
-      .then((resp) => {
-        if (!resp.ok) {
-          throw new Error('获取imsdk签名失败');
-        }
-        return resp.json();
-      })
-      .then((data) => tim.login({ userID: data.userid, userSig: data.signature }))
-      .then((resp) => {
-        console.log(resp);
-      })
-      .catch((error) => {
-        this.$message({
-          message: error,
-          type: 'error',
-        });
-      });
   },
 };
 </script>
