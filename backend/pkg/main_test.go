@@ -58,7 +58,7 @@ func AuxUserRegister(e *echo.Echo, t *testing.T, name string, password string) *
 	e.ServeHTTP(rec, req)
 
 	if t != nil && rec.Result().StatusCode != http.StatusOK {
-		t.Fatal("register failed")
+		t.Fatal("user register failed")
 	}
 
 	return rec
@@ -76,7 +76,7 @@ func AuxUserLogin(e *echo.Echo, t *testing.T, name string, password string) *htt
 	e.ServeHTTP(rec, req)
 
 	if t != nil && rec.Result().StatusCode != http.StatusOK {
-		t.Fatal("login failed")
+		t.Fatal("user login failed")
 	}
 
 	return rec
@@ -225,6 +225,25 @@ func AuxQuestionAccept(e *echo.Echo, t *testing.T, questionid int, choice bool, 
 	return rec
 }
 
+func AuxQuestionReview(e *echo.Echo, t *testing.T, questionid int, choice bool, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/question/review", bytes.NewBufferString(`
+{
+	"questionid": `+strconv.Itoa(questionid)+`,
+	"choice": `+fmt.Sprintf(`%t`, choice)+`
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("question review failed")
+	}
+
+	return rec
+}
+
 func AuxQuestionClose(e *echo.Echo, t *testing.T, questionid int, token string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(http.MethodPost, "/v1/question/close", bytes.NewBufferString(`
 {
@@ -256,6 +275,54 @@ func AuxQuestionCancel(e *echo.Echo, t *testing.T, questionid int, token string)
 
 	if t != nil && rec.Result().StatusCode != http.StatusOK {
 		t.Fatal("question cancel failed")
+	}
+
+	return rec
+}
+
+func AuxAdminLogin(e *echo.Echo, t *testing.T, name string, password string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/admin/login", bytes.NewBufferString(`
+{
+	"username": "`+name+`",
+	"password": "`+password+`"
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("admin login failed")
+	}
+
+	return rec
+}
+
+func AuxAdminAdd(e *echo.Echo, t *testing.T, token string, username string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/admin/add", bytes.NewBufferString(`
+{
+	"username": "`+username+`"
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("admin add failed")
+	}
+
+	return rec
+}
+
+func AuxAdminList(e *echo.Echo, t *testing.T) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodGet, "/v1/admin/list", nil)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("admin list failed")
 	}
 
 	return rec
@@ -373,8 +440,20 @@ func TestUserFilterX1(t *testing.T) {
 	}
 }
 
+// Admin:
+
+func TestAdmin(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+
+	rec := AuxAdminLogin(e, t, "admin", "admin")
+	token, _ := GetIdTokenFromRec(rec, t)
+
+	AuxAdminAdd(e, t, token, "reviewer1")
+	AuxAdminList(e, t)
+}
+
 // Question:
-/*
+
 func TestQuestion(t *testing.T) {
 	e := GetEchoTestEnv("entQuestion")
 
@@ -397,39 +476,46 @@ func TestQuestion(t *testing.T) {
 }
 	`)
 
+	// Login administer 'admin' (root)
+	rec = AuxAdminLogin(e, t, "admin", "admin")
+	admintoken, _ := GetIdTokenFromRec(rec, t)
+
 	// Create 3 questions
-	rec = AuxQuestionSubmit(e, t, token1, `
+	questionid1 := GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token1, `
 {
 	"title": "test title1",
 	"content":"test content1",
 	"answererid":`+strconv.Itoa(userid2)+`
 }
-	`)
-	questionid1 := GetQuestionIdFromSubmit(rec, t)
-	rec = AuxQuestionSubmit(e, t, token1, `
+	`), t)
+	questionid2 := GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token1, `
 {
 	"title": "test title2",
 	"content":"test content2",
 	"answererid":`+strconv.Itoa(userid2)+`
 }
-	`)
-	questionid2 := GetQuestionIdFromSubmit(rec, t)
-	rec = AuxQuestionSubmit(e, t, token1, `
+	`), t)
+	questionid3 := GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token1, `
 {
 	"title": "test title3",
 	"content":"test content3",
 	"answererid":`+strconv.Itoa(userid2)+`
 }
-	`)
-	questionid3 := GetQuestionIdFromSubmit(rec, t)
-	rec = AuxQuestionSubmit(e, t, token2, `
+	`), t)
+	questionid4 := GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token2, `
 {
 	"title": "test title4",
 	"content":"test content4",
 	"answererid":`+strconv.Itoa(userid1)+`
 }
-	`)
-	// questionid4 := GetQuestionIdFromSubmit(rec, t)
+	`), t)
+	questionid5 := GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token2, `
+{
+	"title": "test title5",
+	"content":"test content5",
+	"answererid":`+strconv.Itoa(userid1)+`
+}
+	`), t)
 
 	// Launch some global queries
 	AuxQuestionQuery(e, t, questionid1)
@@ -438,15 +524,26 @@ func TestQuestion(t *testing.T) {
 
 	// Accept question no.1
 	AuxQuestionPay(e, t, questionid1, token1)
+	AuxQuestionReview(e, t, questionid1, true, admintoken)
 	AuxQuestionAccept(e, t, questionid1, true, token2)
 
 	// Reject question no.2
 	AuxQuestionPay(e, t, questionid2, token1)
+	AuxQuestionReview(e, t, questionid2, true, admintoken)
 	AuxQuestionAccept(e, t, questionid2, false, token2)
 
 	// Cancel question no.3
 	AuxQuestionPay(e, t, questionid3, token1)
+	AuxQuestionReview(e, t, questionid3, true, admintoken)
 	AuxQuestionCancel(e, t, questionid3, token1)
+
+	// Admin passes question no.4
+	AuxQuestionPay(e, t, questionid4, token2)
+	AuxQuestionReview(e, t, questionid4, true, admintoken)
+
+	// Admin cancels question no.5
+	AuxQuestionPay(e, t, questionid5, token2)
+	AuxQuestionReview(e, t, questionid5, false, admintoken)
 
 	// Close question no.1
 	AuxQuestionClose(e, t, questionid1, token1)
@@ -460,6 +557,7 @@ func TestQuestionX1(t *testing.T) {
 	"answerer":true
 }
 	`)
+	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, "admin", "admin"), t)
 
 	// Submit: questioning oneself
 	if rec := AuxQuestionSubmit(e, nil, token3, `
@@ -484,6 +582,12 @@ func TestQuestionX1(t *testing.T) {
 	AuxQuestionPay(e, t, questionid4, token3)
 	if rec := AuxQuestionPay(e, nil, questionid4, token3); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("question pay allows repeated payment")
+	}
+
+	// Review: double review
+	AuxQuestionReview(e, t, questionid4, true, admintoken)
+	if rec := AuxQuestionReview(e, nil, questionid4, true, admintoken); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question pay allows repeated review")
 	}
 
 	// Pay: cannot afford question	(abandoned)
@@ -537,6 +641,9 @@ func TestQuestionX2(t *testing.T) {
 	questionid6 := GetQuestionIdFromSubmit(rec, t)
 	AuxQuestionPay(e, t, questionid6, token1)
 
+	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, "admin", "admin"), t)
+	AuxQuestionReview(e, t, questionid6, true, admintoken)
+
 	// Accept: foreign interference
 	if rec := AuxQuestionAccept(e, nil, questionid6, true, token3); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("question accept allows foreign interference")
@@ -576,68 +683,86 @@ func TestQuestionQueryX2(t *testing.T) {
 
 // Unified test for bad json and invalid token verification
 //
-// - the first string parameter of 'af' is its json item, the second its token
+// - the string parameter of 'af' is  its token
 // - it's better to make sure that validation of json and token is done at the beginning of the api function,
 // - which means the 'Bind - BindHeaders - Validate - Verify' procedure
 //
 
-func AuxTestVerificationX(name string, t *testing.T, af func(*echo.Echo, *testing.T, string, string) *httptest.ResponseRecorder) {
+func AuxTestVerificationX(name string, t *testing.T, af func(*echo.Echo, *testing.T, string) *httptest.ResponseRecorder) {
 	e := GetEchoTestEnv("entVerificationX" + name)
 	e1 := GetEchoTestEnv("entVerificationX1" + name)
 	token1, _ := GetIdTokenFromRec(AuxUserRegister(e, t, "userX", "pass"), t)
-	token2, _ := GetIdTokenFromRec(AuxUserRegister(e1, t, "userXX", "pass"), t)
-
-	// Bad json
-	if rec := af(e, nil, ",***", token1); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("api allows bad json")
-	}
+	token2, _ := GetIdTokenFromRec(AuxUserRegister(e1, t, "userX1", "pass"), t)
 
 	// No token
-	if rec := af(e, nil, "", ""); rec.Result().StatusCode != http.StatusBadRequest {
+	if rec := af(e, nil, ""); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("api allows no token")
 	}
 
 	// Not verifiable
-	if rec := af(e, nil, "", token1+"qwerty"); rec.Result().StatusCode != http.StatusForbidden {
+	if rec := af(e, nil, token1+"qwerty"); rec.Result().StatusCode != http.StatusForbidden {
 		t.Fatal("api allows bad verification")
 	}
 
 	// inexistent user
-	if rec := af(e, nil, "", token2); rec.Result().StatusCode != http.StatusBadRequest {
+	if rec := af(e, nil, token2); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("api allows inexistent user")
 	}
 }
 
 // func TestUserEditXv(t *testing.T) {
-// 	AuxTestVerificationX("UserEdit", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
-// 		return AuxUserEdit(e, t, token, "{"+jsonitem+"}")
+// 	AuxTestVerificationX("UserEdit", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+// 		return AuxUserEdit(e, t, token, "{}")
 // 	})
 // }
-// func TestUserInfoXv(t *testing.T) {
-// 	AuxTestVerificationX("UserInfo", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
-// 		return AuxUserInfo(e, t, token)
-// 	})
-// }
-// func TestUserGensigXv(t *testing.T) {
-// 	AuxTestVerificationX("UserGensig", t, func (e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder{
-// 		return AuxUserGensig(e, t, token)
+func TestUserInfoXv(t *testing.T) {
+	AuxTestVerificationX("UserInfo", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+		return AuxUserInfo(e, t, token)
+	})
+}
+func TestUserGensigXv(t *testing.T) {
+	AuxTestVerificationX("UserGensig", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+		return AuxUserGensig(e, t, token)
+	})
+}
+// func TestUserFilterXv(t *testing.T) {
+// 	AuxTestVerificationX("UserFilter", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+// 		return AuxUserFilter(e, t, token, "")
 // 	})
 // }
 func TestQuestionSubmitXv(t *testing.T) {
-	AuxTestVerificationX("QuestionSubmit", t, func(e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder {
+	AuxTestVerificationX("QuestionSubmit", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxQuestionSubmit(e, t, token, `
-		{
-			"title": "test title1",
-			"content":"test content1",
-			"answererid":-1
-			`+jsonitem+`
-		}
-			`)
+{
+	"title":"titleX",
+	"content":"contentX",
+	"answererid":-1
+}
+		`)
 	})
 }
 func TestQuestionPayXv(t *testing.T) {
-	AuxTestVerificationX("QuestionPay", t, func(e *echo.Echo, t *testing.T, jsonitem string, token string) *httptest.ResponseRecorder {
+	AuxTestVerificationX("QuestionPay", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxQuestionPay(e, t, -1, token)
 	})
 }
-*/
+func TestQuestionMineXv(t *testing.T) {
+	AuxTestVerificationX("QuestionMine", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxQuestionMine(e, t, token)
+	})
+}
+func TestQuestionAcceptXv(t *testing.T) {
+	AuxTestVerificationX("QuestionAccept", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxQuestionAccept(e, t, -1, true, token)
+	})
+}
+func TestQuestionCloseXv(t *testing.T) {
+	AuxTestVerificationX("QuestionClose", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxQuestionClose(e, t, -1, token)
+	})
+}
+func TestQuestionCancelXv(t *testing.T) {
+	AuxTestVerificationX("QuestionCancel", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxQuestionCancel(e, t, -1, token)
+	})
+}

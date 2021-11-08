@@ -261,6 +261,7 @@ type userEditRequest struct {
 // @Summary User Filter
 // @Description Filter for wanted users
 // @Produce json
+// @Security token
 // @Param query query userFilterRequest true "user filter request"
 // @Success 200 {object} userFilterResponse "user filter response"
 // @Failure 400 {string} string

@@ -342,19 +342,19 @@ func accept(c echo.Context) error {
 	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	if question.State != "reviewed" {
-		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'reviewed'")
-	}
 	if err := ctx.Validate(u); err != nil {
 		return err
 	}
 	claims, err := ctx.Verify(u.Token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if question.State != "reviewed" {
+		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'reviewed'")
 	}
 	questioner, answerer := question.Edges.Questioner, question.Edges.Answerer
 	if claims.Subject != answerer.Username {
@@ -402,19 +402,19 @@ func review(c echo.Context) error {
 	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	if question.State != "paid" {
-		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'paid'")
-	}
 	if err := ctx.Validate(u); err != nil {
 		return err
 	}
 	claims, err := ctx.VerifyAdmin(u.Token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if question.State != "paid" {
+		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'paid'")
 	}
 	admin, err := ctx.DB().Admin.Query().Where(adminp.Username(claims.Subject)).Only(ctx.Request().Context())
 	if err != nil {
@@ -466,19 +466,19 @@ func close(c echo.Context) error {
 	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	if question.State != "accepted" {
-		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'accepted'")
-	}
 	if err := ctx.Validate(u); err != nil {
 		return err
 	}
 	claims, err := ctx.Verify(u.Token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if question.State != "accepted" {
+		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'accepted'")
 	}
 	questioner, answerer := question.Edges.Questioner, question.Edges.Answerer
 	if claims.Subject != questioner.Username && claims.Subject != answerer.Username {
@@ -517,16 +517,16 @@ func cancel(c echo.Context) error {
 	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
 	if err := ctx.Validate(u); err != nil {
 		return err
 	}
 	claims, err := ctx.Verify(u.Token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	question, err := ctx.DB().Question.Query().Where(questionp.ID(u.QuestionID)).WithQuestioner().WithAnswerer().Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	questioner, answerer := question.Edges.Questioner, question.Edges.Answerer
 	if claims.Subject != questioner.Username && claims.Subject != answerer.Username {
