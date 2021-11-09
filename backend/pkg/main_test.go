@@ -14,7 +14,7 @@ import (
 // Global constants
 
 const (
-	adminRootName = "admin"
+	adminRootName     = "admin"
 	adminRootPassword = "admin"
 )
 
@@ -794,15 +794,16 @@ func AuxTestVerificationX(name string, t *testing.T, af func(*echo.Echo, *testin
 // 	})
 // }
 func TestUserInfoXv(t *testing.T) {
-	AuxTestVerificationX("UserInfo", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+	AuxTestVerificationX("UserInfo", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxUserInfo(e, t, token)
 	})
 }
 func TestUserGensigXv(t *testing.T) {
-	AuxTestVerificationX("UserGensig", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+	AuxTestVerificationX("UserGensig", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxUserGensig(e, t, token)
 	})
 }
+
 // func TestUserFilterXv(t *testing.T) {
 // 	AuxTestVerificationX("UserFilter", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
 // 		return AuxUserFilter(e, t, token, "")
@@ -849,8 +850,8 @@ func TestQuestionCancelXv(t *testing.T) {
 //
 
 func AuxTestAdminVerificationX(name string, t *testing.T, af func(*echo.Echo, *testing.T, string) *httptest.ResponseRecorder) {
-	e := GetEchoTestEnv("entAdminVerificationX"+name)
-	e1 := GetEchoTestEnv("entAdminVerificationX1"+name)
+	e := GetEchoTestEnv("entAdminVerificationX" + name)
+	e1 := GetEchoTestEnv("entAdminVerificationX1" + name)
 	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminRootName, adminRootPassword), t)
 	adminnameX := "newAdminX"
 	passwordX, _ := GetAdminPasswordIdFromRec(AuxAdminAdd(e1, t, admintoken, adminnameX), t)
