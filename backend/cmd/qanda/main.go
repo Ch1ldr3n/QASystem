@@ -10,9 +10,10 @@ var serve = flag.String("serve", "/usr/share/qanda", "static artifacts to serve"
 var storage = flag.String("storage", "sqlite3", "database type")
 var database = flag.String("database", "file:ent?mode=memory&cache=shared&_fk=1", "database connection string")
 var key = flag.String("key", "super-secret-key", "jwt secret key for tokens")
+var adminKey = flag.String("adminkey", "super-secret-key-2", "jwt secret key for tokens")
 
 func main() {
 	flag.Parse()
-	e := qanda.New(*serve, *storage, *database, *key)
+	e := qanda.New(*serve, *storage, *database, *key, *adminKey)
 	e.Logger.Fatal(e.Start(*listen))
 }

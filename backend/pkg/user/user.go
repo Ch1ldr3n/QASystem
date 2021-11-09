@@ -210,7 +210,7 @@ type userInfoResponse struct {
 	Phone      string  `json:"phone"`
 	Answerer   bool    `json:"answerer"`
 	Price      float64 `json:"price"`
-	Balance	   float64 `json:"balance"`
+	Balance    float64 `json:"balance"`
 	Profession string  `json:"profession"`
 }
 
@@ -261,6 +261,7 @@ type userEditRequest struct {
 // @Summary User Filter
 // @Description Filter for wanted users
 // @Produce json
+// @Security token
 // @Param query query userFilterRequest true "user filter request"
 // @Success 200 {object} userFilterResponse "user filter response"
 // @Failure 400 {string} string

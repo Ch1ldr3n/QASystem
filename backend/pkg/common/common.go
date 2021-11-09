@@ -16,8 +16,9 @@ import (
 
 type Context struct {
 	echo.Context
-	DBField *ent.Client
-	Key     []byte
+	DBField  *ent.Client
+	Key      []byte
+	AdminKey []byte
 }
 
 func (c *Context) DB() *ent.Client {
@@ -30,8 +31,22 @@ func (c *Context) Sign(username string) (string, error) {
 	}).SignedString(c.Key)
 }
 
+func (c *Context) SignAdmin(username string) (string, error) {
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.RegisteredClaims{
+		Subject: username,
+	}).SignedString(c.AdminKey)
+}
+
 func (c *Context) Verify(token string) (*jwt.RegisteredClaims, error) {
 	parsed, err := jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, func(_ *jwt.Token) (interface{}, error) { return c.Key, nil })
+	if err != nil {
+		return nil, err
+	}
+	return parsed.Claims.(*jwt.RegisteredClaims), nil
+}
+
+func (c *Context) VerifyAdmin(token string) (*jwt.RegisteredClaims, error) {
+	parsed, err := jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, func(_ *jwt.Token) (interface{}, error) { return c.AdminKey, nil })
 	if err != nil {
 		return nil, err
 	}

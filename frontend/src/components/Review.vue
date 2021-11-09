@@ -1,5 +1,18 @@
 <template>
   <el-container>
+    <el-header>
+      <el-input
+        v-model="newname"
+        placeholder="管理员昵称"
+        clearable
+      >
+        <template #append>
+          <el-button @click="adding">
+            添加
+          </el-button>
+        </template>
+      </el-input>
+    </el-header>
     <el-table
       ref="filterTable"
       :data="tableData"
@@ -46,6 +59,7 @@ export default {
   data() {
     return {
       reviewlist: [],
+      newname: '',
     };
   },
   created() {
@@ -73,6 +87,12 @@ export default {
   methods: {
     filterTag(value, row) {
       return row.tag === value;
+    },
+    adding() {
+      this.$message({
+        message: '添加成功',
+        type: 'success',
+      });
     },
   },
 };

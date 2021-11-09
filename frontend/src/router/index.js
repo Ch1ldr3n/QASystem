@@ -10,6 +10,7 @@ import Submit from '../views/submit-question.vue';
 import Answerer from '../components/Answerer.vue';
 import AdminLogin from '../components/AdminLogin.vue';
 import AdminHomepage from '../components/AdminHomepage.vue';
+import AdminUser from '../components/AdminUser.vue';
 import Income from '../components/Income.vue';
 import Review from '../components/Review.vue';
 
@@ -75,6 +76,14 @@ const routes = [
     path: '/admin/homepage',
     name: 'AdminHomepage',
     component: AdminHomepage,
+    meta: {
+      public: true,
+    },
+  },
+  {
+    path: '/admin/user',
+    name: 'AdminUser',
+    component: AdminUser,
     meta: {
       public: true,
     },
