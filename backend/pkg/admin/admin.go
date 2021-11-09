@@ -17,6 +17,7 @@ func Register(group *echo.Group) {
 	group.GET("/param", param)
 	group.POST("/param", param_edit)
 	group.POST("/edit", edit)
+	group.POST("/change", change)
 }
 
 // @Summary Admin Login
@@ -304,4 +305,44 @@ func edit(c echo.Context) error {
 type adminEditRequest struct {
 	Token    string `header:"authorization" validate:"required"`
 	Password string `json:"password" validate:"required"`
+}
+
+// @Summary Admin Change
+// @Description Change role of admin
+// @Accept json
+// @Security token
+// @Param body body adminChangeRequest true "admin change request"
+// @Success 200 {string} string
+// @Failure 400 {string} string
+// @Router /v1/admin/change [post]
+func change(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(adminChangeRequest)
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.VerifyAdmin(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	if claims.Subject != "admin" || u.Username == "admin" {
+		return echo.NewHTTPError(http.StatusForbidden, "only admin can change role")
+	}
+	_, err = ctx.DB().Admin.Update().Where(adminp.Username(u.Username)).SetRole(adminp.Role(u.Role)).Save(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.JSON(http.StatusOK, "change role successful")
+}
+
+type adminChangeRequest struct {
+	Token    string `header:"authorization" validate:"required"`
+	Username string `json:"username" validate:"required"`
+	Role     string `json:"role", validate:"required"`
 }
