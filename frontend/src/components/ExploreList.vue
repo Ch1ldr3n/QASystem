@@ -4,7 +4,6 @@
     :data="tableData"
     :default-sort="{ prop: 'date', order: 'descending' }"
     style="width: 100%"
-    border
     stripe
   >
     <el-table-column type="expand">
