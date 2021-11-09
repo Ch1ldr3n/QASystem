@@ -38,7 +38,7 @@
         label="问题"
       />
       <el-table-column
-        prop="question"
+        prop="questioner"
         label="提问者"
         width="180"
       />
@@ -57,7 +57,13 @@ export default {
   name: 'Review',
   data() {
     return {
-      reviewlist: [],
+      reviewlist: [
+        {
+          title: 'weishenme',
+          questioner: 'cxj',
+          answer: 'zmy',
+        },
+      ],
       newname: '',
     };
   },
