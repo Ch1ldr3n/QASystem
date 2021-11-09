@@ -347,6 +347,24 @@ func AuxAdminList(e *echo.Echo, t *testing.T) *httptest.ResponseRecorder {
 	return rec
 }
 
+func AuxAdminEdit(e *echo.Echo, t *testing.T, token string, password string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/admin/edit", bytes.NewBufferString(`
+{
+	"password": "`+password+`"
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("admin edit failed")
+	}
+
+	return rec
+}
+
 //
 // test functions
 //
@@ -355,23 +373,26 @@ func AuxAdminList(e *echo.Echo, t *testing.T) *httptest.ResponseRecorder {
 
 func TestUser(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
-	AuxUserRegister(e, t, "user1", "testpassword")
-	rec := AuxUserLogin(e, t, "user1", "testpassword")
+	AuxUserRegister(e, t, "user1", "testpassword_old")
+	rec := AuxUserLogin(e, t, "user1", "testpassword_old")
 	token1, userid1 := GetIdTokenFromRec(rec, t)
 	rec = AuxUserRegister(e, t, "user2", "testpassword")
 	token2, _ := GetIdTokenFromRec(rec, t)
 
 	AuxUserInfo(e, t, token1)
 	AuxUserGensig(e, t, token1)
+	newpassword := "testpassword"
 	AuxUserEdit(e, t, token1, `
 {
 	"email":"hello",
 	"phone":"12345678",
 	"answerer":true,
 	"price":-100,
-	"profession":"Geschichte"
+	"profession":"Geschichte",
+	"password":"`+newpassword+`"
 }
 	`)
+	token1, _ = GetIdTokenFromRec(AuxUserLogin(e, t, "user1", newpassword), t)
 	AuxUserFilter(e, t, token2, "?id="+strconv.Itoa(userid1)+"&username=user1&email=hello&phone=12345678&answerer=true&priceUpperBound=1000&priceLowerBound=-1000&profession=Geschichte")
 }
 
@@ -467,7 +488,13 @@ func TestAdmin(t *testing.T) {
 	rec := AuxAdminLogin(e, t, adminRootName, adminRootPassword)
 	token, _ := GetIdTokenFromRec(rec, t)
 
-	AuxAdminAdd(e, t, token, "reviewer1")
+	adminname := "reviewer1"
+	password, _ := GetAdminPasswordIdFromRec(AuxAdminAdd(e, t, token, adminname), t)
+	token1, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminname, password), t)
+
+	password = "newadminpassword"
+	AuxAdminEdit(e, t, token1, password)
+	AuxAdminLogin(e, t, adminname, password)
 	AuxAdminList(e, t)
 }
 
