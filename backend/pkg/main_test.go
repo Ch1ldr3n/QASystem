@@ -299,11 +299,20 @@ func AuxQuestionCancel(e *echo.Echo, t *testing.T, questionid int, token string)
 	return rec
 }
 
+func jsonEscape(i string) string {
+	b, err := json.Marshal(i)
+	if err != nil {
+		panic(err)
+	}
+	s := string(b)
+	return s[1 : len(s)-1]
+}
+
 func AuxAdminLogin(e *echo.Echo, t *testing.T, name string, password string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(http.MethodPost, "/v1/admin/login", bytes.NewBufferString(`
 {
 	"username": "`+name+`",
-	"password": "`+password+`"
+	"password": "`+jsonEscape(password)+`"
 }
     `))
 	req.Header.Add("Content-Type", "application/json")
