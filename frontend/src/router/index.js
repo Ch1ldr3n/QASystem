@@ -130,6 +130,11 @@ router.beforeEach((to, from, next) => {
     } else {
       next();
     }
+    if (window.localStorage.getItem('admintoken') == null) {
+      next({ name: 'AdminLogin' });
+    } else {
+      next();
+    }
   } else {
     next();
   }

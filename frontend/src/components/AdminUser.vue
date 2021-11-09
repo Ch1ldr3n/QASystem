@@ -94,7 +94,7 @@ export default {
           fetch('/v1/admin/edit', {
             method: 'POST',
             headers: {
-              Authorization: window.localStorage.getItem('token'),
+              Authorization: window.localStorage.getItem('admintoken'),
               'content-type': 'application/json',
             },
             body: JSON.stringify({
