@@ -110,14 +110,6 @@ const routes = [
   //   }
   // },
   // {
-  //   path: '/admin/adminpasswordchange',
-  //   name: 'AdminPasswordChange',
-  //   component: AdminPasswordChange,
-  //   meta: {
-  //     public: true,
-  //   }
-  // },
-  // {
   //   path: '/admin/sysconfig',
   //   name: 'SystemConfig',
   //   component: SystemConfig,
