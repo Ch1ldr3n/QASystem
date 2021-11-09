@@ -16,7 +16,7 @@ func Register(group *echo.Group) {
 	group.GET("/list", list)
 	group.GET("/param", param)
 	group.POST("/param", param_edit)
-	// group.POST("/edit", edit)
+	group.POST("/edit", edit)
 }
 
 // @Summary Admin Login
