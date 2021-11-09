@@ -74,7 +74,7 @@ export default {
   },
   methods: {
     refresh() {
-      fetch('/v1/question/reviewlist', {
+      fetch('/v1/question/review', {
         method: 'GET',
         headers: {
           'content-type': 'application/json',
