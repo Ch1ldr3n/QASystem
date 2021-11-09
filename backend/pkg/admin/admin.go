@@ -15,6 +15,7 @@ func Register(group *echo.Group) {
 	group.POST("/add", add)
 	group.GET("/list", list)
 	group.GET("/param", param)
+	group.POST("/param", param_edit)
 	// group.POST("/edit", edit)
 }
 
@@ -201,4 +202,67 @@ type paramQueryResponse struct {
 	AnswerDeadline int     `json:"answer_deadline"`
 	AnswerLimit    int     `json:"answer_limit"`
 	DoneDeadline   int     `json:"done_deadline"`
+}
+
+// @Summary Param Edit
+// @Description Edit current system param
+// @Accept json
+// @Security token
+// @Param body body paramEditRequest true "param edit request"
+// @Success 200 {string} string
+// @Failure 400 {string} string
+// @Router /v1/admin/param [post]
+func param_edit(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(paramEditRequest)
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.VerifyAdmin(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	if claims.Subject != "admin" {
+		return echo.NewHTTPError(http.StatusForbidden, "only admin can edit param")
+	}
+	upd := ctx.DB().Param.Update().Where(paramp.Scope("default"))
+	if u.MinPrice != nil {
+		upd = upd.SetMinPrice(*u.MinPrice)
+	}
+	if u.MaxPrice != nil {
+		upd = upd.SetMaxPrice(*u.MaxPrice)
+	}
+	if u.AcceptDeadline != nil {
+		upd = upd.SetAcceptDeadline(*u.AcceptDeadline)
+	}
+	if u.AnswerDeadline != nil {
+		upd = upd.SetAnswerDeadline(*u.AnswerDeadline)
+	}
+	if u.AnswerLimit != nil {
+		upd = upd.SetAnswerLimit(*u.AnswerLimit)
+	}
+	if u.DoneDeadline != nil {
+		upd = upd.SetDoneDeadline(*u.DoneDeadline)
+	}
+	_, err = upd.Save(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.JSON(http.StatusOK, "edit param successful")
+}
+
+type paramEditRequest struct {
+	Token          string   `header:"authorization" validate:"required"`
+	MinPrice       *float64 `json:"max_price"`
+	MaxPrice       *float64 `json:"min_price"`
+	AcceptDeadline *int     `json:"accept_deadline"`
+	AnswerDeadline *int     `json:"answer_deadline"`
+	AnswerLimit    *int     `json:"answer_limit"`
+	DoneDeadline   *int     `json:"done_deadline"`
 }
