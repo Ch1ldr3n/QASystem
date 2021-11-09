@@ -5,6 +5,8 @@
       :data="tableData"
       :default-sort="{ prop: 'date', order: 'descending' }"
       style="width: 100%"
+      border
+      stripe
     >
       <el-table-column type="expand">
         <template #default="props">
@@ -20,22 +22,19 @@
         </template>
       </el-table-column>
       <el-table-column
-        prop="date"
-        label="日期"
-        sortable
-        min-width="20%"
-        column-key="date"
-      />
-      <el-table-column
         prop="title"
         label="问题"
       />
+      <el-table-column
+        prop="question"
+        label="提问者"
+        width="180"
+      />
 
       <el-table-column
-        prop="state"
-        label="状态"
-        sortable
-        min-width="10%"
+        prop="answer"
+        label="回答者"
+        width="180"
       />
     </el-table>
   </el-container>
@@ -43,25 +42,25 @@
 
 <script>
 export default {
-  name: 'AdminQuestionList',
+  name: 'Review',
   data() {
     return {
-      questionlist: [],
+      reviewlist: [],
     };
   },
   created() {
-    fetch('/v1/question/list', {
+    fetch('/v1/question/reviewlist', {
       method: 'GET',
       // headers: {}
     })
       .then((resp) => {
         if (!resp.ok) {
-          throw new Error('获取管理员问题列表失败！');
+          throw new Error('获取待审核问题列表失败！');
         }
         return resp.json();
       })
       .then((data) => {
-        this.tableData = data.questionlist;
+        this.tableData = data.reviewlist;
         console.log(data);
       })
       .catch((error) => {

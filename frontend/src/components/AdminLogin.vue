@@ -4,7 +4,7 @@
       <el-col :span="8">
         <el-card>
           <div class="card-header">
-            <h2>登录</h2>
+            <h2>管理员登录</h2>
           </div>
           <div>
             <el-form
@@ -90,7 +90,7 @@ export default {
                 type: 'success',
               });
               this.$router.push({
-                name: 'AdminQuestion',
+                name: 'AdminHomepage',
               });
             })
             .catch((error) => {
