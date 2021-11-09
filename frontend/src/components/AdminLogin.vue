@@ -84,7 +84,7 @@ export default {
               return resp.json();
             })
             .then((data) => {
-              window.localStorage.setItem('token', data.token);
+              window.localStorage.setItem('admintoken', data.token);
               this.$message({
                 message: '管理员登录成功',
                 type: 'success',
