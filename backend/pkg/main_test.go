@@ -11,6 +11,13 @@ import (
 	"testing"
 )
 
+// Global constants
+
+const (
+	adminRootName = "admin"
+	adminRootPassword = "admin"
+)
+
 //
 // Auxiliary functions for Auxiliary functions
 //
@@ -40,6 +47,18 @@ func GetQuestionIdFromSubmit(rec *httptest.ResponseRecorder, t *testing.T) int {
 		t.Fatal(err)
 	}
 	return resp.QuestionID
+}
+
+func GetAdminPasswordIdFromRec(rec *httptest.ResponseRecorder, t *testing.T) (string, int) {
+	resp := new(struct {
+		Password string `json:"password"`
+		ID       int    `json:"id"`
+	})
+	err := json.NewDecoder(rec.Body).Decode(resp)
+	if t != nil && err != nil {
+		t.Fatal(err)
+	}
+	return resp.Password, resp.ID
 }
 
 //
@@ -445,11 +464,43 @@ func TestUserFilterX1(t *testing.T) {
 func TestAdmin(t *testing.T) {
 	e := GetEchoTestEnv("entAdmin")
 
-	rec := AuxAdminLogin(e, t, "admin", "admin")
+	rec := AuxAdminLogin(e, t, adminRootName, adminRootPassword)
 	token, _ := GetIdTokenFromRec(rec, t)
 
 	AuxAdminAdd(e, t, token, "reviewer1")
 	AuxAdminList(e, t)
+}
+
+// Login: bad json
+func TestAdminLoginX1(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+	if rec := AuxAdminLogin(e, nil, "adminX", "password\"*;"); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("admin login allows bad json")
+	}
+}
+
+// Login: no data
+func TestAdminLoginX2(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+	if rec := AuxAdminLogin(e, nil, "\"\"}", ""); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("admin login allows failed validation")
+	}
+}
+
+// Login: inexistent username
+func TestAdminLoginX3(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+	if rec := AuxAdminLogin(e, nil, "adminX", "abc123"); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("admin login allows inexistent username")
+	}
+}
+
+// Login: wrong password
+func TestAdminLoginX4(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+	if rec := AuxAdminLogin(e, nil, adminRootName, "wrongpasswordX"); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("admin login allows wrong password")
+	}
 }
 
 // Question:
@@ -477,7 +528,7 @@ func TestQuestion(t *testing.T) {
 	`)
 
 	// Login administer 'admin' (root)
-	rec = AuxAdminLogin(e, t, "admin", "admin")
+	rec = AuxAdminLogin(e, t, adminRootName, adminRootPassword)
 	admintoken, _ := GetIdTokenFromRec(rec, t)
 
 	// Create 3 questions
@@ -557,7 +608,7 @@ func TestQuestionX1(t *testing.T) {
 	"answerer":true
 }
 	`)
-	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, "admin", "admin"), t)
+	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminRootName, adminRootPassword), t)
 
 	// Submit: questioning oneself
 	if rec := AuxQuestionSubmit(e, nil, token3, `
@@ -641,7 +692,7 @@ func TestQuestionX2(t *testing.T) {
 	questionid6 := GetQuestionIdFromSubmit(rec, t)
 	AuxQuestionPay(e, t, questionid6, token1)
 
-	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, "admin", "admin"), t)
+	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminRootName, adminRootPassword), t)
 	AuxQuestionReview(e, t, questionid6, true, admintoken)
 
 	// Accept: foreign interference
@@ -764,5 +815,43 @@ func TestQuestionCloseXv(t *testing.T) {
 func TestQuestionCancelXv(t *testing.T) {
 	AuxTestVerificationX("QuestionCancel", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxQuestionCancel(e, t, -1, token)
+	})
+}
+
+// Unified test for administer verification
+//
+
+func AuxTestAdminVerificationX(name string, t *testing.T, af func(*echo.Echo, *testing.T, string) *httptest.ResponseRecorder) {
+	e := GetEchoTestEnv("entAdminVerificationX"+name)
+	e1 := GetEchoTestEnv("entAdminVerificationX1"+name)
+	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminRootName, adminRootPassword), t)
+	adminnameX := "newAdminX"
+	passwordX, _ := GetAdminPasswordIdFromRec(AuxAdminAdd(e1, t, admintoken, adminnameX), t)
+	admintokenX, _ := GetIdTokenFromRec(AuxAdminLogin(e1, t, adminnameX, passwordX), t)
+
+	// No token
+	if rec := af(e, nil, ""); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("api allows no token")
+	}
+
+	// Not verifiable
+	if rec := af(e, nil, admintoken+"qwerty"); rec.Result().StatusCode != http.StatusForbidden {
+		t.Fatal("api allows bad verification")
+	}
+
+	// illegal user
+	if rec := af(e, nil, admintokenX); rec.Result().StatusCode != http.StatusForbidden {
+		t.Fatal("api allows illegal user")
+	}
+}
+
+func TestAdminAddXv(t *testing.T) {
+	AuxTestAdminVerificationX("AdminAdd", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxAdminAdd(e, t, token, "anotherAdmin")
+	})
+}
+func TestQuestionReviewXv(t *testing.T) {
+	AuxTestAdminVerificationX("AdminReview", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxAdminAdd(e, t, token, "anotherAdmin")
 	})
 }
