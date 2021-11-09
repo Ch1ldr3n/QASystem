@@ -200,12 +200,12 @@ export default {
               'content-type': 'application/json',
             },
             body: JSON.stringify({
-              accept_deadline: this.model.take_order_waiting_time,
-              answer_deadline: this.model.first_answer_waiting_time,
-              answer_limit: this.model.max_qa_times,
-              done_deadline: this.model.max_service_time,
-              max_price: this.model.max_price,
-              min_price: this.model.min_price,
+              accept_deadline: parseInt(this.model.take_order_waiting_time),
+              answer_deadline: parseInt(this.model.first_answer_waiting_time),
+              answer_limit: parseInt(this.model.max_qa_times),
+              done_deadline: parseInt(this.model.max_service_time),
+              max_price: parseFloat(this.model.max_price),
+              min_price: parseFloat(this.model.min_price),
               token: window.localStorage.getItem('admintoken'),
             }),
           })
