@@ -55,7 +55,7 @@ export default {
   },
   methods: {
     refresh() {
-      fetch('/v1/question/list', {
+      fetch('/v1/admin/list', {
         method: 'GET',
         headers: {
           'content-type': 'application/json',

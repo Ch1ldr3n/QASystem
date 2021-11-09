@@ -69,7 +69,7 @@ export default {
           return resp.json();
         })
         .then((data) => {
-          this.reviewlist = data.reviewlist;
+          this.reviewlist = data;
           console.log(data);
         })
         .catch((error) => {
