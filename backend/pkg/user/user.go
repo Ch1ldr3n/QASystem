@@ -238,11 +238,18 @@ func edit(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	}
-	_, err = ctx.DB().User.Update().Where(userp.Username(claims.Subject)).
+	user := ctx.DB().User.Update().Where(userp.Username(claims.Subject)).
 		SetNillableEmail(u.Email).SetNillablePhone(u.Phone).
 		SetNillableAnswerer(u.Answerer).SetNillablePrice(u.Price).
-		SetNillableProfession(u.Profession).
-		Save(ctx.Request().Context())
+		SetNillableProfession(u.Profession)
+	if u.Password != nil {
+		password, err := bcrypt.GenerateFromPassword([]byte(*u.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		user = user.SetPassword(hex.EncodeToString(password))
+	}
+	_, err = user.Save(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -256,6 +263,7 @@ type userEditRequest struct {
 	Answerer   *bool    `json:"answerer"`
 	Price      *float64 `json:"price"`
 	Profession *string  `json:"profession"`
+	Password   *string  `json:"password"`
 }
 
 // @Summary User Filter

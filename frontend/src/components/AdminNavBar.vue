@@ -5,7 +5,7 @@
   >
     <el-menu-item
       index="0"
-      :route="{ name: 'Review' }"
+      :route="{ name: 'AdminHomepage' }"
     >
       待审核问题
     </el-menu-item>
@@ -21,7 +21,7 @@
       </template>
       <el-menu-item
         index="4"
-        :route="{ name: 'AdminPasswordChange' }"
+        :route="{ name: 'AdminUser' }"
       >
         修改密码
       </el-menu-item>

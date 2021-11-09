@@ -25,10 +25,12 @@
           <p>{{ props.row.content }}</p>
           <el-button
             type="primary"
+            @click="approve(props.row.id, true)"
           >
             审核通过
           </el-button>
-          <el-button>
+          <el-button
+          @click="approve(props.row.id, false)">
             拒绝通过
           </el-button>
         </template>
@@ -68,28 +70,34 @@ export default {
     };
   },
   created() {
-    fetch('/v1/question/reviewlist', {
-      method: 'GET',
-      // headers: {}
-    })
-      .then((resp) => {
-        if (!resp.ok) {
-          throw new Error('获取待审核问题列表失败！');
-        }
-        return resp.json();
-      })
-      .then((data) => {
-        this.reviewlist = data.reviewlist;
-        console.log(data);
-      })
-      .catch((error) => {
-        this.$message({
-          message: error,
-          type: 'error',
-        });
-      });
+    this.refresh();
   },
   methods: {
+    refresh() {
+      fetch('/v1/question/reviewlist', {
+        method: 'GET',
+        headers: {
+          'content-type': 'application/json',
+          authorization: window.localStorage.getItem('admintoken'),
+        },
+      })
+        .then((resp) => {
+          if (!resp.ok) {
+            throw new Error('刷新待审核问题列表失败！');
+          }
+          return resp.json();
+        })
+        .then((data) => {
+          this.reviewlist = data.reviewlist;
+          console.log(data);
+        })
+        .catch((error) => {
+          this.$message({
+            message: error,
+            type: 'error',
+          });
+        });
+    },
     filterTag(value, row) {
       return row.tag === value;
     },
@@ -120,6 +128,34 @@ export default {
             this.$forceUpdate();
           });
         }
+      });
+    },
+    approve(id, choice) {
+      fetch('/v1/question/review', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: window.localStorage.getItem('admintoken'),
+        },
+        body: JSON.stringify({
+          choice,
+          questionid: id,
+        }),
+      }).then((resp) => {
+        if (!resp.ok) {
+          throw new Error('审核通过失败！');
+        }
+      }).then(() => {
+        this.$message({
+          message: '确认成功',
+          type: 'success',
+        });
+        this.refresh();
+      }).catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
       });
     },
   },

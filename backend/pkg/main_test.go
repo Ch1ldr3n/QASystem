@@ -14,7 +14,7 @@ import (
 // Global constants
 
 const (
-	adminRootName = "admin"
+	adminRootName     = "admin"
 	adminRootPassword = "admin"
 )
 
@@ -299,11 +299,20 @@ func AuxQuestionCancel(e *echo.Echo, t *testing.T, questionid int, token string)
 	return rec
 }
 
+func jsonEscape(i string) string {
+	b, err := json.Marshal(i)
+	if err != nil {
+		panic(err)
+	}
+	s := string(b)
+	return s[1 : len(s)-1]
+}
+
 func AuxAdminLogin(e *echo.Echo, t *testing.T, name string, password string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(http.MethodPost, "/v1/admin/login", bytes.NewBufferString(`
 {
 	"username": "`+name+`",
-	"password": "`+password+`"
+	"password": "`+jsonEscape(password)+`"
 }
     `))
 	req.Header.Add("Content-Type", "application/json")
@@ -347,6 +356,24 @@ func AuxAdminList(e *echo.Echo, t *testing.T) *httptest.ResponseRecorder {
 	return rec
 }
 
+func AuxAdminEdit(e *echo.Echo, t *testing.T, token string, password string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/admin/edit", bytes.NewBufferString(`
+{
+	"password": "`+password+`"
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("admin edit failed")
+	}
+
+	return rec
+}
+
 //
 // test functions
 //
@@ -355,23 +382,26 @@ func AuxAdminList(e *echo.Echo, t *testing.T) *httptest.ResponseRecorder {
 
 func TestUser(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
-	AuxUserRegister(e, t, "user1", "testpassword")
-	rec := AuxUserLogin(e, t, "user1", "testpassword")
+	AuxUserRegister(e, t, "user1", "testpassword_old")
+	rec := AuxUserLogin(e, t, "user1", "testpassword_old")
 	token1, userid1 := GetIdTokenFromRec(rec, t)
 	rec = AuxUserRegister(e, t, "user2", "testpassword")
 	token2, _ := GetIdTokenFromRec(rec, t)
 
 	AuxUserInfo(e, t, token1)
 	AuxUserGensig(e, t, token1)
+	newpassword := "testpassword"
 	AuxUserEdit(e, t, token1, `
 {
 	"email":"hello",
 	"phone":"12345678",
 	"answerer":true,
 	"price":-100,
-	"profession":"Geschichte"
+	"profession":"Geschichte",
+	"password":"`+newpassword+`"
 }
 	`)
+	token1, _ = GetIdTokenFromRec(AuxUserLogin(e, t, "user1", newpassword), t)
 	AuxUserFilter(e, t, token2, "?id="+strconv.Itoa(userid1)+"&username=user1&email=hello&phone=12345678&answerer=true&priceUpperBound=1000&priceLowerBound=-1000&profession=Geschichte")
 }
 
@@ -467,7 +497,13 @@ func TestAdmin(t *testing.T) {
 	rec := AuxAdminLogin(e, t, adminRootName, adminRootPassword)
 	token, _ := GetIdTokenFromRec(rec, t)
 
-	AuxAdminAdd(e, t, token, "reviewer1")
+	adminname := "reviewer1"
+	password, _ := GetAdminPasswordIdFromRec(AuxAdminAdd(e, t, token, adminname), t)
+	token1, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminname, password), t)
+
+	password = "newadminpassword"
+	AuxAdminEdit(e, t, token1, password)
+	AuxAdminLogin(e, t, adminname, password)
 	AuxAdminList(e, t)
 }
 
@@ -767,15 +803,16 @@ func AuxTestVerificationX(name string, t *testing.T, af func(*echo.Echo, *testin
 // 	})
 // }
 func TestUserInfoXv(t *testing.T) {
-	AuxTestVerificationX("UserInfo", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+	AuxTestVerificationX("UserInfo", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxUserInfo(e, t, token)
 	})
 }
 func TestUserGensigXv(t *testing.T) {
-	AuxTestVerificationX("UserGensig", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+	AuxTestVerificationX("UserGensig", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxUserGensig(e, t, token)
 	})
 }
+
 // func TestUserFilterXv(t *testing.T) {
 // 	AuxTestVerificationX("UserFilter", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
 // 		return AuxUserFilter(e, t, token, "")
@@ -822,8 +859,8 @@ func TestQuestionCancelXv(t *testing.T) {
 //
 
 func AuxTestAdminVerificationX(name string, t *testing.T, af func(*echo.Echo, *testing.T, string) *httptest.ResponseRecorder) {
-	e := GetEchoTestEnv("entAdminVerificationX"+name)
-	e1 := GetEchoTestEnv("entAdminVerificationX1"+name)
+	e := GetEchoTestEnv("entAdminVerificationX" + name)
+	e1 := GetEchoTestEnv("entAdminVerificationX1" + name)
 	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminRootName, adminRootPassword), t)
 	adminnameX := "newAdminX"
 	passwordX, _ := GetAdminPasswordIdFromRec(AuxAdminAdd(e1, t, admintoken, adminnameX), t)
