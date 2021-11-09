@@ -4,6 +4,7 @@ import "github.com/labstack/echo/v4"
 import "gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 import "gitlab.secoder.net/bauhinia/qanda-schema/ent"
 import adminp "gitlab.secoder.net/bauhinia/qanda-schema/ent/admin"
+import paramp "gitlab.secoder.net/bauhinia/qanda-schema/ent/param"
 import "net/http"
 import "golang.org/x/crypto/bcrypt"
 import "encoding/hex"
@@ -13,6 +14,7 @@ func Register(group *echo.Group) {
 	group.POST("/login", login)
 	group.POST("/add", add)
 	group.GET("/list", list)
+	group.GET("/param", param)
 	// group.POST("/edit", edit)
 }
 
@@ -152,4 +154,51 @@ type adminInfoDisplay struct {
 
 type adminListResponse struct {
 	Userlist []adminInfoDisplay `json:"userlist"`
+}
+
+// @Summary Param Query
+// @Description Query current system param
+// @Produce json
+// @Security token
+// @Success 200 {object} paramQueryResponse "param query response"
+// @Failure 400 {string} string
+// @Router /v1/admin/param [get]
+func param(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(paramQueryRequest)
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	_, err := ctx.VerifyAdmin(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	pa, err := ctx.DB().Param.Query().Where(paramp.Scope("default")).Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.JSON(http.StatusOK, paramQueryResponse{
+		MinPrice:       pa.MinPrice,
+		MaxPrice:       pa.MaxPrice,
+		AcceptDeadline: pa.AcceptDeadline,
+		AnswerDeadline: pa.AnswerDeadline,
+		AnswerLimit:    pa.AnswerLimit,
+		DoneDeadline:   pa.DoneDeadline,
+	})
+}
+
+type paramQueryRequest struct {
+	Token string `header:"authorization" validate:"required"`
+}
+
+type paramQueryResponse struct {
+	MinPrice       float64 `json:"max_price"`
+	MaxPrice       float64 `json:"min_price"`
+	AcceptDeadline int     `json:"accept_deadline"`
+	AnswerDeadline int     `json:"answer_deadline"`
+	AnswerLimit    int     `json:"answer_limit"`
+	DoneDeadline   int     `json:"done_deadline"`
 }
