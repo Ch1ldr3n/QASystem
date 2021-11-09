@@ -15,10 +15,9 @@
     </el-header>
     <el-table
       ref="filterTable"
-      :data="tableData"
+      :data="reviewlist"
       :default-sort="{ prop: 'date', order: 'descending' }"
       style="width: 100%"
-      border
       stripe
     >
       <el-table-column type="expand">
@@ -74,7 +73,7 @@ export default {
         return resp.json();
       })
       .then((data) => {
-        this.tableData = data.reviewlist;
+        this.reviewlist = data.reviewlist;
         console.log(data);
       })
       .catch((error) => {
