@@ -2,6 +2,7 @@ package question
 
 import "github.com/labstack/echo/v4"
 import "gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
+import "gitlab.secoder.net/bauhinia/qanda-schema/ent"
 import userp "gitlab.secoder.net/bauhinia/qanda-schema/ent/user"
 import adminp "gitlab.secoder.net/bauhinia/qanda-schema/ent/admin"
 import questionp "gitlab.secoder.net/bauhinia/qanda-schema/ent/question"
@@ -199,7 +200,7 @@ func list(c echo.Context) error {
 	ctx := c.(*common.Context)
 	const numLimit = 1000
 	var questionlist [numLimit]questionInfoDesplay
-	questions, err := ctx.DB().Question.Query().Limit(numLimit).WithQuestioner().WithAnswerer().All(ctx.Request().Context())
+	questions, err := ctx.DB().Question.Query().Order(ent.Desc(questionp.FieldID)).Limit(numLimit).WithQuestioner().WithAnswerer().All(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -279,7 +280,7 @@ func mine(c echo.Context) error {
 		askedlist[i].Content = user.Edges.Asked[i].Content
 		askedlist[i].State = string(user.Edges.Asked[i].State)
 		// get its answerer
-		question, err := ctx.DB().Question.Query().Where(questionp.ID(user.Edges.Asked[i].ID)).WithAnswerer().Only(ctx.Request().Context())
+		question, err := ctx.DB().Question.Query().Where(questionp.ID(user.Edges.Asked[i].ID)).Order(ent.Desc(questionp.FieldID)).WithAnswerer().Only(ctx.Request().Context())
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
@@ -297,7 +298,7 @@ func mine(c echo.Context) error {
 		answeredlist[i].Content = user.Edges.Answered[i].Content
 		answeredlist[i].State = string(user.Edges.Answered[i].State)
 		//get its questioner
-		question, err := ctx.DB().Question.Query().Where(questionp.ID(user.Edges.Answered[i].ID)).WithQuestioner().Only(ctx.Request().Context())
+		question, err := ctx.DB().Question.Query().Where(questionp.ID(user.Edges.Answered[i].ID)).Order(ent.Desc(questionp.FieldID)).WithQuestioner().Only(ctx.Request().Context())
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}

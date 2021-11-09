@@ -2,6 +2,7 @@ package admin
 
 import "github.com/labstack/echo/v4"
 import "gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
+import "gitlab.secoder.net/bauhinia/qanda-schema/ent"
 import adminp "gitlab.secoder.net/bauhinia/qanda-schema/ent/admin"
 import "net/http"
 import "golang.org/x/crypto/bcrypt"
@@ -128,7 +129,7 @@ type adminAddResponse struct {
 // @Router /v1/admin/list [get]
 func list(c echo.Context) error {
 	ctx := c.(*common.Context)
-	users, err := ctx.DB().Admin.Query().All(ctx.Request().Context())
+	users, err := ctx.DB().Admin.Query().Order(ent.Asc(adminp.FieldID)).All(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
