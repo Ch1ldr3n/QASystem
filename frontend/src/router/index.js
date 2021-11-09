@@ -14,6 +14,7 @@ import AdminUser from '../components/AdminUser.vue';
 import Income from '../components/Income.vue';
 import Review from '../components/Review.vue';
 import AdminList from '../components/AdminList.vue';
+import AdminParam from '../components/AdminParameter.vue';
 
 const routes = [
   {
@@ -106,6 +107,11 @@ const routes = [
     meta: {
       public: true,
     },
+  },
+  {
+    path: '/admin/param',
+    name: 'SystemConfig',
+    component: AdminParam,
   },
   // {
   //   path: '/admin/sysconfig',
