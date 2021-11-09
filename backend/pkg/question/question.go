@@ -20,6 +20,7 @@ func Register(group *echo.Group) {
 	group.POST("/review", review)
 	group.POST("/close", close)
 	group.POST("/cancel", cancel)
+	group.GET("/review", revlist)
 }
 
 // @Summary Question Submit
@@ -188,7 +189,7 @@ func query(c echo.Context) error {
 	})
 }
 
-type questionQueryResponse = questionInfoDesplay
+type questionQueryResponse = questionInfoDisplay
 
 // @Summary Question List
 // @Description List of all questions open to all users
@@ -199,7 +200,7 @@ type questionQueryResponse = questionInfoDesplay
 func list(c echo.Context) error {
 	ctx := c.(*common.Context)
 	const numLimit = 1000
-	var questionlist [numLimit]questionInfoDesplay
+	var questionlist [numLimit]questionInfoDisplay
 	questions, err := ctx.DB().Question.Query().Order(ent.Desc(questionp.FieldID)).Limit(numLimit).WithQuestioner().WithAnswerer().All(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -222,7 +223,7 @@ func list(c echo.Context) error {
 	})
 }
 
-type questionInfoDesplay struct {
+type questionInfoDisplay struct {
 	ID                 int     `json:"id"`
 	Price              float64 `json:"price"`
 	Title              string  `json:"title"`
@@ -236,7 +237,7 @@ type questionInfoDesplay struct {
 
 type questionListResponse struct {
 	ResultNum    int                   `json:"num"`
-	Questionlist []questionInfoDesplay `json:"questionlist"`
+	Questionlist []questionInfoDisplay `json:"questionlist"`
 }
 
 // @Summary Question Mine
@@ -265,8 +266,8 @@ func mine(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	}
 	const numLimit = 1000
-	var askedlist [numLimit]questionInfoDesplay
-	var answeredlist [numLimit]questionInfoDesplay
+	var askedlist [numLimit]questionInfoDisplay
+	var answeredlist [numLimit]questionInfoDisplay
 	user, err1 := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).WithAsked().WithAnswered().Only(ctx.Request().Context())
 	if err1 != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err1.Error())
@@ -321,9 +322,9 @@ type questionMineRequest struct {
 
 type questionMineResponse struct {
 	AskedNum     int                   `json:"askednum"`
-	AskedList    []questionInfoDesplay `json:"askedlist"`
+	AskedList    []questionInfoDisplay `json:"askedlist"`
 	AnsweredNum  int                   `json:"answerednum"`
-	AnsweredList []questionInfoDesplay `json:"answeredlist"`
+	AnsweredList []questionInfoDisplay `json:"answeredlist"`
 }
 
 // @Summary Question Accept
@@ -551,4 +552,53 @@ func cancel(c echo.Context) error {
 type questionCancelRequest struct {
 	QuestionID int    `json:"questionid"`
 	Token      string `header:"authorization" validate:"required"`
+}
+
+// @Summary Review List
+// @Description List all to-be-reviewed questions
+// @Produce json
+// @Security token
+// @Success 200 {object} questionRevlistResponse "question review list response"
+// @Failure 400 {string} string
+// @Router /v1/question/review [get]
+func revlist(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(questionCancelRequest)
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	_, err := ctx.VerifyAdmin(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	questions, err := ctx.DB().Question.Query().Where(questionp.StateEQ("paid")).WithQuestioner().WithAnswerer().Order(ent.Desc(questionp.FieldID)).All(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	var questionlist = make([]questionInfoDisplay, 0)
+	for _, question := range questions {
+		questionlist = append(questionlist, questionInfoDisplay{
+			ID                 :question.ID,
+			Price              :question.Price,
+			Title              :question.Title,
+			Content            :question.Content,
+			State              :question.State.String(),
+			QuestionerID       :question.Edges.Questioner.ID,
+			AnswererID         :question.Edges.Answerer.ID,
+			QuestionerUsername :question.Edges.Questioner.Username,
+			AnswererUsername   :question.Edges.Answerer.Username,
+		})
+	}
+	return ctx.JSON(http.StatusOK, questionRevlistResponse{
+		Number: len(questionlist),
+		QuestionList: questionlist,
+	})
+}
+
+type questionRevlistResponse struct {
+	Number     	 int	               `json:"number"`
+	QuestionList []questionInfoDisplay `json:"questionlist"`
 }
