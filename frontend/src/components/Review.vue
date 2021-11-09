@@ -112,7 +112,7 @@ export default {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
-            authorization: window.localStorage.getItem('admintoken'),
+          authorization: window.localStorage.getItem('admintoken'),
         },
         body: JSON.stringify({
           choice,

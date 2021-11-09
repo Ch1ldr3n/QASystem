@@ -13,6 +13,7 @@ import AdminHomepage from '../components/AdminHomepage.vue';
 import AdminUser from '../components/AdminUser.vue';
 import Income from '../components/Income.vue';
 import Review from '../components/Review.vue';
+import AdminList from '../components/AdminList.vue';
 
 const routes = [
   {
@@ -97,18 +98,15 @@ const routes = [
     path: '/admin/review',
     name: 'Review',
     component: Review,
+  },
+  {
+    path: '/admin/adminlist',
+    name: 'AdminList',
+    component: AdminList,
     meta: {
       public: true,
     },
   },
-  // {
-  //   path: '/admin/adminlist',
-  //   name: 'AdminList',
-  //   component: AdminList,
-  //   meta: {
-  //     public: true,
-  //   }
-  // },
   // {
   //   path: '/admin/sysconfig',
   //   name: 'SystemConfig',
