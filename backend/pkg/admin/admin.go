@@ -4,6 +4,7 @@ import "github.com/labstack/echo/v4"
 import "gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 import "gitlab.secoder.net/bauhinia/qanda-schema/ent"
 import adminp "gitlab.secoder.net/bauhinia/qanda-schema/ent/admin"
+import paramp "gitlab.secoder.net/bauhinia/qanda-schema/ent/param"
 import "net/http"
 import "golang.org/x/crypto/bcrypt"
 import "encoding/hex"
@@ -13,6 +14,8 @@ func Register(group *echo.Group) {
 	group.POST("/login", login)
 	group.POST("/add", add)
 	group.GET("/list", list)
+	group.GET("/param", param)
+	group.POST("/param", param_edit)
 	// group.POST("/edit", edit)
 }
 
@@ -152,4 +155,114 @@ type adminInfoDisplay struct {
 
 type adminListResponse struct {
 	Userlist []adminInfoDisplay `json:"userlist"`
+}
+
+// @Summary Param Query
+// @Description Query current system param
+// @Produce json
+// @Security token
+// @Success 200 {object} paramQueryResponse "param query response"
+// @Failure 400 {string} string
+// @Router /v1/admin/param [get]
+func param(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(paramQueryRequest)
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	_, err := ctx.VerifyAdmin(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	pa, err := ctx.DB().Param.Query().Where(paramp.Scope("default")).Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.JSON(http.StatusOK, paramQueryResponse{
+		MinPrice:       pa.MinPrice,
+		MaxPrice:       pa.MaxPrice,
+		AcceptDeadline: pa.AcceptDeadline,
+		AnswerDeadline: pa.AnswerDeadline,
+		AnswerLimit:    pa.AnswerLimit,
+		DoneDeadline:   pa.DoneDeadline,
+	})
+}
+
+type paramQueryRequest struct {
+	Token string `header:"authorization" validate:"required"`
+}
+
+type paramQueryResponse struct {
+	MinPrice       float64 `json:"max_price"`
+	MaxPrice       float64 `json:"min_price"`
+	AcceptDeadline int     `json:"accept_deadline"`
+	AnswerDeadline int     `json:"answer_deadline"`
+	AnswerLimit    int     `json:"answer_limit"`
+	DoneDeadline   int     `json:"done_deadline"`
+}
+
+// @Summary Param Edit
+// @Description Edit current system param
+// @Accept json
+// @Security token
+// @Param body body paramEditRequest true "param edit request"
+// @Success 200 {string} string
+// @Failure 400 {string} string
+// @Router /v1/admin/param [post]
+func param_edit(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(paramEditRequest)
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.VerifyAdmin(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	if claims.Subject != "admin" {
+		return echo.NewHTTPError(http.StatusForbidden, "only admin can edit param")
+	}
+	upd := ctx.DB().Param.Update().Where(paramp.Scope("default"))
+	if u.MinPrice != nil {
+		upd = upd.SetMinPrice(*u.MinPrice)
+	}
+	if u.MaxPrice != nil {
+		upd = upd.SetMaxPrice(*u.MaxPrice)
+	}
+	if u.AcceptDeadline != nil {
+		upd = upd.SetAcceptDeadline(*u.AcceptDeadline)
+	}
+	if u.AnswerDeadline != nil {
+		upd = upd.SetAnswerDeadline(*u.AnswerDeadline)
+	}
+	if u.AnswerLimit != nil {
+		upd = upd.SetAnswerLimit(*u.AnswerLimit)
+	}
+	if u.DoneDeadline != nil {
+		upd = upd.SetDoneDeadline(*u.DoneDeadline)
+	}
+	_, err = upd.Save(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.JSON(http.StatusOK, "edit param successful")
+}
+
+type paramEditRequest struct {
+	Token          string   `header:"authorization" validate:"required"`
+	MinPrice       *float64 `json:"max_price"`
+	MaxPrice       *float64 `json:"min_price"`
+	AcceptDeadline *int     `json:"accept_deadline"`
+	AnswerDeadline *int     `json:"answer_deadline"`
+	AnswerLimit    *int     `json:"answer_limit"`
+	DoneDeadline   *int     `json:"done_deadline"`
 }

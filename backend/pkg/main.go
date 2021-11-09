@@ -11,6 +11,7 @@ import (
 	"github.com/swaggo/echo-swagger"
 	"gitlab.secoder.net/bauhinia/qanda-schema/ent"
 	adminp "gitlab.secoder.net/bauhinia/qanda-schema/ent/admin"
+	paramp "gitlab.secoder.net/bauhinia/qanda-schema/ent/param"
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/admin"
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 	_ "gitlab.secoder.net/bauhinia/qanda/backend/pkg/docs"
@@ -60,6 +61,16 @@ func New(serve string, storage string, database string, key string, adminKey str
 			e.Logger.Fatal(err)
 		}
 		_, err = db.Admin.Create().SetUsername("admin").SetRole("admin").SetPassword(hex.EncodeToString(password)).Save(context.Background())
+		if err != nil {
+			e.Logger.Fatal(err)
+		}
+	}
+	c, err = db.Param.Query().Where(paramp.Scope("default")).Count(context.Background())
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	if c == 0 {
+		_, err = db.Param.Create().SetScope("default").SetMinPrice(10).SetMaxPrice(400).SetAcceptDeadline(3600).SetAnswerDeadline(3600).SetAnswerLimit(50).SetDoneDeadline(3600).Save(context.Background())
 		if err != nil {
 			e.Logger.Fatal(err)
 		}
