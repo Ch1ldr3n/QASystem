@@ -210,7 +210,7 @@ export default {
   },
 
   created() {
-    this.model.description = window.localStorage.getItem('description');
+    // this.model.description = window.localStorage.getItem('description');
     fetch('/v1/user/info', {
       method: 'GET',
       headers: {
@@ -231,6 +231,7 @@ export default {
         this.model.price = data.price;
         this.model.profession = data.profession;
         this.model.balance = data.balance;
+        this.model.description = data.description;
       })
       .catch((error) => {
         this.$message({
@@ -255,12 +256,14 @@ export default {
               'content-type': 'application/json',
             },
             body: JSON.stringify({
+              password: this.model.password1,
               answerer: this.model.answerer,
               email: this.model.email,
               phone: this.model.phone,
               price: parseFloat(this.model.price),
               profession: this.model.profession,
               token: window.localStorage.getItem('token'),
+              description: this.model.description,
             }),
           }).then((resp) => {
             if (!resp.ok) {
