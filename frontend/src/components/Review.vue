@@ -94,9 +94,32 @@ export default {
       return row.tag === value;
     },
     adding() {
-      this.$message({
-        message: '添加成功',
-        type: 'success',
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          fetch('/v1/admin/add', {
+            method: 'POST',
+            headers: {
+              Authorization: window.localStorage.getItem('admintoken'),
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({
+              token: window.localStorage.getItem('admintoken'),
+              username: this.newname,
+            }),
+          }).then((resp) => {
+            if (!resp.ok) {
+              throw new Error('添加失败!');
+            }
+          }).then((data) => {
+            this.$message({
+              showClose: true,
+              message: `添加成功，初始密码为 ${data.password}`,
+              type: 'success',
+              duration: 0,
+            });
+            this.$forceUpdate();
+          });
+        }
       });
     },
   },
