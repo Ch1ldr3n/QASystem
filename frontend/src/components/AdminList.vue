@@ -1,5 +1,5 @@
 <template>
-  <el-container>
+  <el-container style="margin-left: 50px; margin-top: 20px;">
     <el-header>
       <el-input
         v-model="newname"
