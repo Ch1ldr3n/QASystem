@@ -116,7 +116,11 @@ export default {
             }),
           }).then((resp) => {
             if (!resp.ok) {
-              throw new Error('无法重复添加同名管理员!');
+              if (resp.status === 403) {
+                throw new Error('无添加管理员权限!');
+              } else {
+                throw new Error('无法重复添加同名管理员!');
+              }
             }
             return resp.json();
           }).then((data) => {

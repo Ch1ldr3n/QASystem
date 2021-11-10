@@ -209,13 +209,18 @@ export default {
           })
             .then((resp) => {
               if (!resp.ok) {
-                throw new Error('修改失败!');
+                throw new Error('无修改系统参数权限!');
               }
               this.$message({
                 message: '修改成功',
                 type: 'success',
               });
               this.$forceUpdate();
+            }).catch((error) => {
+              this.$message({
+                message: error,
+                type: 'error',
+              });
             });
         }
       });
