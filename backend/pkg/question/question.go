@@ -268,7 +268,17 @@ func mine(c echo.Context) error {
 	const numLimit = 1000
 	var askedlist [numLimit]questionInfoDisplay
 	var answeredlist [numLimit]questionInfoDisplay
-	user, err1 := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).WithAsked().WithAnswered().Only(ctx.Request().Context())
+	user, err1 := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).
+		WithAsked(func(q *ent.QuestionQuery){
+			q.Order(ent.Desc(questionp.FieldID))
+			q.WithAnswerer()
+		}).
+		WithAnswered(func(q *ent.QuestionQuery){
+			q.Where(questionp.StateNotIn("created", "paid"))
+			q.Order(ent.Desc(questionp.FieldID))
+			q.WithQuestioner()
+		}).
+		Only(ctx.Request().Context())
 	if err1 != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err1.Error())
 	}
@@ -280,15 +290,10 @@ func mine(c echo.Context) error {
 		askedlist[i].Title = user.Edges.Asked[i].Title
 		askedlist[i].Content = user.Edges.Asked[i].Content
 		askedlist[i].State = string(user.Edges.Asked[i].State)
-		// get its answerer
-		question, err := ctx.DB().Question.Query().Where(questionp.ID(user.Edges.Asked[i].ID)).Order(ent.Desc(questionp.FieldID)).WithAnswerer().Only(ctx.Request().Context())
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-		}
 		askedlist[i].QuestionerID = user.ID
-		askedlist[i].AnswererID = question.Edges.Answerer.ID
+		askedlist[i].AnswererID = user.Edges.Asked[i].Edges.Answerer.ID
 		askedlist[i].QuestionerUsername = user.Username
-		askedlist[i].AnswererUsername = question.Edges.Answerer.Username
+		askedlist[i].AnswererUsername = user.Edges.Asked[i].Edges.Answerer.Username
 	}
 	// answered
 	listlen2 := len(user.Edges.Answered)
@@ -298,14 +303,9 @@ func mine(c echo.Context) error {
 		answeredlist[i].Title = user.Edges.Answered[i].Title
 		answeredlist[i].Content = user.Edges.Answered[i].Content
 		answeredlist[i].State = string(user.Edges.Answered[i].State)
-		//get its questioner
-		question, err := ctx.DB().Question.Query().Where(questionp.ID(user.Edges.Answered[i].ID)).Order(ent.Desc(questionp.FieldID)).WithQuestioner().Only(ctx.Request().Context())
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-		}
-		answeredlist[i].QuestionerID = question.Edges.Questioner.ID
+		answeredlist[i].QuestionerID = user.Edges.Answered[i].Edges.Questioner.ID
 		answeredlist[i].AnswererID = user.ID
-		answeredlist[i].QuestionerUsername = question.Edges.Questioner.Username
+		answeredlist[i].QuestionerUsername = user.Edges.Answered[i].Edges.Questioner.Username
 		answeredlist[i].AnswererUsername = user.Username
 	}
 	return ctx.JSON(http.StatusOK, questionMineResponse{
