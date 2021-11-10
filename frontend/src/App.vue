@@ -1,9 +1,12 @@
 <template>
   <el-container>
     <el-header>
-      <AdminNavBar v-if="this.$route.path.startsWith('/admin')" />
+      <AdminNavBar v-if="$route.path.startsWith('/admin')" />
       <!-- <NavBar :login-done="navbar.loginDone"/> -->
-      <NavBar v-else :login-done="navbar.loginDone" />
+      <NavBar
+        v-else
+        :login-done="navbar.loginDone"
+      />
 
       <!-- TODO: add admin navbar -->
     </el-header>
