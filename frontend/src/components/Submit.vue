@@ -60,7 +60,7 @@
 
 <script>
 export default {
-  name: 'Pay',
+  name: 'Submit',
   data() {
     return {
       qname: '',
