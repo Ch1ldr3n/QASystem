@@ -78,17 +78,11 @@ const routes = [
     path: '/admin/homepage',
     name: 'AdminHomepage',
     component: AdminHomepage,
-    meta: {
-      public: true,
-    },
   },
   {
     path: '/admin/user',
     name: 'AdminUser',
     component: AdminUser,
-    meta: {
-      public: true,
-    },
   },
   {
     path: '/income',
@@ -104,9 +98,6 @@ const routes = [
     path: '/admin/adminlist',
     name: 'AdminList',
     component: AdminList,
-    meta: {
-      public: true,
-    },
   },
   {
     path: '/admin/param',
@@ -129,13 +120,10 @@ const router = createRouter({
 });
 router.beforeEach((to, from, next) => {
   if (!to.matched.some((record) => record.meta.public)) {
-    if (window.localStorage.getItem('token') == null) {
-      next({ name: 'Login' });
-    } else {
-      next();
-    }
-    if (window.localStorage.getItem('admintoken') == null) {
+    if (window.localStorage.getItem('admintoken') == null && to.path.startsWith('/admin')) {
       next({ name: 'AdminLogin' });
+    } else if (window.localStorage.getItem('token') == null && !to.path.startsWith('/admin')) {
+      next({ name: 'Login' });
     } else {
       next();
     }

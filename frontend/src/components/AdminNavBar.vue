@@ -46,13 +46,13 @@ export default {
   name: 'AdminNavBar',
   methods: {
     logout() {
-      window.localStorage.removeItem('token');
+      window.localStorage.removeItem('admintoken');
       this.$message({
         message: '登出成功',
         type: 'success',
       });
       this.$router.push({
-        name: 'Explore',
+        name: 'AdminLogin',
       });
     },
   },
