@@ -1,17 +1,24 @@
 <template>
-  <el-container style="margin-left: 50px; margin-top: 20px;">
+  <el-container style="margin-top: 20px;">
     <el-header>
-      <el-input
-        v-model="newname"
-        placeholder="管理员昵称"
-        clearable
+      <el-form
+        ref="form"
+        :model="form"
+        :rules="rules"
       >
-        <template #append>
-          <el-button @click="adding">
-            添加
-          </el-button>
-        </template>
-      </el-input>
+        <el-form-item prop="newname">
+          <el-input
+            v-model="form.newname"
+            placeholder="管理员昵称"
+          >
+            <template #append>
+              <el-button @click="adding">
+                添加
+              </el-button>
+            </template>
+          </el-input>
+        </el-form-item>
+      </el-form>
     </el-header>
     <el-main>
       <el-table
@@ -47,7 +54,23 @@ export default {
   data() {
     return {
       adminlist: [],
-      newname: '',
+      form: {
+        newname: '',
+      },
+      rules: {
+        newname: [
+          {
+            required: true,
+            message: '请输入管理员用户名',
+            trigger: 'blur',
+          },
+          {
+            min: 4,
+            message: '管理员用户名长度至少为4',
+            trigger: 'blur',
+          },
+        ],
+      },
     };
   },
   created() {
@@ -69,8 +92,7 @@ export default {
           return resp.json();
         })
         .then((data) => {
-          this.adminlist = data.adminlist;
-          console.log(data);
+          this.adminlist = data.userlist;
         })
         .catch((error) => {
           this.$message({
@@ -90,20 +112,26 @@ export default {
             },
             body: JSON.stringify({
               token: window.localStorage.getItem('admintoken'),
-              username: this.newname,
+              username: this.form.newname,
             }),
           }).then((resp) => {
             if (!resp.ok) {
-              throw new Error('添加失败!');
+              throw new Error('无法重复添加同名管理员!');
             }
+            return resp.json();
           }).then((data) => {
             this.$message({
               showClose: true,
-              message: `添加成功，初始密码为 ${data.password}`,
+              message: `添加成功，用户名 ${this.form.newname}，初始密码为 ${data.password}`,
               type: 'success',
               duration: 0,
             });
-            this.$forceUpdate();
+            this.refresh();
+          }).catch((error) => {
+            this.$message({
+              message: error,
+              type: 'error',
+            });
           });
         }
       });

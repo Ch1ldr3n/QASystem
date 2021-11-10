@@ -28,15 +28,13 @@
         label="问题"
       />
       <el-table-column
-        prop="questioner"
+        prop="qusername"
         label="提问者"
-        width="180"
       />
 
       <el-table-column
-        prop="answer"
+        prop="ausername"
         label="回答者"
-        width="180"
       />
     </el-table>
   </el-container>
@@ -69,7 +67,7 @@ export default {
           return resp.json();
         })
         .then((data) => {
-          this.reviewlist = data;
+          this.reviewlist = data.questionlist;
           console.log(data);
         })
         .catch((error) => {

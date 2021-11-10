@@ -26,8 +26,7 @@
                     type="number"
                   />
                 </el-col>
-                <el-col :span="4">
-                </el-col>
+                <el-col :span="4" />
                 <el-col :span="10">
                   <el-input
                     v-model="model.max_price"
