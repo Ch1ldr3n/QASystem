@@ -27,7 +27,7 @@
       </el-menu-item>
       <el-menu-item
         index="5"
-        :route="{ name: 'SystemConfig' }"
+        :route="{ name: 'AdminParam' }"
       >
         系统参数
       </el-menu-item>

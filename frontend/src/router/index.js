@@ -5,8 +5,8 @@ import User from '../components/User.vue';
 import Question from '../components/Question.vue';
 import Login from '../components/Login.vue';
 import Register from '../components/Register.vue';
-import Pay from '../views/pay.vue';
-import Submit from '../views/submit-question.vue';
+import Pay from '../components/Pay.vue';
+import Submit from '../components/Submit.vue';
 import Answerer from '../components/Answerer.vue';
 import AdminLogin from '../components/AdminLogin.vue';
 import AdminHomepage from '../components/AdminHomepage.vue';
@@ -14,7 +14,7 @@ import AdminUser from '../components/AdminUser.vue';
 import Income from '../components/Income.vue';
 import Review from '../components/Review.vue';
 import AdminList from '../components/AdminList.vue';
-import AdminParam from '../components/AdminParameter.vue';
+import AdminParam from '../components/AdminParam.vue';
 
 const routes = [
   {
@@ -101,7 +101,7 @@ const routes = [
   },
   {
     path: '/admin/param',
-    name: 'SystemConfig',
+    name: 'AdminParam',
     component: AdminParam,
   },
   // {

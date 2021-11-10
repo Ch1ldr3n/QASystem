@@ -34,22 +34,25 @@
         <el-table-column
           prop="role"
           label="职务"
+          :formatter="stateFormat"
         />
         <el-table-column
           prop="role"
           label="操作"
         >
           <template #default="props">
-            <el-button v-if="props.row.role === 'none'"
+            <el-button
+              v-if="props.row.role === 'none'"
               type="primary"
               @click="change(props.row.username, 'reviewer')"
             >
-            赋予审核权限
+              赋予审核权限
             </el-button>
-            <el-button v-if="props.row.role === 'reviewer'"
+            <el-button
+              v-if="props.row.role === 'reviewer'"
               @click="change(props.row.username, 'none')"
             >
-            取消审核权限
+              取消审核权限
             </el-button>
           </template>
         </el-table-column>
@@ -89,6 +92,18 @@ export default {
     this.refresh();
   },
   methods: {
+    stateFormat(row) {
+      switch (row.state) {
+        case 'admin':
+          return '站长';
+        case 'reviewer':
+          return '审核员';
+        case 'none':
+          return '管理员';
+        default:
+          return '';
+      }
+    },
     refresh() {
       fetch('/v1/admin/list', {
         method: 'GET',
