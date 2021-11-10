@@ -93,7 +93,7 @@ export default {
         }),
       }).then((resp) => {
         if (!resp.ok) {
-          throw new Error('审核通过失败！');
+          throw new Error('无审核权限！');
         }
       }).then(() => {
         this.$message({

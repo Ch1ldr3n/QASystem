@@ -27,11 +27,6 @@
         :default-sort="{ prop: 'username', order: 'descending' }"
         style="width: 100%"
       >
-        <el-table-column type="expand">
-          <template #default="props">
-            <p>{{ props.row.content }}</p>
-          </template>
-        </el-table-column>
         <el-table-column
           prop="username"
           label="姓名"
@@ -39,8 +34,25 @@
         <el-table-column
           prop="role"
           label="职务"
-          width="180"
         />
+        <el-table-column
+          prop="role"
+          label="操作"
+        >
+          <template #default="props">
+            <el-button v-if="props.row.role === 'none'"
+              type="primary"
+              @click="change(props.row.username, 'reviewer')"
+            >
+            赋予审核权限
+            </el-button>
+            <el-button v-if="props.row.role === 'reviewer'"
+              @click="change(props.row.username, 'none')"
+            >
+            取消审核权限
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </el-main>
   </el-container>
@@ -101,6 +113,39 @@ export default {
           });
         });
     },
+    change(username, role) {
+      fetch('/v1/admin/change', {
+        method: 'POST',
+        headers: {
+          Authorization: window.localStorage.getItem('admintoken'),
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          role,
+        }),
+      }).then((resp) => {
+        if (!resp.ok) {
+          if (resp.status === 403) {
+            throw new Error('无修改管理员身份权限!');
+          } else {
+            throw new Error('修改管理员身份时发生错误!');
+          }
+        }
+      }).then(() => {
+        this.$message({
+          showClose: true,
+          message: '修改成功',
+          type: 'success',
+        });
+        this.refresh();
+      }).catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
+    },
     adding() {
       this.$refs.form.validate((valid) => {
         if (valid) {
@@ -116,7 +161,11 @@ export default {
             }),
           }).then((resp) => {
             if (!resp.ok) {
-              throw new Error('无法重复添加同名管理员!');
+              if (resp.status === 403) {
+                throw new Error('无添加管理员权限!');
+              } else {
+                throw new Error('无法重复添加同名管理员!');
+              }
             }
             return resp.json();
           }).then((data) => {
