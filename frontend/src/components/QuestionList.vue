@@ -381,7 +381,7 @@ export default {
     onMessageReceived(event) {
       event.data.forEach((msg) => {
         if (!this.isChatOpen || msg.conversationID !== `GROUP${this.chatid}`) {
-          const q = this.tableData.find((row) => row.id === msg.conversationID);
+          const q = this.tableData.find((row) => `GROUP${row.id}` === msg.conversationID);
           this.$message({
             message: `你有新的来自问题${q.title}的消息`,
             type: 'success',
