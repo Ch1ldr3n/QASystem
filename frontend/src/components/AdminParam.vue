@@ -96,7 +96,7 @@
 
 <script>
 export default {
-  name: 'AdminParameter',
+  name: 'AdminParam',
   data() {
     const checkPrice = (rules, value, callback) => {
       if (!this.model.min_price || !this.model.max_price) {
