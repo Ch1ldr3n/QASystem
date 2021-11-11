@@ -453,22 +453,20 @@ func TestUserLoginX3(t *testing.T) {
 	}
 }
 
+// Login: inexistent user
+func TestUserLoginX4(t *testing.T) {
+	e := GetEchoTestEnv("entUser")
+	if rec := AuxUserLogin(e, nil, "userXinexistent", "hello"); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("user login allows inexistent user")
+	}
+}
+
 // Info: token verification
 func TestUserInfoX1(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	token, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "testpassword"), t)
 	if rec := AuxUserInfo(e, nil, token+"qwerty"); rec.Result().StatusCode != http.StatusForbidden {
 		t.Fatal("user info allows incorrect token")
-	}
-}
-
-// Info: inexistent user
-func TestUserInfoX2(t *testing.T) {
-	e := GetEchoTestEnv("entUser")
-	e1 := GetEchoTestEnv("entTestUserInfoX2")
-	token, _ := GetIdTokenFromRec(AuxUserRegister(e1, t, "user1X", "testpassword"), t)
-	if rec := AuxUserInfo(e, nil, token); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("user info allows inexistent user")
 	}
 }
 
@@ -481,11 +479,45 @@ func TestUserEditX1(t *testing.T) {
 	}
 }
 
+// Edit: no token
+func TestUserEditX2(t *testing.T) {
+	e := GetEchoTestEnv("entUser")
+	if rec := AuxUserEdit(e, nil, "", "{}"); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("user edit allows no token")
+	}
+}
+
+// Edit: token verification
+func TestUserEditX3(t *testing.T) {
+	e := GetEchoTestEnv("entUser")
+	token, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "testpassword"), t)
+	if rec := AuxUserEdit(e, nil, token+"qwerty", "{}"); rec.Result().StatusCode != http.StatusForbidden {
+		t.Fatal("user edit allows incorrect token")
+	}
+}
+
 // Filter: bad query
 func TestUserFilterX1(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserFilter(e, nil, "", "?answerer=trualse"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user filter allows bad query")
+	}
+}
+
+// Filter: no token
+func TestUserFilterX2(t *testing.T) {
+	e := GetEchoTestEnv("entUser")
+	if rec := AuxUserFilter(e, nil, "", ""); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("user filter allows no token")
+	}
+}
+
+// Filter: invalid token
+func TestUserFilterX3(t *testing.T) {
+	e := GetEchoTestEnv("entUser")
+	token, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "testpassword"), t)
+	if rec := AuxUserFilter(e, nil, token+"qwerty", ""); rec.Result().StatusCode != http.StatusForbidden {
+		t.Fatal("user filter allows invalid token")
 	}
 }
 
@@ -812,7 +844,6 @@ func TestUserGensigXv(t *testing.T) {
 		return AuxUserGensig(e, t, token)
 	})
 }
-
 // func TestUserFilterXv(t *testing.T) {
 // 	AuxTestVerificationX("UserFilter", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
 // 		return AuxUserFilter(e, t, token, "")
