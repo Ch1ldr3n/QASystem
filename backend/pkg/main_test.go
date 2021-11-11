@@ -388,6 +388,52 @@ func AuxAdminEdit(e *echo.Echo, t *testing.T, token string, password string) *ht
 	return rec
 }
 
+func AuxAdminChange(e *echo.Echo, t *testing.T, token string, username string, role string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/admin/change", bytes.NewBufferString(`
+{
+	"username": "`+username+`",
+	"role":"`+role+`"
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("admin change failed")
+	}
+
+	return rec
+}
+
+func AuxParamView(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodGet, "/v1/admin/param", nil)
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("param list failed")
+	}
+
+	return rec
+}
+
+func AuxParamEdit(e *echo.Echo, t *testing.T, token string, jsondata string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/admin/param", bytes.NewBufferString(jsondata))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("param edit failed")
+	}
+
+	return rec
+}
+
 //
 // test functions
 //
@@ -517,6 +563,20 @@ func TestAdmin(t *testing.T) {
 	AuxAdminEdit(e, t, token1, password)
 	AuxAdminLogin(e, t, adminname, password)
 	AuxAdminList(e, t)
+
+	AuxAdminChange(e, t, token, adminname, "none")
+
+	AuxParamView(e, t, token)
+	AuxParamEdit(e, t, token, `
+{
+	"min_price":-1,
+	"max_price":1000,
+	"accept_deadline":1000,
+	"answer_deadline":1000,
+	"answer_limit":1000,
+	"done_deadline":1000
+}
+	`)
 }
 
 // Login: bad json
@@ -887,5 +947,25 @@ func TestAdminAddXv(t *testing.T) {
 func TestQuestionReviewXv(t *testing.T) {
 	AuxTestAdminVerificationX("AdminReview", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxQuestionReview(e, t, -1, true, token)
+	})
+}
+func TestAdminEditXv(t *testing.T) {
+	AuxTestAdminVerificationX("AdminEdit", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxAdminEdit(e, t, token, "newpassword")
+	})
+}
+func TestAdminChangeXv(t *testing.T) {
+	AuxTestAdminVerificationX("AdminChange", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxAdminChange(e, t, token, "anotherAdmin", "none")
+	})
+}
+func TestParamViewXv(t *testing.T) {
+	AuxTestAdminVerificationX("ParamView", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxParamView(e, t, token)
+	})
+}
+func TestParamEditXv(t *testing.T) {
+	AuxTestAdminVerificationX("ParamEdit", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxParamEdit(e, t, token, "{}")
 	})
 }
