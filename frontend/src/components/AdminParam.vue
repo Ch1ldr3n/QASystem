@@ -20,7 +20,7 @@
               prop="price"
             >
               <el-row>
-                <el-col :span="10">
+                <el-col :span="9">
                   <el-input
                     v-model="model.min_price"
                     type="number"
@@ -32,11 +32,15 @@
                 >
                   —
                 </el-col>
-                <el-col :span="10">
+                <el-col :span="11">
                   <el-input
                     v-model="model.max_price"
                     type="number"
-                  />
+                  >
+                    <template #append>
+                      元
+                    </template>
+                  </el-input>
                 </el-col>
               </el-row>
             </el-form-item>
@@ -47,16 +51,24 @@
               <el-input
                 v-model="model.take_order_waiting_time"
                 type="number"
-              />
+              >
+                <template #append>
+                  秒
+                </template>
+              </el-input>
             </el-form-item>
             <el-form-item
-              label="首次作答等待时长"
+              label="作答等待时长"
               prop="first_answer_waiting_time"
             >
               <el-input
                 v-model="model.first_answer_waiting_time"
                 type="number"
-              />
+              >
+                <template #append>
+                  秒
+                </template>
+              </el-input>
             </el-form-item>
             <el-form-item
               label="最大问答次数"
@@ -65,7 +77,11 @@
               <el-input
                 v-model="model.max_qa_times"
                 type="number"
-              />
+              >
+                <template #append>
+                  次
+                </template>
+              </el-input>
             </el-form-item>
             <el-form-item
               label="最长服务时长"
@@ -74,7 +90,11 @@
               <el-input
                 v-model="model.max_service_time"
                 type="number"
-              />
+              >
+                <template #append>
+                  秒
+                </template>
+              </el-input>
             </el-form-item>
             <el-form-item>
               <el-button
