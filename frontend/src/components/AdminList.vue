@@ -93,7 +93,7 @@ export default {
   },
   methods: {
     stateFormat(row) {
-      switch (row.state) {
+      switch (row.role) {
         case 'admin':
           return '站长';
         case 'reviewer':
