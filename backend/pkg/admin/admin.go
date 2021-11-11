@@ -260,8 +260,8 @@ func param_edit(c echo.Context) error {
 
 type paramEditRequest struct {
 	Token          string   `header:"authorization" validate:"required"`
-	MinPrice       *float64 `json:"max_price"`
-	MaxPrice       *float64 `json:"min_price"`
+	MinPrice       *float64 `json:"min_price"`
+	MaxPrice       *float64 `json:"max_price"`
 	AcceptDeadline *int     `json:"accept_deadline"`
 	AnswerDeadline *int     `json:"answer_deadline"`
 	AnswerLimit    *int     `json:"answer_limit"`
