@@ -225,6 +225,20 @@ func AuxQuestionMine(e *echo.Echo, t *testing.T, token string) *httptest.Respons
 	return rec
 }
 
+func AuxQuestionRevlist(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodGet, "/v1/question/review", nil)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("question review list failed")
+	}
+
+	return rec
+}
+
 func AuxQuestionAccept(e *echo.Echo, t *testing.T, questionid int, choice bool, token string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(http.MethodPost, "/v1/question/accept", bytes.NewBufferString(`
 {
@@ -374,6 +388,52 @@ func AuxAdminEdit(e *echo.Echo, t *testing.T, token string, password string) *ht
 	return rec
 }
 
+func AuxAdminChange(e *echo.Echo, t *testing.T, token string, username string, role string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/admin/change", bytes.NewBufferString(`
+{
+	"username": "`+username+`",
+	"role":"`+role+`"
+}
+    `))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("admin change failed")
+	}
+
+	return rec
+}
+
+func AuxParamView(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodGet, "/v1/admin/param", nil)
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("param list failed")
+	}
+
+	return rec
+}
+
+func AuxParamEdit(e *echo.Echo, t *testing.T, token string, jsondata string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/admin/param", bytes.NewBufferString(jsondata))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("param edit failed")
+	}
+
+	return rec
+}
+
 //
 // test functions
 //
@@ -453,22 +513,20 @@ func TestUserLoginX3(t *testing.T) {
 	}
 }
 
+// Login: inexistent user
+func TestUserLoginX4(t *testing.T) {
+	e := GetEchoTestEnv("entUser")
+	if rec := AuxUserLogin(e, nil, "userXinexistent", "hello"); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("user login allows inexistent user")
+	}
+}
+
 // Info: token verification
 func TestUserInfoX1(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	token, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "testpassword"), t)
 	if rec := AuxUserInfo(e, nil, token+"qwerty"); rec.Result().StatusCode != http.StatusForbidden {
 		t.Fatal("user info allows incorrect token")
-	}
-}
-
-// Info: inexistent user
-func TestUserInfoX2(t *testing.T) {
-	e := GetEchoTestEnv("entUser")
-	e1 := GetEchoTestEnv("entTestUserInfoX2")
-	token, _ := GetIdTokenFromRec(AuxUserRegister(e1, t, "user1X", "testpassword"), t)
-	if rec := AuxUserInfo(e, nil, token); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("user info allows inexistent user")
 	}
 }
 
@@ -505,6 +563,20 @@ func TestAdmin(t *testing.T) {
 	AuxAdminEdit(e, t, token1, password)
 	AuxAdminLogin(e, t, adminname, password)
 	AuxAdminList(e, t)
+
+	AuxAdminChange(e, t, token, adminname, "none")
+
+	AuxParamView(e, t, token)
+	AuxParamEdit(e, t, token, `
+{
+	"min_price":-1,
+	"max_price":1000,
+	"accept_deadline":1000,
+	"answer_deadline":1000,
+	"answer_limit":1000,
+	"done_deadline":1000
+}
+	`)
 }
 
 // Login: bad json
@@ -611,7 +683,9 @@ func TestQuestion(t *testing.T) {
 
 	// Accept question no.1
 	AuxQuestionPay(e, t, questionid1, token1)
+	AuxQuestionRevlist(e, t, admintoken)
 	AuxQuestionReview(e, t, questionid1, true, admintoken)
+	AuxQuestionMine(e, t, token2)
 	AuxQuestionAccept(e, t, questionid1, true, token2)
 
 	// Reject question no.2
@@ -777,9 +851,7 @@ func TestQuestionQueryX2(t *testing.T) {
 
 func AuxTestVerificationX(name string, t *testing.T, af func(*echo.Echo, *testing.T, string) *httptest.ResponseRecorder) {
 	e := GetEchoTestEnv("entVerificationX" + name)
-	e1 := GetEchoTestEnv("entVerificationX1" + name)
 	token1, _ := GetIdTokenFromRec(AuxUserRegister(e, t, "userX", "pass"), t)
-	token2, _ := GetIdTokenFromRec(AuxUserRegister(e1, t, "userX1", "pass"), t)
 
 	// No token
 	if rec := af(e, nil, ""); rec.Result().StatusCode != http.StatusBadRequest {
@@ -790,18 +862,13 @@ func AuxTestVerificationX(name string, t *testing.T, af func(*echo.Echo, *testin
 	if rec := af(e, nil, token1+"qwerty"); rec.Result().StatusCode != http.StatusForbidden {
 		t.Fatal("api allows bad verification")
 	}
-
-	// inexistent user
-	if rec := af(e, nil, token2); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("api allows inexistent user")
-	}
 }
 
-// func TestUserEditXv(t *testing.T) {
-// 	AuxTestVerificationX("UserEdit", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
-// 		return AuxUserEdit(e, t, token, "{}")
-// 	})
-// }
+func TestUserEditXv(t *testing.T) {
+	AuxTestVerificationX("UserEdit", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+		return AuxUserEdit(e, t, token, "{}")
+	})
+}
 func TestUserInfoXv(t *testing.T) {
 	AuxTestVerificationX("UserInfo", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxUserInfo(e, t, token)
@@ -812,12 +879,11 @@ func TestUserGensigXv(t *testing.T) {
 		return AuxUserGensig(e, t, token)
 	})
 }
-
-// func TestUserFilterXv(t *testing.T) {
-// 	AuxTestVerificationX("UserFilter", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
-// 		return AuxUserFilter(e, t, token, "")
-// 	})
-// }
+func TestUserFilterXv(t *testing.T) {
+	AuxTestVerificationX("UserFilter", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+		return AuxUserFilter(e, t, token, "")
+	})
+}
 func TestQuestionSubmitXv(t *testing.T) {
 	AuxTestVerificationX("QuestionSubmit", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxQuestionSubmit(e, t, token, `
@@ -860,11 +926,7 @@ func TestQuestionCancelXv(t *testing.T) {
 
 func AuxTestAdminVerificationX(name string, t *testing.T, af func(*echo.Echo, *testing.T, string) *httptest.ResponseRecorder) {
 	e := GetEchoTestEnv("entAdminVerificationX" + name)
-	e1 := GetEchoTestEnv("entAdminVerificationX1" + name)
 	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminRootName, adminRootPassword), t)
-	adminnameX := "newAdminX"
-	passwordX, _ := GetAdminPasswordIdFromRec(AuxAdminAdd(e1, t, admintoken, adminnameX), t)
-	admintokenX, _ := GetIdTokenFromRec(AuxAdminLogin(e1, t, adminnameX, passwordX), t)
 
 	// No token
 	if rec := af(e, nil, ""); rec.Result().StatusCode != http.StatusBadRequest {
@@ -875,11 +937,6 @@ func AuxTestAdminVerificationX(name string, t *testing.T, af func(*echo.Echo, *t
 	if rec := af(e, nil, admintoken+"qwerty"); rec.Result().StatusCode != http.StatusForbidden {
 		t.Fatal("api allows bad verification")
 	}
-
-	// illegal user
-	if rec := af(e, nil, admintokenX); rec.Result().StatusCode != http.StatusForbidden {
-		t.Fatal("api allows illegal user")
-	}
 }
 
 func TestAdminAddXv(t *testing.T) {
@@ -889,6 +946,26 @@ func TestAdminAddXv(t *testing.T) {
 }
 func TestQuestionReviewXv(t *testing.T) {
 	AuxTestAdminVerificationX("AdminReview", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
-		return AuxAdminAdd(e, t, token, "anotherAdmin")
+		return AuxQuestionReview(e, t, -1, true, token)
+	})
+}
+func TestAdminEditXv(t *testing.T) {
+	AuxTestAdminVerificationX("AdminEdit", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxAdminEdit(e, t, token, "newpassword")
+	})
+}
+func TestAdminChangeXv(t *testing.T) {
+	AuxTestAdminVerificationX("AdminChange", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxAdminChange(e, t, token, "anotherAdmin", "none")
+	})
+}
+func TestParamViewXv(t *testing.T) {
+	AuxTestAdminVerificationX("ParamView", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxParamView(e, t, token)
+	})
+}
+func TestParamEditXv(t *testing.T) {
+	AuxTestAdminVerificationX("ParamEdit", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxParamEdit(e, t, token, "{}")
 	})
 }
