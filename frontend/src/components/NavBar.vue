@@ -23,7 +23,7 @@
     </el-menu-item>
     <el-sub-menu index="3">
       <template #title>
-        更多
+        个人信息
       </template>
       <el-menu-item
         index="4"
