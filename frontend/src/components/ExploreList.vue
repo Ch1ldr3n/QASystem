@@ -34,10 +34,10 @@
   </el-container>
   <el-container style="text-align: center;">
     <el-pagination
-    :page-size="5"
+    :page-size="10"
     layout="prev, pager, next, jumper"
     v-model:currentPage="currentPage"
-    :total="100"
+    :total="1000"
     @size-change="handleSizeChange"
     @current-change="handleCurrentChange"
     style="margin:0 auto"
@@ -53,7 +53,7 @@ export default {
     return {
       tableData: [],
       currentPage: 1,
-      pageSize: 5,
+      pageSize: 10,
     };
   },
   created() {
