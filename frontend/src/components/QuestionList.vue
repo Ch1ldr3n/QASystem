@@ -1,4 +1,5 @@
 <template>
+<el-main>
   <el-container>
     <el-table
       ref="filterTable"
@@ -122,6 +123,7 @@
         </template>
       </el-table-column>
     </el-table>
+  </el-container>
     <beautiful-chat
       style="z-index: 1000"
       :participants="participants"
@@ -143,6 +145,7 @@
       :message-styling="true"
       @scrollToTop="handleScrollToTop"
     />
+  <el-container>
     <el-pagination
     :page-size="10"
     layout="prev, pager, next, jumper"
@@ -154,6 +157,7 @@
     >
     </el-pagination>
   </el-container>
+</el-main>
 </template>
 
 <script>

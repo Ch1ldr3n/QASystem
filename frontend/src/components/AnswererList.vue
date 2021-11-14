@@ -1,4 +1,5 @@
 <template>
+<el-main>
 <el-container>
   <el-table
     ref="filterTable"
@@ -42,6 +43,8 @@
       </template>
     </el-table-column>
   </el-table>
+</el-container>
+<el-container>
   <el-pagination
     :page-size="10"
     layout="prev, pager, next, jumper"
@@ -53,6 +56,7 @@
     >
     </el-pagination>
 </el-container>
+</el-main>
 </template>
 
 <script>
