@@ -3,7 +3,7 @@
   <el-container>
   <el-table
     ref="filterTable"
-    :data="tableData"
+    :data="tableData.slice((currentPage-1)*pageSize,currentPage*pageSize)"
     :default-sort="{ prop: 'date', order: 'descending' }"
     style="width: 100%"
     stripe
@@ -52,6 +52,7 @@ export default {
     return {
       tableData: [],
       currentPage: 1,
+      pageSize: 5,
     };
   },
   created() {
