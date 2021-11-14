@@ -1,7 +1,8 @@
 <template>
+<el-container>
   <el-table
     ref="filterTable"
-    :data="userlist"
+    :data="userlist.slice((currentPage-1)*pageSize,currentPage*pageSize)"
     :default-sort="{ prop: 'username', order: 'descending' }"
     style="width: 100%"
   >
@@ -41,6 +42,17 @@
       </template>
     </el-table-column>
   </el-table>
+  <el-pagination
+    :page-size="10"
+    layout="prev, pager, next, jumper"
+    v-model:currentPage="currentPage"
+    :total="1000"
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+    style="margin:0 auto"
+    >
+    </el-pagination>
+</el-container>
 </template>
 
 <script>
@@ -48,6 +60,8 @@ export default {
   data() {
     return {
       userlist: [],
+      currentPage: 1,
+      pageSize: 10,
     };
   },
   created() {
@@ -83,6 +97,12 @@ export default {
         name: 'Submit',
         query: { id },
       });
+    },
+    handleSizeChange(val) {
+      console.log(`每页 ${val} 条`);
+    },
+    handleCurrentChange(val) {
+      console.log(`当前页: ${val}`);
     },
   },
 };

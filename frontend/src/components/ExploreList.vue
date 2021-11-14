@@ -32,7 +32,7 @@
     />
   </el-table>
   </el-container>
-  <el-container style="text-align: center;">
+  <el-container>
     <el-pagination
     :page-size="10"
     layout="prev, pager, next, jumper"
