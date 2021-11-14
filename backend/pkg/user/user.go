@@ -3,6 +3,7 @@ package user
 import "github.com/labstack/echo/v4"
 import "gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 import "gitlab.secoder.net/bauhinia/qanda-schema/ent"
+import paramp "gitlab.secoder.net/bauhinia/qanda-schema/ent/param"
 import userp "gitlab.secoder.net/bauhinia/qanda-schema/ent/user"
 import "net/http"
 import "golang.org/x/crypto/bcrypt"
@@ -237,6 +238,15 @@ func edit(c echo.Context) error {
 	claims, err := ctx.Verify(u.Token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	if u.Price != nil {
+		pa, err := ctx.DB().Param.Query().Where(paramp.Scope("default")).Only(ctx.Request().Context())
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		if *u.Price < pa.MinPrice || *u.Price > pa.MaxPrice {
+			return echo.NewHTTPError(http.StatusBadRequest, "price out of range")
+		}
 	}
 	user := ctx.DB().User.Update().Where(userp.Username(claims.Subject)).
 		SetNillableEmail(u.Email).SetNillablePhone(u.Phone).

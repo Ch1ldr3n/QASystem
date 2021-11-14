@@ -438,10 +438,83 @@ func AuxParamEdit(e *echo.Echo, t *testing.T, token string, jsondata string) *ht
 // test functions
 //
 
+// Admin:
+
+func TestAdmin(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+
+	rec := AuxAdminLogin(e, t, adminRootName, adminRootPassword)
+	token, _ := GetIdTokenFromRec(rec, t)
+
+	adminname := "reviewer1"
+	password, _ := GetAdminPasswordIdFromRec(AuxAdminAdd(e, t, token, adminname), t)
+	token1, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminname, password), t)
+
+	password = "newadminpassword"
+	AuxAdminEdit(e, t, token1, password)
+	AuxAdminLogin(e, t, adminname, password)
+	AuxAdminList(e, t)
+
+	AuxAdminChange(e, t, token, adminname, "none")
+
+	AuxParamView(e, t, token)
+	AuxParamEdit(e, t, token, `
+{
+	"min_price":-1000,
+	"max_price":1000,
+	"accept_deadline":1000,
+	"answer_deadline":1000,
+	"answer_limit":1000,
+	"done_deadline":1000
+}
+	`)
+}
+
+// Login: bad json
+func TestAdminLoginX1(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+	if rec := AuxAdminLogin(e, nil, "adminX", "password\"*;"); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("admin login allows bad json")
+	}
+}
+
+// Login: no data
+func TestAdminLoginX2(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+	if rec := AuxAdminLogin(e, nil, "\"\"}", ""); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("admin login allows failed validation")
+	}
+}
+
+// Login: inexistent username
+func TestAdminLoginX3(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+	if rec := AuxAdminLogin(e, nil, "adminX", "abc123"); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("admin login allows inexistent username")
+	}
+}
+
+// Login: wrong password
+func TestAdminLoginX4(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+	if rec := AuxAdminLogin(e, nil, adminRootName, "wrongpasswordX"); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("admin login allows wrong password")
+	}
+}
+
 // User:
 
 func TestUser(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
+
+	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminRootName, adminRootPassword), t)
+	AuxParamEdit(e, t, admintoken, `
+{
+	"min_price":-1000,
+	"max_price":1000
+}
+	`)
+
 	AuxUserRegister(e, t, "user1", "testpassword_old")
 	rec := AuxUserLogin(e, t, "user1", "testpassword_old")
 	token1, userid1 := GetIdTokenFromRec(rec, t)
@@ -455,8 +528,8 @@ func TestUser(t *testing.T) {
 {
 	"email":"hello",
 	"phone":"12345678",
+	"price":100,
 	"answerer":true,
-	"price":-100,
 	"profession":"Geschichte",
 	"password":"`+newpassword+`"
 }
@@ -539,75 +612,20 @@ func TestUserEditX1(t *testing.T) {
 	}
 }
 
+// Edit: invalid price
+func TestUserEditX2(t *testing.T) {
+	e := GetEchoTestEnv("entUser")
+	token, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "testpassword"), t)
+	if rec := AuxUserEdit(e, nil, token, "{\"price\":999999}"); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("user edit allows invalid price")
+	}
+}
+
 // Filter: bad query
 func TestUserFilterX1(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserFilter(e, nil, "", "?answerer=trualse"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user filter allows bad query")
-	}
-}
-
-// Admin:
-
-func TestAdmin(t *testing.T) {
-	e := GetEchoTestEnv("entAdmin")
-
-	rec := AuxAdminLogin(e, t, adminRootName, adminRootPassword)
-	token, _ := GetIdTokenFromRec(rec, t)
-
-	adminname := "reviewer1"
-	password, _ := GetAdminPasswordIdFromRec(AuxAdminAdd(e, t, token, adminname), t)
-	token1, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminname, password), t)
-
-	password = "newadminpassword"
-	AuxAdminEdit(e, t, token1, password)
-	AuxAdminLogin(e, t, adminname, password)
-	AuxAdminList(e, t)
-
-	AuxAdminChange(e, t, token, adminname, "none")
-
-	AuxParamView(e, t, token)
-	AuxParamEdit(e, t, token, `
-{
-	"min_price":-1,
-	"max_price":1000,
-	"accept_deadline":1000,
-	"answer_deadline":1000,
-	"answer_limit":1000,
-	"done_deadline":1000
-}
-	`)
-}
-
-// Login: bad json
-func TestAdminLoginX1(t *testing.T) {
-	e := GetEchoTestEnv("entAdmin")
-	if rec := AuxAdminLogin(e, nil, "adminX", "password\"*;"); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("admin login allows bad json")
-	}
-}
-
-// Login: no data
-func TestAdminLoginX2(t *testing.T) {
-	e := GetEchoTestEnv("entAdmin")
-	if rec := AuxAdminLogin(e, nil, "\"\"}", ""); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("admin login allows failed validation")
-	}
-}
-
-// Login: inexistent username
-func TestAdminLoginX3(t *testing.T) {
-	e := GetEchoTestEnv("entAdmin")
-	if rec := AuxAdminLogin(e, nil, "adminX", "abc123"); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("admin login allows inexistent username")
-	}
-}
-
-// Login: wrong password
-func TestAdminLoginX4(t *testing.T) {
-	e := GetEchoTestEnv("entAdmin")
-	if rec := AuxAdminLogin(e, nil, adminRootName, "wrongpasswordX"); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("admin login allows wrong password")
 	}
 }
 
