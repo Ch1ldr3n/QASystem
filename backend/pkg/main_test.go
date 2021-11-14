@@ -741,6 +741,7 @@ func TestQuestion(t *testing.T) {
 	// Close question no.1
 	AuxQuestionClose(e, t, questionid1, token1)
 	AuxQuestionAggreg(e, t, token1)
+	AuxQuestionAggreg(e, t, token2)
 }
 
 func TestQuestionX1(t *testing.T) {
@@ -938,6 +939,11 @@ func TestQuestionMineXv(t *testing.T) {
 		return AuxQuestionMine(e, t, token)
 	})
 }
+func TestQuestionAggregXv(t *testing.T) {
+	AuxTestVerificationX("QuestionAggreg", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxQuestionAggreg(e, t, token)
+	})
+}
 func TestQuestionAcceptXv(t *testing.T) {
 	AuxTestVerificationX("QuestionAccept", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxQuestionAccept(e, t, -1, true, token)
@@ -1000,5 +1006,10 @@ func TestParamViewXv(t *testing.T) {
 func TestParamEditXv(t *testing.T) {
 	AuxTestAdminVerificationX("ParamEdit", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxParamEdit(e, t, token, "{}")
+	})
+}
+func TestQuestionRevlistXv(t *testing.T) {
+	AuxTestAdminVerificationX("QuestionRevlist", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+		return AuxQuestionRevlist(e, t, token)
 	})
 }
