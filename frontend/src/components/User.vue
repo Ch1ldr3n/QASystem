@@ -267,7 +267,11 @@ export default {
             }),
           }).then((resp) => {
             if (!resp.ok) {
-              throw new Error('修改失败!');
+              resp.text().then((text) => {
+                throw new Error(text);
+              }).catch((error) => {
+                throw error;
+              });
             }
             this.$message({
               message: '修改成功',
