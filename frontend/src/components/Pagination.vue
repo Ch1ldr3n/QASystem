@@ -1,10 +1,9 @@
 <template>
   <div class="demo-pagination-block">
-    <span class="demonstration">前往</span>
     <el-pagination
     :page-size="5"
     layout="prev, pager, next, jumper"
-    v-model:currentPage="currentPage1"
+    v-model:currentPage="currentPage"
     :total="100"
     @size-change="handleSizeChange"
     @current-change="handleCurrentChange"
@@ -17,10 +16,7 @@ export default ({
   name: 'Pagination',
   data() {
     return {
-      currentPage1: 1,
-      currentPage2: 5,
-      currentPage3: 5,
-      cuurentPage4: 4,
+      currentPage: 1,
     };
   },
   methods: {
@@ -29,6 +25,9 @@ export default ({
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
+    //   this.data = [];
+    },
+    getlist() {
     },
   },
 });

@@ -1,4 +1,6 @@
 <template>
+<el-main>
+  <el-container>
   <el-table
     ref="filterTable"
     :data="tableData"
@@ -29,6 +31,19 @@
       min-width="10%"
     />
   </el-table>
+  </el-container>
+  <el-container style="text-align: center;">
+    <el-pagination
+    :page-size="5"
+    layout="prev, pager, next, jumper"
+    v-model:currentPage="currentPage"
+    :total="100"
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+    >
+    </el-pagination>
+  </el-container>
+</el-main>
 </template>
 
 <script>
@@ -36,6 +51,7 @@ export default {
   data() {
     return {
       tableData: [],
+      currentPage: 1,
     };
   },
   created() {
@@ -63,6 +79,12 @@ export default {
       this.$message({
         message: '尚未实现！',
       });
+    },
+    handleSizeChange(val) {
+      console.log(`每页 ${val} 条`);
+    },
+    handleCurrentChange(val) {
+      console.log(`当前页: ${val}`);
     },
   },
 };
