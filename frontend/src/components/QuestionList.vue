@@ -2,7 +2,7 @@
   <el-container>
     <el-table
       ref="filterTable"
-      :data="tableData"
+      :data="tableData.slice((currentPage-1)*pageSize,currentPage*pageSize)"
       :default-sort="{ prop: 'date', order: 'descending' }"
       style="width: 100%"
     >
@@ -143,6 +143,16 @@
       :message-styling="true"
       @scrollToTop="handleScrollToTop"
     />
+    <el-pagination
+    :page-size="10"
+    layout="prev, pager, next, jumper"
+    v-model:currentPage="currentPage"
+    :total="1000"
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+    style="margin:0 auto"
+    >
+    </el-pagination>
   </el-container>
 </template>
 
@@ -161,6 +171,8 @@ export default {
       participants: [],
       messageList: [], // the list of the messages to show, can be paginated and adjusted dynamically
       newMessagesCount: 0,
+      currentPage: 1,
+      pageSize: 10,
       isChatOpen: false, // to determine whether the chat window should be open or closed
       showTypingIndicator: '', // when set to a value matching the participant.id it shows the typing indicator for the specific user
       colors: {
@@ -237,6 +249,12 @@ export default {
         default:
           return '';
       }
+    },
+    handleSizeChange(val) {
+      console.log(`每页 ${val} 条`);
+    },
+    handleCurrentChange(val) {
+      console.log(`当前页: ${val}`);
     },
     filterTag(value, row) {
       return row.asked === value;
