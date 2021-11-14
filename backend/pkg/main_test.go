@@ -225,6 +225,20 @@ func AuxQuestionMine(e *echo.Echo, t *testing.T, token string) *httptest.Respons
 	return rec
 }
 
+func AuxQuestionAggreg(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodGet, "/v1/question/aggreg", nil)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("question aggregation failed")
+	}
+
+	return rec
+}
+
 func AuxQuestionRevlist(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(http.MethodGet, "/v1/question/review", nil)
 	req.Header.Add("Content-Type", "application/json")
@@ -726,6 +740,7 @@ func TestQuestion(t *testing.T) {
 
 	// Close question no.1
 	AuxQuestionClose(e, t, questionid1, token1)
+	AuxQuestionAggreg(e, t, token1)
 }
 
 func TestQuestionX1(t *testing.T) {

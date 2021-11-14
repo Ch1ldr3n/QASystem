@@ -21,6 +21,7 @@ func Register(group *echo.Group) {
 	group.POST("/close", close)
 	group.POST("/cancel", cancel)
 	group.GET("/review", revlist)
+	group.GET("/aggreg", aggreg)
 }
 
 // @Summary Question Submit
@@ -602,4 +603,104 @@ func revlist(c echo.Context) error {
 type questionRevlistResponse struct {
 	Number     	 int	               `json:"number"`
 	QuestionList []questionInfoDisplay `json:"questionlist"`
+}
+
+// @Summary Question Aggreg
+// @Description Summary of income of this month
+// @Security token
+// @Accept json
+// @Produce json
+// @Param body body questionAggregRequest true "question aggreg request"
+// @Success 200 {object} questionAggregResponse "question aggreg response"
+// @Failure 400 {string} string
+// @Router /v1/question/aggreg [get]
+func aggreg(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(questionAggregRequest)
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	claims, err := ctx.Verify(u.Token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	}
+	// question filter:
+	dur, err := time.ParseDuration("-720h")
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	basedate := time.Now().Add(dur)
+	user, err1 := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).
+		WithAsked(func(q *ent.QuestionQuery){
+			q.Where(questionp.ModifiedGTE(basedate))
+			q.Where(questionp.StateEQ("done"))
+			q.Order(ent.Desc(questionp.FieldID))
+			q.WithAnswerer()
+		}).
+		WithAnswered(func(q *ent.QuestionQuery){
+			q.Where(questionp.ModifiedGTE(basedate))
+			q.Where(questionp.StateEQ("done"))
+			q.Order(ent.Desc(questionp.FieldID))
+			q.WithQuestioner()
+		}).
+		Only(ctx.Request().Context())
+	if err1 != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err1.Error())
+	}
+	// summary:
+	earning, spending := 0.0, 0.0
+	questionlist := make([]questionInfoDisplay, 0)
+	// asked (spending)
+	for _, question := range user.Edges.Asked {
+		spending += question.Price
+		questionlist = append(questionlist, questionInfoDisplay{
+			ID: question.ID,
+			Price: question.Price,
+			Title: question.Title,
+			Content: question.Content,
+			State: string(question.State),
+			QuestionerID: user.ID,
+			AnswererID: question.Edges.Answerer.ID,
+			QuestionerUsername: user.Username,
+			AnswererUsername: question.Edges.Answerer.Username,
+		})
+	}
+	// answered (earning)
+	for _, question := range user.Edges.Answered {
+		earning += question.Price
+		questionlist = append(questionlist, questionInfoDisplay{
+			ID: question.ID,
+			Price: question.Price,
+			Title: question.Title,
+			Content: question.Content,
+			State: string(question.State),
+			QuestionerID: question.Edges.Questioner.ID,
+			AnswererID: user.ID,
+			QuestionerUsername: question.Edges.Questioner.Username,
+			AnswererUsername: user.Username,
+		})
+	}
+	return ctx.JSON(http.StatusOK, questionAggregResponse{
+		Num: len(questionlist),
+		List: questionlist, 
+		Earning: earning,
+		Spending: spending,
+	})
+}
+
+type questionAggregRequest struct {
+	Token string `header:"authorization" validate:"required"`
+}
+
+type questionAggregResponse struct {
+	Num      int                   `json:"num"`
+	List     []questionInfoDisplay `json:"list"`
+	Earning  float64               `json:"earning"`
+	Spending float64               `json:"spending"`
 }
