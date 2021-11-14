@@ -455,6 +455,7 @@ export default {
         })
         .then((data) => {
           this.tableData = [...(data.answeredlist.map((v) => Object.assign(v, { asked: false }))), ...(data.askedlist.map((v) => Object.assign(v, { asked: true })))];
+          this.total = data.answerednum + data.askednum;
           console.log(data);
         })
         .catch((error) => {
