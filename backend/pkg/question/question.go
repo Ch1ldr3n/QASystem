@@ -631,66 +631,44 @@ func aggreg(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	}
 	// question filter:
-	dur, err := time.ParseDuration("-720h")
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	basedate := time.Now().Add(dur)
 	user, err1 := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).
 		WithAsked(func(q *ent.QuestionQuery){
-			q.Where(questionp.ModifiedGTE(basedate))
 			q.Where(questionp.StateEQ("done"))
-			q.Order(ent.Desc(questionp.FieldID))
+			q.WithQuestioner()
 			q.WithAnswerer()
 		}).
 		WithAnswered(func(q *ent.QuestionQuery){
-			q.Where(questionp.ModifiedGTE(basedate))
 			q.Where(questionp.StateEQ("done"))
-			q.Order(ent.Desc(questionp.FieldID))
 			q.WithQuestioner()
+			q.WithAnswerer()
 		}).
 		Only(ctx.Request().Context())
 	if err1 != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err1.Error())
 	}
-	// summary:
-	earning, spending := 0.0, 0.0
-	questionlist := make([]questionInfoDisplay, 0)
-	// asked (spending)
-	for _, question := range user.Edges.Asked {
-		spending += question.Price
-		questionlist = append(questionlist, questionInfoDisplay{
-			ID: question.ID,
-			Price: question.Price,
-			Title: question.Title,
-			Content: question.Content,
-			State: string(question.State),
-			QuestionerID: user.ID,
-			AnswererID: question.Edges.Answerer.ID,
-			QuestionerUsername: user.Username,
-			AnswererUsername: question.Edges.Answerer.Username,
-		})
-	}
-	// answered (earning)
-	for _, question := range user.Edges.Answered {
-		earning += question.Price
-		questionlist = append(questionlist, questionInfoDisplay{
-			ID: question.ID,
-			Price: question.Price,
-			Title: question.Title,
-			Content: question.Content,
-			State: string(question.State),
-			QuestionerID: question.Edges.Questioner.ID,
-			AnswererID: user.ID,
-			QuestionerUsername: question.Edges.Questioner.Username,
-			AnswererUsername: user.Username,
-		})
+	// calculation:
+	data := make(map[int](map[int](*questionAggregMonthData)))
+	// - Asked
+	for _, question := range append(user.Edges.Asked, user.Edges.Answered...) {
+		timeObj := time.Unix(question.Modified.Unix(), 0)
+		year, month := int(timeObj.Year()), int(timeObj.Month())
+		// insert
+		if _, exist := data[year]; !exist {
+			data[year] = make(map[int](*questionAggregMonthData))
+		}
+		if _, exist := data[year][month]; !exist {
+			data[year][month] = new(questionAggregMonthData)
+		}
+		// update
+		if question.Edges.Answerer.ID == user.ID {
+			data[year][month].Earning += question.Price
+		}
+		if question.Edges.Questioner.ID == user.ID {
+			data[year][month].Spending += question.Price
+		}
 	}
 	return ctx.JSON(http.StatusOK, questionAggregResponse{
-		Num: len(questionlist),
-		List: questionlist, 
-		Earning: earning,
-		Spending: spending,
+		Datamap: data,
 	})
 }
 
@@ -698,9 +676,11 @@ type questionAggregRequest struct {
 	Token string `header:"authorization" validate:"required"`
 }
 
+type questionAggregMonthData struct {
+	Earning  float64	// default: 0.0
+	Spending float64	// default: 0.0
+}
+
 type questionAggregResponse struct {
-	Num      int                   `json:"num"`
-	List     []questionInfoDisplay `json:"list"`
-	Earning  float64               `json:"earning"`
-	Spending float64               `json:"spending"`
+	Datamap map[int](map[int](*questionAggregMonthData)) `json:"map"`
 }
