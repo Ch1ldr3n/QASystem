@@ -495,7 +495,7 @@ func TestAdminLoginX1(t *testing.T) {
 // Login: no data
 func TestAdminLoginX2(t *testing.T) {
 	e := GetEchoTestEnv("entAdmin")
-	if rec := AuxAdminLogin(e, nil, "\"\"}", ""); rec.Result().StatusCode != http.StatusBadRequest {
+	if rec := AuxAdminLogin(e, nil, "\"}", ""); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("admin login allows failed validation")
 	}
 }
@@ -513,6 +513,24 @@ func TestAdminLoginX4(t *testing.T) {
 	e := GetEchoTestEnv("entAdmin")
 	if rec := AuxAdminLogin(e, nil, adminRootName, "wrongpasswordX"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("admin login allows wrong password")
+	}
+}
+
+// Add: not 'admin'
+func TestAdminAddX1(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+	token, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, "reviewer1", "newadminpassword"), t)
+	if rec := AuxAdminAdd(e, nil, token, "reviewerX"); rec.Result().StatusCode != http.StatusForbidden {
+		t.Fatal("admin add allows operating on non-root admin")
+	}
+}
+
+// Param-Edit: not 'admin'
+func TestParamEditX1(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+	token, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, "reviewer1", "newadminpassword"), t)
+	if rec := AuxParamEdit(e, nil, token, "{}"); rec.Result().StatusCode != http.StatusForbidden {
+		t.Fatal("param edit allows operating on non-root admin")
 	}
 }
 
@@ -765,6 +783,17 @@ func TestQuestionX1(t *testing.T) {
 		t.Fatal("question submit allows questioning oneself")
 	}
 
+	// Submit: questioning inexistent person
+	if rec := AuxQuestionSubmit(e, nil, token3, `
+{
+	"title": "test titleX",
+	"content":"test contentX",
+	"answererid":-1
+}
+	`); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question submit allows questioning inexistent person")
+	}
+
 	// Pay: repeated payment
 	_, userid2 := GetIdTokenFromRec(AuxUserLogin(e, t, "user2", "pass"), t)
 	questionid4 := GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token3, `
@@ -853,6 +882,37 @@ func TestQuestionX2(t *testing.T) {
 	// Cancel: foreign interference
 	if rec := AuxQuestionCancel(e, nil, questionid6, token3); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("question cancel allows foreign interference")
+	}
+}
+
+func TestQuestionX3(t *testing.T) {
+	e := GetEchoTestEnv("entQuestion")
+	token, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "pass"), t)
+	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminRootName, adminRootPassword), t)
+
+	// Pay: inexistent question ID
+	if rec := AuxQuestionPay(e, nil, -1, token); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question pay allows inexistent question")
+	}
+
+	// Review: inexistent question ID
+	if rec := AuxQuestionReview(e, nil, -1, true, admintoken); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question review allows paying inexistent question")
+	}
+
+	// Accept: inexistent question ID
+	if rec := AuxQuestionAccept(e, nil, -1, true, token); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question accept allows inexistent question")
+	}
+
+	// Close: inexistent question ID
+	if rec := AuxQuestionClose(e, nil, -1, token); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question close allows inexistent question")
+	}
+
+	// Cancel: inexistent question ID
+	if rec := AuxQuestionCancel(e, nil, -1, token); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question cancel allows inexistent question")
 	}
 }
 
