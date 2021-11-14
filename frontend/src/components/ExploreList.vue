@@ -40,6 +40,7 @@
     :total="100"
     @size-change="handleSizeChange"
     @current-change="handleCurrentChange"
+    style="margin:0 auto"
     >
     </el-pagination>
   </el-container>
