@@ -249,6 +249,9 @@ export default {
       this.$refs.form.validate((valid) => {
         if (valid) {
           window.localStorage.setItem('description', this.model.description);
+          if (this.model.password1 === '') {
+            this.model.password1 = null;
+          }
           fetch('/v1/user/edit', {
             method: 'POST',
             headers: {
