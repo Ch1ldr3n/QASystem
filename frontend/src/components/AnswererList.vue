@@ -49,7 +49,7 @@
     :page-size="10"
     layout="prev, pager, next, jumper"
     v-model:currentPage="currentPage"
-    :total="1000"
+    :total="total"
     @size-change="handleSizeChange"
     @current-change="handleCurrentChange"
     style="margin:0 auto"
@@ -66,6 +66,7 @@ export default {
       userlist: [],
       currentPage: 1,
       pageSize: 10,
+      total: 1000,
     };
   },
   created() {
@@ -81,6 +82,7 @@ export default {
       })
       .then((data) => {
         this.userlist = data.userlist;
+        this.total = data.num;
       })
       .catch((error) => {
         this.$message({

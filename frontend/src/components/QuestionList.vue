@@ -150,7 +150,7 @@
     :page-size="10"
     layout="prev, pager, next, jumper"
     v-model:currentPage="currentPage"
-    :total="1000"
+    :total="total"
     @size-change="handleSizeChange"
     @current-change="handleCurrentChange"
     style="margin:0 auto"
@@ -177,6 +177,7 @@ export default {
       newMessagesCount: 0,
       currentPage: 1,
       pageSize: 10,
+      total: 1000,
       isChatOpen: false, // to determine whether the chat window should be open or closed
       showTypingIndicator: '', // when set to a value matching the participant.id it shows the typing indicator for the specific user
       colors: {
