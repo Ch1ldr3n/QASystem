@@ -1,4 +1,5 @@
 <template>
+<el-main>
   <el-container>
     <el-table
       ref="filterTable"
@@ -122,6 +123,7 @@
         </template>
       </el-table-column>
     </el-table>
+  </el-container>
     <beautiful-chat
       style="z-index: 1000"
       :participants="participants"
@@ -143,17 +145,19 @@
       :message-styling="true"
       @scrollToTop="handleScrollToTop"
     />
+  <el-container>
     <el-pagination
     :page-size="10"
     layout="prev, pager, next, jumper"
     v-model:currentPage="currentPage"
-    :total="1000"
+    :total="total"
     @size-change="handleSizeChange"
     @current-change="handleCurrentChange"
     style="margin:0 auto"
     >
     </el-pagination>
   </el-container>
+</el-main>
 </template>
 
 <script>
@@ -173,6 +177,7 @@ export default {
       newMessagesCount: 0,
       currentPage: 1,
       pageSize: 10,
+      total: 1000,
       isChatOpen: false, // to determine whether the chat window should be open or closed
       showTypingIndicator: '', // when set to a value matching the participant.id it shows the typing indicator for the specific user
       colors: {
@@ -450,6 +455,7 @@ export default {
         })
         .then((data) => {
           this.tableData = [...(data.answeredlist.map((v) => Object.assign(v, { asked: false }))), ...(data.askedlist.map((v) => Object.assign(v, { asked: true })))];
+          this.total = data.answerednum + data.askednum;
           console.log(data);
         })
         .catch((error) => {
