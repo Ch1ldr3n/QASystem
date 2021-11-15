@@ -12,6 +12,8 @@ import (
 	"gitlab.secoder.net/bauhinia/qanda-schema/ent"
 	adminp "gitlab.secoder.net/bauhinia/qanda-schema/ent/admin"
 	paramp "gitlab.secoder.net/bauhinia/qanda-schema/ent/param"
+	userp "gitlab.secoder.net/bauhinia/qanda-schema/ent/user"
+	questionp "gitlab.secoder.net/bauhinia/qanda-schema/ent/question"
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/admin"
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 	_ "gitlab.secoder.net/bauhinia/qanda/backend/pkg/docs"
@@ -19,6 +21,7 @@ import (
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/user"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
+	"time"
 )
 
 type Validator struct {
@@ -89,5 +92,68 @@ func New(serve string, storage string, database string, key string, adminKey str
 	user.Register(v1.Group("/user"))
 	question.Register(v1.Group("/question"))
 	admin.Register(v1.Group("/admin"))
+
+	// Check question modified time EVERY SECOND 
+	go func(db *ent.Client){
+		pa, err := db.Param.Query().Where(paramp.Scope("default")).Only(context.Background())
+		if err != nil {
+			e.Logger.Fatal(err)
+		}
+		timeBackwardSecond := func (num int) time.Time {
+			return time.Now().Add(time.Second * time.Duration(-num))
+		}
+		for {
+			acceptClear := timeBackwardSecond(pa.AcceptDeadline)
+			answerClear := timeBackwardSecond(pa.AnswerDeadline)
+			doneClear := timeBackwardSecond(pa.DoneDeadline)
+			// Accept Deadline
+			questions, err := db.Question.Query().Where(questionp.StateEQ("reviewed")).Where(questionp.ModifiedLT(acceptClear)).WithQuestioner().All(context.Background())
+			if err != nil {
+				e.Logger.Fatal(err)
+			}
+			for _, question := range questions {
+				_, err = db.Question.Update().Where(questionp.ID(question.ID)).SetState("canceled").Save(context.Background())
+				if err != nil {
+					e.Logger.Fatal(err)
+				}
+				_, err = db.User.Update().Where(userp.ID(question.Edges.Questioner.ID)).SetBalance(question.Edges.Questioner.Balance + question.Price).Save(context.Background())
+				if err != nil {
+					e.Logger.Fatal(err)
+				}
+			}
+			// Answer Deadline
+			questions, err = db.Question.Query().Where(questionp.StateEQ("accepted")).Where(questionp.Answered(false)).Where(questionp.ModifiedLT(answerClear)).WithQuestioner().All(context.Background())
+			if err != nil {
+				e.Logger.Fatal(err)
+			}
+			for _, question := range questions {
+				_, err = db.Question.Update().Where(questionp.ID(question.ID)).SetState("canceled").Save(context.Background())
+				if err != nil {
+					e.Logger.Fatal(err)
+				}
+				_, err = db.User.Update().Where(userp.ID(question.Edges.Questioner.ID)).SetBalance(question.Edges.Questioner.Balance + question.Price).Save(context.Background())
+				if err != nil {
+					e.Logger.Fatal(err)
+				}
+			}
+			// Done Deadline
+			questions, err = db.Question.Query().Where(questionp.StateEQ("accepted")).Where(questionp.Answered(true)).Where(questionp.ModifiedLT(doneClear)).WithAnswerer().All(context.Background())
+			if err != nil {
+				e.Logger.Fatal(err)
+			}
+			for _, question := range questions {
+				_, err = db.Question.Update().Where(questionp.ID(question.ID)).SetState("done").Save(context.Background())
+				if err != nil {
+					e.Logger.Fatal(err)
+				}
+				_, err = db.User.Update().Where(userp.ID(question.Edges.Answerer.ID)).SetBalance(question.Edges.Answerer.Balance + question.Price).Save(context.Background())
+				if err != nil {
+					e.Logger.Fatal(err)
+				}
+			}
+			time.Sleep(time.Second)
+		}
+	}(db)
+
 	return e
 }
