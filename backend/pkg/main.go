@@ -51,6 +51,7 @@ func New(serve string, storage string, database string, key string, adminKey str
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
+
 	if err := db.Schema.Create(context.Background()); err != nil {
 		e.Logger.Fatal(err)
 	}
@@ -68,6 +69,7 @@ func New(serve string, storage string, database string, key string, adminKey str
 			e.Logger.Fatal(err)
 		}
 	}
+
 	c, err = db.Param.Query().Where(paramp.Scope("default")).Count(context.Background())
 	if err != nil {
 		e.Logger.Fatal(err)
@@ -78,6 +80,7 @@ func New(serve string, storage string, database string, key string, adminKey str
 			e.Logger.Fatal(err)
 		}
 	}
+
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			cc := &common.Context{Context: c, DBField: db, Key: []byte(key), AdminKey: []byte(adminKey)}
@@ -95,21 +98,17 @@ func New(serve string, storage string, database string, key string, adminKey str
 
 	// Check question modified time EVERY SECOND 
 	go func(db *ent.Client){
-		pa, err := db.Param.Query().Where(paramp.Scope("default")).Only(context.Background())
-		if err != nil {
-			e.Logger.Fatal(err)
-		}
 		timeBackwardSecond := func (num int) time.Time {
 			return time.Now().Add(time.Second * time.Duration(-num))
 		}
 		for {
-			acceptClear := timeBackwardSecond(pa.AcceptDeadline)
-			answerClear := timeBackwardSecond(pa.AnswerDeadline)
-			doneClear := timeBackwardSecond(pa.DoneDeadline)
 			pa, err := db.Param.Query().Where(paramp.Scope("default")).Only(context.Background())
 			if err != nil {
 				e.Logger.Fatal(err)
 			}
+			acceptClear := timeBackwardSecond(pa.AcceptDeadline)
+			answerClear := timeBackwardSecond(pa.AnswerDeadline)
+			doneClear := timeBackwardSecond(pa.DoneDeadline)
 			answerLimit := pa.AnswerLimit
 			// Accept Deadline --> Cancel
 			questions1, err := db.Question.Query().Where(questionp.StateEQ(questionp.StateReviewed)).Where(questionp.ModifiedLT(acceptClear)).WithQuestioner().All(context.Background())
