@@ -22,6 +22,7 @@ func Register(group *echo.Group) {
 	group.POST("/cancel", cancel)
 	group.GET("/review", revlist)
 	group.GET("/aggreg", aggreg)
+	group.POST("/callback", callback)
 }
 
 // @Summary Question Submit
@@ -683,4 +684,66 @@ type questionAggregMonthData struct {
 
 type questionAggregResponse struct {
 	Datamap map[int](map[int](*questionAggregMonthData)) `json:"map"`
+}
+
+// @Summary Question Callback
+// @Description Response to IM callback
+// @Accept json
+// @Produce json
+// @Param body body questionCallbackRequest true "question callback request"
+// @Success 200 {object} string "question callback response"
+// @Failure 400 {string} string
+// @Router /v1/question/callback [post]
+func callback(c echo.Context) error {
+	ctx := c.(*common.Context)
+	u := new(questionCallbackRequest)
+	if err := ctx.Bind(u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := ctx.Validate(u); err != nil {
+		return err
+	}
+	groupid, err := strconv.Atoi(u.GroupId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	senderid, err := strconv.Atoi(u.From_Account)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	question, err := ctx.DB().Question.Query().Where(questionp.ID(groupid)).WithAnswerer().Only(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	upd := ctx.DB().Question.Update().Where(questionp.ID(groupid)).SetMsgCount(question.MsgCount + 1)
+	if !question.Answered && senderid == question.Edges.Answerer.ID {
+		upd = upd.SetAnswered(true)
+	}
+	if _, err := upd.Save(ctx.Request().Context()); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.JSON(http.StatusOK, questionCallbackResponse{
+		ActionStatus: "OK",
+		ErrorCode: 0,
+		ErrorInfo: "",
+	})
+}
+
+type questionCallbackRequest struct {
+	SdkAppid        string `query:"SdkAppid"`
+	CallbackCommand string `json:"CallbackCommand"`
+	GroupId         string `json:"GroupId"`
+	Type            string `json:"Type"`
+	From_Account    string `json:"From_Account"`
+	MsgSeq          int    `json:"MsgSeq"`
+	MsgTime         int    `json:"MsgTime"`
+}
+
+type questionCallbackResponse struct {
+	ActionStatus string `json:"ActionStatus"`
+	ErrorInfo    string `json:"ErrorInfo"`
+	ErrorCode    int    `json:"ErrorCode"`
 }
