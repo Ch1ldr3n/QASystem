@@ -33,7 +33,7 @@ func Register(group *echo.Group) {
 // @Param body body questionSubmitRequest true "question submit request"
 // @Success 200 {object} questionSubmitResponse "question submit response"
 // @Failure 400 {string} string
-// @Router /v1/question/summit [post]
+// @Router /v1/question/submit [post]
 func submit(c echo.Context) error {
 	ctx := c.(*common.Context)
 	u := new(questionSubmitRequest)
@@ -60,6 +60,9 @@ func submit(c echo.Context) error {
 	answerer, err0 := ctx.DB().User.Query().Where(userp.ID(u.AnswererID)).Only(ctx.Request().Context())
 	if err0 != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err0.Error())
+	}
+	if !answerer.Answerer {
+		return echo.NewHTTPError(http.StatusBadRequest, "error: asking those who are not qualified as an answerer")
 	}
 	question, err := ctx.DB().Question.Create().
 		SetPrice(answerer.Price).

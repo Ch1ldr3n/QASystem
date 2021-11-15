@@ -841,8 +841,19 @@ func TestQuestionX1(t *testing.T) {
 	// 	t.Fatal("question pay allows illegal payment")
 	// }
 
+	// Submit: questioning a non-answerer
+	token4, userid4 := GetIdTokenFromRec(AuxUserRegister(e, t, "user4", "pass"), t)
+	if rec := AuxQuestionSubmit(e, nil, token3, `
+{
+	"title": "test titleX",
+	"content":"test contentX",
+	"answererid":`+strconv.Itoa(userid4)+`
+}
+	`); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question pay allows questioning a non-answerer")
+	}
+
 	// Pay: paying another person's question
-	token4, _ := GetIdTokenFromRec(AuxUserRegister(e, t, "user4", "pass"), t)
 	if rec := AuxQuestionPay(e, nil, questionid5, token4); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("question pay allows paying others' questions")
 	}
