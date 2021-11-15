@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+	"time"
 	"testing"
 )
 
@@ -322,6 +323,19 @@ func AuxQuestionCancel(e *echo.Echo, t *testing.T, questionid int, token string)
 
 	if t != nil && rec.Result().StatusCode != http.StatusOK {
 		t.Fatal("question cancel failed")
+	}
+
+	return rec
+}
+
+func AuxQuestionCallback(e *echo.Echo, t *testing.T, body string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodPost, "/v1/question/callback", bytes.NewBufferString(body))
+	req.Header.Add("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if t != nil && rec.Result().StatusCode != http.StatusOK {
+		t.Fatal("question IM callback failed")
 	}
 
 	return rec
@@ -689,7 +703,7 @@ func TestQuestion(t *testing.T) {
 	rec = AuxAdminLogin(e, t, adminRootName, adminRootPassword)
 	admintoken, _ := GetIdTokenFromRec(rec, t)
 
-	// Create 3 questions
+	// Create 5 questions
 	questionid1 := GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token1, `
 {
 	"title": "test title1",
@@ -827,8 +841,19 @@ func TestQuestionX1(t *testing.T) {
 	// 	t.Fatal("question pay allows illegal payment")
 	// }
 
+	// Submit: questioning a non-answerer
+	token4, userid4 := GetIdTokenFromRec(AuxUserRegister(e, t, "user4", "pass"), t)
+	if rec := AuxQuestionSubmit(e, nil, token3, `
+{
+	"title": "test titleX",
+	"content":"test contentX",
+	"answererid":`+strconv.Itoa(userid4)+`
+}
+	`); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("question pay allows questioning a non-answerer")
+	}
+
 	// Pay: paying another person's question
-	token4, _ := GetIdTokenFromRec(AuxUserRegister(e, t, "user4", "pass"), t)
 	if rec := AuxQuestionPay(e, nil, questionid5, token4); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("question pay allows paying others' questions")
 	}
@@ -1072,4 +1097,147 @@ func TestQuestionRevlistXv(t *testing.T) {
 	AuxTestAdminVerificationX("QuestionRevlist", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxQuestionRevlist(e, t, token)
 	})
+}
+
+// Parameter test
+//
+
+func GetQuestionStateFromRec(rec *httptest.ResponseRecorder, t *testing.T) string {
+	resp := new(struct {
+		ID                 int     `json:"id"`
+		Price              float64 `json:"price"`
+		Title              string  `json:"title"`
+		Content            string  `json:"content"`
+		State              string  `json:"state"`
+		QuestionerID       int     `json:"questionerid"`
+		AnswererID         int     `json:"answererid"`
+		QuestionerUsername string  `json:"qusername"`
+		AnswererUsername   string  `json:"ausername"`
+	})
+	err := json.NewDecoder(rec.Body).Decode(resp)
+	if t != nil && err != nil {
+		t.Fatal(err)
+	}
+	return resp.State
+}
+
+func TestParam(t *testing.T) {
+	e := GetEchoTestEnv("entParam")
+	admintoken, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminRootName, adminRootPassword), t)
+	AuxParamEdit(e, t, admintoken, `
+{
+	"min_price":-1000,
+	"max_price":1000,
+	"accept_deadline":2,
+	"answer_deadline":2,
+	"answer_limit":1,
+	"done_deadline":2
+}
+	`)
+	rec := AuxUserRegister(e, t, "user1", "pass")
+	token1, _ := GetIdTokenFromRec(rec, t)
+	rec = AuxUserRegister(e, t, "user2", "pass")
+	token2, userid2 := GetIdTokenFromRec(rec, t)
+	AuxUserEdit(e, t, token2, `
+{
+	"answerer":true,
+	"price":200
+}
+	`)
+
+	const (
+		StateCanceled = "canceled"
+		StateDone = "done"
+	)
+
+	// accept deadline
+	questionid := GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token1, `
+{
+	"title": "test title",
+	"content":"test content",
+	"answererid":`+strconv.Itoa(userid2)+`
+}
+	`), t)
+	AuxQuestionPay(e, t, questionid, token1)
+	AuxQuestionReview(e, t, questionid, true, admintoken)
+	time.Sleep(time.Second * 3)
+	rec = AuxQuestionQuery(e, t, questionid)
+	if GetQuestionStateFromRec(rec, t) != StateCanceled {
+		t.Fatal("param accept deadline doesn't work")
+	}
+
+	// answer deadline
+	questionid = GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token1, `
+{
+	"title": "test title",
+	"content":"test content",
+	"answererid":`+strconv.Itoa(userid2)+`
+}
+	`), t)
+	AuxQuestionPay(e, t, questionid, token1)
+	AuxQuestionReview(e, t, questionid, true, admintoken)
+	AuxQuestionAccept(e, t, questionid, true, token2)
+	time.Sleep(time.Second * 3)
+	rec = AuxQuestionQuery(e, t, questionid)
+	if GetQuestionStateFromRec(rec, t) != StateCanceled {
+		t.Fatal("param answer deadline doesn't work")
+	}
+
+	// answer limit
+	questionid = GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token1, `
+{
+	"title": "test title",
+	"content":"test content",
+	"answererid":`+strconv.Itoa(userid2)+`
+}
+	`), t)
+	AuxQuestionPay(e, t, questionid, token1)
+	AuxQuestionReview(e, t, questionid, true, admintoken)
+	AuxQuestionAccept(e, t, questionid, true, token2)
+	for i := 1; i < 2; i++ {
+		AuxQuestionCallback(e, t, `
+		{
+			"SdkAppid":"1",
+			"CallbackCommand":"Group.CallbackAfterSendMsg",
+			"GroupId":"`+strconv.Itoa(questionid)+`",
+			"Type":"Private",
+			"From_Account":"`+strconv.Itoa(userid2)+`",
+			"MsgSeq":123,
+			"MsgTime":1234567890
+		}
+			`)
+	}
+	time.Sleep(time.Second * 3)
+	rec = AuxQuestionQuery(e, t, questionid)
+	if GetQuestionStateFromRec(rec, t) != StateDone {
+		t.Fatal("param answer limit doesn't work")
+	}
+
+	// done deadline
+	questionid = GetQuestionIdFromSubmit(AuxQuestionSubmit(e, t, token1, `
+{
+	"title": "test title",
+	"content":"test content",
+	"answererid":`+strconv.Itoa(userid2)+`
+}
+	`), t)
+	AuxQuestionPay(e, t, questionid, token1)
+	AuxQuestionReview(e, t, questionid, true, admintoken)
+	AuxQuestionAccept(e, t, questionid, true, token2)
+	AuxQuestionCallback(e, t, `
+{
+	"SdkAppid":"1",
+	"CallbackCommand":"Group.CallbackAfterSendMsg",
+	"GroupId":"`+strconv.Itoa(questionid)+`",
+	"Type":"Private",
+	"From_Account":"`+strconv.Itoa(userid2)+`",
+	"MsgSeq":123,
+	"MsgTime":1234567890
+}
+	`)
+	time.Sleep(time.Second * 3)
+	rec = AuxQuestionQuery(e, t, questionid)
+	if GetQuestionStateFromRec(rec, t) != StateDone {
+		t.Fatal("param done deadline doesn't work")
+	}
 }
