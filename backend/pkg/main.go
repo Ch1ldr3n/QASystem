@@ -107,12 +107,12 @@ func New(serve string, storage string, database string, key string, adminKey str
 			answerClear := timeBackwardSecond(pa.AnswerDeadline)
 			doneClear := timeBackwardSecond(pa.DoneDeadline)
 			// Accept Deadline
-			questions, err := db.Question.Query().Where(questionp.StateEQ("reviewed")).Where(questionp.ModifiedLT(acceptClear)).WithQuestioner().All(context.Background())
+			questions, err := db.Question.Query().Where(questionp.StateEQ(questionp.StateReviewed)).Where(questionp.ModifiedLT(acceptClear)).WithQuestioner().All(context.Background())
 			if err != nil {
 				e.Logger.Fatal(err)
 			}
 			for _, question := range questions {
-				_, err = db.Question.Update().Where(questionp.ID(question.ID)).SetState("canceled").Save(context.Background())
+				_, err = db.Question.Update().Where(questionp.ID(question.ID)).SetState(questionp.StateCanceled).Save(context.Background())
 				if err != nil {
 					e.Logger.Fatal(err)
 				}
@@ -122,12 +122,12 @@ func New(serve string, storage string, database string, key string, adminKey str
 				}
 			}
 			// Answer Deadline
-			questions, err = db.Question.Query().Where(questionp.StateEQ("accepted")).Where(questionp.Answered(false)).Where(questionp.ModifiedLT(answerClear)).WithQuestioner().All(context.Background())
+			questions, err = db.Question.Query().Where(questionp.StateEQ(questionp.StateAccepted)).Where(questionp.Answered(false)).Where(questionp.ModifiedLT(answerClear)).WithQuestioner().All(context.Background())
 			if err != nil {
 				e.Logger.Fatal(err)
 			}
 			for _, question := range questions {
-				_, err = db.Question.Update().Where(questionp.ID(question.ID)).SetState("canceled").Save(context.Background())
+				_, err = db.Question.Update().Where(questionp.ID(question.ID)).SetState(questionp.StateCanceled).Save(context.Background())
 				if err != nil {
 					e.Logger.Fatal(err)
 				}
@@ -137,12 +137,12 @@ func New(serve string, storage string, database string, key string, adminKey str
 				}
 			}
 			// Done Deadline
-			questions, err = db.Question.Query().Where(questionp.StateEQ("accepted")).Where(questionp.Answered(true)).Where(questionp.ModifiedLT(doneClear)).WithAnswerer().All(context.Background())
+			questions, err = db.Question.Query().Where(questionp.StateEQ(questionp.StateAccepted)).Where(questionp.Answered(true)).Where(questionp.ModifiedLT(doneClear)).WithAnswerer().All(context.Background())
 			if err != nil {
 				e.Logger.Fatal(err)
 			}
 			for _, question := range questions {
-				_, err = db.Question.Update().Where(questionp.ID(question.ID)).SetState("done").Save(context.Background())
+				_, err = db.Question.Update().Where(questionp.ID(question.ID)).SetState(questionp.StateDone).Save(context.Background())
 				if err != nil {
 					e.Logger.Fatal(err)
 				}

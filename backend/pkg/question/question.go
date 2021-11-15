@@ -66,7 +66,7 @@ func submit(c echo.Context) error {
 		SetContent(u.Content).
 		SetCreated(time.Now()).
 		SetModified(time.Now()).
-		SetState("created").
+		SetState(questionp.StateCreated).
 		SetQuestionerID(questioner.ID).
 		SetAnswererID(answerer.ID).
 		Save(ctx.Request().Context())
@@ -135,7 +135,7 @@ func pay(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	if question.State != "created" {
+	if question.State != questionp.StateCreated {
 		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'created'")
 	}
 	payer, _ := question.Edges.Questioner, question.Edges.Answerer
@@ -149,7 +149,7 @@ func pay(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("paid").SetModified(time.Now()).Save(ctx.Request().Context())
+	_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState(questionp.StatePaid).SetModified(time.Now()).Save(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -276,7 +276,7 @@ func mine(c echo.Context) error {
 			q.WithAnswerer()
 		}).
 		WithAnswered(func(q *ent.QuestionQuery){
-			q.Where(questionp.StateNotIn("created", "paid"))
+			q.Where(questionp.StateNotIn(questionp.StateCreated, questionp.StatePaid))
 			q.Order(ent.Desc(questionp.FieldID))
 			q.WithQuestioner()
 		}).
@@ -357,7 +357,7 @@ func accept(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	if question.State != "reviewed" {
+	if question.State != questionp.StateReviewed {
 		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'reviewed'")
 	}
 	questioner, answerer := question.Edges.Questioner, question.Edges.Answerer
@@ -365,13 +365,13 @@ func accept(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "current user is not the answerer")
 	}
 	if u.Choice {
-		_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("accepted").SetModified(time.Now()).Save(ctx.Request().Context())
+		_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState(questionp.StateAccepted).SetModified(time.Now()).Save(ctx.Request().Context())
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 		return ctx.JSON(http.StatusOK, "question is accepted")
 	} else {
-		_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("canceled").SetModified(time.Now()).Save(ctx.Request().Context())
+		_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState(questionp.StateCanceled).SetModified(time.Now()).Save(ctx.Request().Context())
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
@@ -417,7 +417,7 @@ func review(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	if question.State != "paid" {
+	if question.State != questionp.StatePaid {
 		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'paid'")
 	}
 	admin, err := ctx.DB().Admin.Query().Where(adminp.Username(claims.Subject)).Only(ctx.Request().Context())
@@ -429,13 +429,13 @@ func review(c echo.Context) error {
 	}
 	questioner := question.Edges.Questioner
 	if u.Choice {
-		_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("reviewed").SetModified(time.Now()).Save(ctx.Request().Context())
+		_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState(questionp.StateReviewed).SetModified(time.Now()).Save(ctx.Request().Context())
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 		return ctx.JSON(http.StatusOK, "question is reviewed")
 	} else {
-		_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("canceled").SetModified(time.Now()).Save(ctx.Request().Context())
+		_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState(questionp.StateCanceled).SetModified(time.Now()).Save(ctx.Request().Context())
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
@@ -481,14 +481,14 @@ func close(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	if question.State != "accepted" {
+	if question.State != questionp.StateAccepted {
 		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'accepted'")
 	}
 	questioner, answerer := question.Edges.Questioner, question.Edges.Answerer
 	if claims.Subject != questioner.Username && claims.Subject != answerer.Username {
 		return echo.NewHTTPError(http.StatusBadRequest, "current user is neither the questioner nor the answerer")
 	}
-	_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("done").SetModified(time.Now()).Save(ctx.Request().Context())
+	_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState(questionp.StateDone).SetModified(time.Now()).Save(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -536,15 +536,15 @@ func cancel(c echo.Context) error {
 	if claims.Subject != questioner.Username && claims.Subject != answerer.Username {
 		return echo.NewHTTPError(http.StatusBadRequest, "current user is neither the questioner nor the answerer")
 	}
-	if question.State == "paid" || question.State == "reviewed" || question.State == "accepted" {
+	if question.State == questionp.StatePaid || question.State == questionp.StateReviewed || question.State == questionp.StateAccepted {
 		_, err = ctx.DB().User.Update().Where(userp.ID(questioner.ID)).SetBalance(questioner.Balance + question.Price).Save(ctx.Request().Context())
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
-	} else if question.State != "created" {
+	} else if question.State != questionp.StateCreated {
 		return echo.NewHTTPError(http.StatusBadRequest, "question state is not 'created', 'paid', 'reviewed' or 'accepted'")
 	}
-	_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState("canceled").SetModified(time.Now()).Save(ctx.Request().Context())
+	_, err = ctx.DB().Question.Update().Where(questionp.ID(question.ID)).SetState(questionp.StateCanceled).SetModified(time.Now()).Save(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -576,7 +576,7 @@ func revlist(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	}
-	questions, err := ctx.DB().Question.Query().Where(questionp.StateEQ("paid")).WithQuestioner().WithAnswerer().Order(ent.Desc(questionp.FieldID)).All(ctx.Request().Context())
+	questions, err := ctx.DB().Question.Query().Where(questionp.StateEQ(questionp.StatePaid)).WithQuestioner().WithAnswerer().Order(ent.Desc(questionp.FieldID)).All(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -633,12 +633,12 @@ func aggreg(c echo.Context) error {
 	// question filter:
 	user, err1 := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).
 		WithAsked(func(q *ent.QuestionQuery){
-			q.Where(questionp.StateEQ("done"))
+			q.Where(questionp.StateEQ(questionp.StateDone))
 			q.WithQuestioner()
 			q.WithAnswerer()
 		}).
 		WithAnswered(func(q *ent.QuestionQuery){
-			q.Where(questionp.StateEQ("done"))
+			q.Where(questionp.StateEQ(questionp.StateDone))
 			q.WithQuestioner()
 			q.WithAnswerer()
 		}).
