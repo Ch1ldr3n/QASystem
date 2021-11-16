@@ -253,7 +253,6 @@ type questionListResponse struct {
 // @Description List of all relevant questions
 // @Security token
 // @Produce json
-// @Param body body questionMineRequest true "question mine request"
 // @Success 200 {object} questionMineResponse "question mine response"
 // @Failure 400 {string} string
 // @Router /v1/question/mine [get]
@@ -619,7 +618,6 @@ type questionRevlistResponse struct {
 // @Description Summary of income of this month
 // @Security token
 // @Produce json
-// @Param body body questionAggregRequest true "question aggreg request"
 // @Success 200 {object} questionAggregResponse "question aggreg response"
 // @Failure 400 {string} string
 // @Router /v1/question/aggreg [get]
