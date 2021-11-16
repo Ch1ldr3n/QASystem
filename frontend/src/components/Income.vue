@@ -7,8 +7,7 @@
       <el-container style="margin-left: 50px; margin-top: 20px;">
         <el-table
           ref="filterTable"
-          :data="list"
-          :default-sort="{ prop: 'date', order: 'descending' }"
+          :data="tableData"
           style="width: 100%"
         >
           <el-table-column
@@ -21,7 +20,7 @@
             label="月份"
             sortable
             min-width="10%"
-            column-key="month"
+            column-key="Month"
           />
           <el-table-column
             prop="Earning"
@@ -51,7 +50,7 @@ export default {
   },
   data() {
     return {
-      list: [],
+      tableData: [],
     };
   },
   created() {
@@ -64,7 +63,7 @@ export default {
         return resp.json();
       })
       .then((data) => {
-        this.list = data.list;
+        this.tableData = data.list;
       })
       .catch((error) => {
         this.$message({
