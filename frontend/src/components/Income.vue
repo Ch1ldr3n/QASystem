@@ -12,25 +12,25 @@
           style="width: 100%"
         >
           <el-table-column
-            prop="month"
+            prop="Year"
             label="年份"
             min-width="10%"
           />
           <el-table-column
-            prop="month"
+            prop="Month"
             label="月份"
             sortable
             min-width="10%"
             column-key="month"
           />
           <el-table-column
-            prop="earning"
+            prop="Earning"
             label="收入"
             sortable
             min-width="20%"
           />
           <el-table-column
-            prop="spending"
+            prop="Spending"
             label="支出"
             sortable
             min-width="20%"
