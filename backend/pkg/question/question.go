@@ -9,6 +9,7 @@ import questionp "gitlab.secoder.net/bauhinia/qanda-schema/ent/question"
 import "net/http"
 import "time"
 import "strconv"
+import "sort"
 
 func Register(group *echo.Group) {
 	group.POST("/submit", submit)
@@ -251,9 +252,7 @@ type questionListResponse struct {
 // @Summary Question Mine
 // @Description List of all relevant questions
 // @Security token
-// @Accept json
 // @Produce json
-// @Param body body questionMineRequest true "question mine request"
 // @Success 200 {object} questionMineResponse "question mine response"
 // @Failure 400 {string} string
 // @Router /v1/question/mine [get]
@@ -618,9 +617,7 @@ type questionRevlistResponse struct {
 // @Summary Question Aggreg
 // @Description Summary of income of this month
 // @Security token
-// @Accept json
 // @Produce json
-// @Param body body questionAggregRequest true "question aggreg request"
 // @Success 200 {object} questionAggregResponse "question aggreg response"
 // @Failure 400 {string} string
 // @Router /v1/question/aggreg [get]
@@ -668,6 +665,8 @@ func aggreg(c echo.Context) error {
 		}
 		if _, exist := data[year][month]; !exist {
 			data[year][month] = new(questionAggregMonthData)
+			data[year][month].Year = year
+			data[year][month].Month = month
 		}
 		// update
 		if question.Edges.Answerer.ID == user.ID {
@@ -677,8 +676,16 @@ func aggreg(c echo.Context) error {
 			data[year][month].Spending += question.Price
 		}
 	}
+	list := make([]questionAggregMonthData, 0)
+	for year := range data {
+		for month := range data[year] {
+			list = append(list, *data[year][month])
+		}
+	}
+	li := questionAggregMonthDataList(list)
+	sort.Sort(li)
 	return ctx.JSON(http.StatusOK, questionAggregResponse{
-		Datamap: data,
+		Data: li,
 	})
 }
 
@@ -687,12 +694,26 @@ type questionAggregRequest struct {
 }
 
 type questionAggregMonthData struct {
+	Year     int
+	Month    int
 	Earning  float64	// default: 0.0
 	Spending float64	// default: 0.0
 }
 
+type questionAggregMonthDataList []questionAggregMonthData
+
+func (md questionAggregMonthDataList) Len() int {
+	return len(md)
+}
+func (md questionAggregMonthDataList) Less(i, j int) bool {
+	return md[i].Year < md[j].Year || (md[i].Year == md[j].Year && md[i].Month < md[j].Month)
+}
+func (md questionAggregMonthDataList) Swap(i, j int) {
+	md[i], md[j] = md[j], md[i]
+}
+
 type questionAggregResponse struct {
-	Datamap map[int](map[int](*questionAggregMonthData)) `json:"map"`
+	Data []questionAggregMonthData `json:"list"`
 }
 
 // @Summary Question Callback
