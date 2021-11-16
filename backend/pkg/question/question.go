@@ -571,7 +571,7 @@ type questionCancelRequest struct {
 // @Router /v1/question/review [get]
 func revlist(c echo.Context) error {
 	ctx := c.(*common.Context)
-	u := new(questionCancelRequest)
+	u := new(questionRevlistRequest)
 	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -604,6 +604,10 @@ func revlist(c echo.Context) error {
 		Number: len(questionlist),
 		QuestionList: questionlist,
 	})
+}
+
+type questionRevlistRequest struct {
+	Token      string `header:"authorization" validate:"required"`
 }
 
 type questionRevlistResponse struct {

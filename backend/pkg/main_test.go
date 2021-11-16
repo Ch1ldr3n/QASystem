@@ -548,6 +548,15 @@ func TestParamEditX1(t *testing.T) {
 	}
 }
 
+// Change: not 'admin'
+func TestAdminChangeX1(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+	token, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, "reviewer1", "newadminpassword"), t)
+	if rec := AuxAdminChange(e, nil, token, "reviewer1", "reviewer"); rec.Result().StatusCode != http.StatusForbidden {
+		t.Fatal("admin change allows operating on non-root admin")
+	}
+}
+
 // User:
 
 func TestUser(t *testing.T) {
@@ -584,16 +593,8 @@ func TestUser(t *testing.T) {
 	AuxUserFilter(e, t, token2, "?id="+strconv.Itoa(userid1)+"&username=user1&email=hello&phone=12345678&answerer=true&priceUpperBound=1000&priceLowerBound=-1000&profession=Geschichte")
 }
 
-// Register: bad json
-func TestUserRegisterX1(t *testing.T) {
-	e := GetEchoTestEnv("entUser")
-	if rec := AuxUserRegister(e, nil, "userX\"!!", "testpassword"); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("user register allows bad json")
-	}
-}
-
 // Register: no password
-func TestUserRegisterX2(t *testing.T) {
+func TestUserRegisterX1(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserRegister(e, nil, "userX\"}", ""); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user register allows no password")
@@ -601,23 +602,15 @@ func TestUserRegisterX2(t *testing.T) {
 }
 
 // Register: repeated register
-func TestUserRegisterX3(t *testing.T) {
+func TestUserRegisterX2(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserRegister(e, nil, "user1", "testpassword"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user register allows repeated register")
 	}
 }
 
-// Login: bad json
-func TestUserLoginX1(t *testing.T) {
-	e := GetEchoTestEnv("entUser")
-	if rec := AuxUserLogin(e, nil, "user1\"!!", "testpassword"); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("user login allows bad json")
-	}
-}
-
 // Login: no password
-func TestUserLoginX2(t *testing.T) {
+func TestUserLoginX1(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserLogin(e, nil, "user1\"}", "testpassword"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user login allows no password")
@@ -625,7 +618,7 @@ func TestUserLoginX2(t *testing.T) {
 }
 
 // Login: incorrect password
-func TestUserLoginX3(t *testing.T) {
+func TestUserLoginX2(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserLogin(e, nil, "user1", "hello"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user login allows incorrect password")
@@ -633,7 +626,7 @@ func TestUserLoginX3(t *testing.T) {
 }
 
 // Login: inexistent user
-func TestUserLoginX4(t *testing.T) {
+func TestUserLoginX3(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	if rec := AuxUserLogin(e, nil, "userXinexistent", "hello"); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("user login allows inexistent user")
@@ -649,17 +642,8 @@ func TestUserInfoX1(t *testing.T) {
 	}
 }
 
-// Edit: bad json
-func TestUserEditX1(t *testing.T) {
-	e := GetEchoTestEnv("entUser")
-	token, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "testpassword"), t)
-	if rec := AuxUserEdit(e, nil, token, "{\"}"); rec.Result().StatusCode != http.StatusBadRequest {
-		t.Fatal("user edit allows bad json")
-	}
-}
-
 // Edit: invalid price
-func TestUserEditX2(t *testing.T) {
+func TestUserEditX1(t *testing.T) {
 	e := GetEchoTestEnv("entUser")
 	token, _ := GetIdTokenFromRec(AuxUserLogin(e, t, "user1", "testpassword"), t)
 	if rec := AuxUserEdit(e, nil, token, "{\"price\":999999}"); rec.Result().StatusCode != http.StatusBadRequest {
@@ -822,6 +806,14 @@ func TestQuestionX1(t *testing.T) {
 		t.Fatal("question pay allows repeated payment")
 	}
 
+	// Review: non-admin
+	adminname := "reviewer1"
+	password, _ := GetAdminPasswordIdFromRec(AuxAdminAdd(e, t, admintoken, adminname), t)
+	admintoken1, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminname, password), t)
+	if rec := AuxQuestionReview(e, nil, questionid4, true, admintoken1); rec.Result().StatusCode != http.StatusForbidden {
+		t.Fatal("question review allows operating on non-root admin")
+	}
+
 	// Review: double review
 	AuxQuestionReview(e, t, questionid4, true, admintoken)
 	if rec := AuxQuestionReview(e, nil, questionid4, true, admintoken); rec.Result().StatusCode != http.StatusBadRequest {
@@ -961,9 +953,72 @@ func TestQuestionQueryX2(t *testing.T) {
 	}
 }
 
-// Unified test for bad json and invalid token verification
+// Unified test for bad json
+// - the string parameter of 'af' is its position to inject bad json character
 //
-// - the string parameter of 'af' is  its token
+
+func AuxTestBadJsonX(name string, t *testing.T, af func(*echo.Echo, *testing.T, string) *httptest.ResponseRecorder) {
+	e := GetEchoTestEnv("entBadJsonX" + name)
+	// Bad json
+	if rec := af(e, nil, "***\"***"); rec.Result().StatusCode != http.StatusBadRequest {
+		t.Fatal("api allows bad json")
+	}
+}
+
+func TestAdminAddXb(t *testing.T) {
+	AuxTestBadJsonX("AdminAdd", t, func(e *echo.Echo, t *testing.T, inject string) *httptest.ResponseRecorder {
+		return AuxAdminAdd(e, t, "", inject)
+	})
+}
+func TestAdminChangeXb(t *testing.T) {
+	AuxTestBadJsonX("AdminChange", t, func(e *echo.Echo, t *testing.T, inject string) *httptest.ResponseRecorder {
+		return AuxAdminChange(e, t, "", inject, "")
+	})
+}
+func TestAdminEditXb(t *testing.T) {
+	AuxTestBadJsonX("AdminEdit", t, func(e *echo.Echo, t *testing.T, inject string) *httptest.ResponseRecorder {
+		return AuxAdminEdit(e, t, "", inject)
+	})
+}
+func TestAdminLoginXb(t *testing.T) {
+	AuxTestBadJsonX("AdminLogin", t, func(e *echo.Echo, t *testing.T, inject string) *httptest.ResponseRecorder {
+		return AuxAdminLogin(e, t, "", inject)
+	})
+}
+func TestParamEditXb(t *testing.T) {
+	AuxTestBadJsonX("ParamEdit", t, func(e *echo.Echo, t *testing.T, inject string) *httptest.ResponseRecorder {
+		return AuxParamEdit(e, t, "", inject)
+	})
+}
+func TestQuestionCallbackXb(t *testing.T) {
+	AuxTestBadJsonX("QuestionCallback", t, func(e *echo.Echo, t *testing.T, inject string) *httptest.ResponseRecorder {
+		return AuxQuestionCallback(e, t, inject)
+	})
+}
+func TestQuestionSubmitXb(t *testing.T) {
+	AuxTestBadJsonX("QuestionSubmit", t, func(e *echo.Echo, t *testing.T, inject string) *httptest.ResponseRecorder {
+		return AuxQuestionSubmit(e, t, "", inject)
+	})
+}
+func TestUserEditXb(t *testing.T) {
+	AuxTestBadJsonX("UserEdit", t, func(e *echo.Echo, t *testing.T, inject string) *httptest.ResponseRecorder {
+		return AuxUserEdit(e, t, "", inject)
+	})
+}
+func TestUserLoginXb(t *testing.T) {
+	AuxTestBadJsonX("UserLogin", t, func(e *echo.Echo, t *testing.T, inject string) *httptest.ResponseRecorder {
+		return AuxUserLogin(e, t, "", inject)
+	})
+}
+func TestUserRegisterXb(t *testing.T) {
+	AuxTestBadJsonX("UserRegister", t, func(e *echo.Echo, t *testing.T, inject string) *httptest.ResponseRecorder {
+		return AuxUserRegister(e, t, "", inject)
+	})
+}
+
+// Unified test for invalid token verification
+//
+// - the string parameter of 'af' is its token
 // - it's better to make sure that validation of json and token is done at the beginning of the api function,
 // - which means the 'Bind - BindHeaders - Validate - Verify' procedure
 //
@@ -1194,20 +1249,20 @@ func TestParam(t *testing.T) {
 	AuxQuestionPay(e, t, questionid, token1)
 	AuxQuestionReview(e, t, questionid, true, admintoken)
 	AuxQuestionAccept(e, t, questionid, true, token2)
-	for i := 1; i < 2; i++ {
+	for i := 0; i < 2; i++ {
 		AuxQuestionCallback(e, t, `
-		{
-			"SdkAppid":"1",
-			"CallbackCommand":"Group.CallbackAfterSendMsg",
-			"GroupId":"`+strconv.Itoa(questionid)+`",
-			"Type":"Private",
-			"From_Account":"`+strconv.Itoa(userid2)+`",
-			"MsgSeq":123,
-			"MsgTime":1234567890
-		}
-			`)
+{
+	"SdkAppid":"1",
+	"CallbackCommand":"Group.CallbackAfterSendMsg",
+	"GroupId":"`+strconv.Itoa(questionid)+`",
+	"Type":"Private",
+	"From_Account":"`+strconv.Itoa(userid2)+`",
+	"MsgSeq":123,
+	"MsgTime":1234567890
+}
+		`)
 	}
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 1)
 	rec = AuxQuestionQuery(e, t, questionid)
 	if GetQuestionStateFromRec(rec, t) != StateDone {
 		t.Fatal("param answer limit doesn't work")
