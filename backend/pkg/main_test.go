@@ -548,6 +548,15 @@ func TestParamEditX1(t *testing.T) {
 	}
 }
 
+// Change: not 'admin'
+func TestAdminChangeX1(t *testing.T) {
+	e := GetEchoTestEnv("entAdmin")
+	token, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, "reviewer1", "newadminpassword"), t)
+	if rec := AuxAdminChange(e, nil, token, "reviewer1", "reviewer"); rec.Result().StatusCode != http.StatusForbidden {
+		t.Fatal("admin change allows operating on non-root admin")
+	}
+}
+
 // User:
 
 func TestUser(t *testing.T) {
@@ -795,6 +804,14 @@ func TestQuestionX1(t *testing.T) {
 	AuxQuestionPay(e, t, questionid4, token3)
 	if rec := AuxQuestionPay(e, nil, questionid4, token3); rec.Result().StatusCode != http.StatusBadRequest {
 		t.Fatal("question pay allows repeated payment")
+	}
+
+	// Review: non-admin
+	adminname := "reviewer1"
+	password, _ := GetAdminPasswordIdFromRec(AuxAdminAdd(e, t, admintoken, adminname), t)
+	admintoken1, _ := GetIdTokenFromRec(AuxAdminLogin(e, t, adminname, password), t)
+	if rec := AuxQuestionReview(e, nil, questionid4, true, admintoken1); rec.Result().StatusCode != http.StatusForbidden {
+		t.Fatal("question review allows operating on non-root admin")
 	}
 
 	// Review: double review
