@@ -1,129 +1,129 @@
 <template>
-<el-main>
-  <el-container>
-    <el-table
-      ref="filterTable"
-      :data="tableData.slice((currentPage-1)*pageSize,currentPage*pageSize)"
-      :default-sort="{ prop: 'date', order: 'descending' }"
-      style="width: 100%"
-    >
-      <el-table-column type="expand">
-        <template #default="props">
-          <p>{{ props.row.content }}</p>
-          <el-button
-            v-if="props.row.asked && props.row.state === 'created'"
-            @click="pay(props.row.id)"
-          >
-            去支付
-          </el-button>
-          <el-button
-            v-if="!props.row.asked && props.row.state === 'created'"
-            disabled
-          >
-            等待对方支付
-          </el-button>
-          <el-button
-            v-if="props.row.state === 'paid'"
-            disabled
-          >
-            审核中
-          </el-button>
-          <el-button
-            v-if="props.row.asked && props.row.state === 'reviewed'"
-            disabled
-          >
-            等待对方接单
-          </el-button>
-          <el-button
-            v-if="!props.row.asked && props.row.state === 'reviewed'"
-            type="success"
-            @click="accept(props.row.id, true)"
-          >
-            接受提问
-          </el-button>
-          <el-button
-            v-if="!props.row.asked && props.row.state === 'reviewed'"
-            type="danger"
-            @click="accept(props.row.id, false)"
-          >
-            拒绝提问
-          </el-button>
-          <el-button
-            v-if="['accepted', 'done'].includes(props.row.state)"
-            type="primary"
-            @click="openChat(props.row)"
-          >
-            开始聊天
-          </el-button>
-          <el-button
-            v-if="props.row.state === 'accepted'"
-            type="primary"
-            @click="done(props.row.id)"
-          >
-            完成问答
-          </el-button>
-          <el-button
-            v-if="
-              props.row.asked &&
-                !['accepted', 'done', 'canceled'].includes(props.row.state)
-            "
-            type="danger"
-            @click="cancel(props.row.id)"
-          >
-            取消提问
-          </el-button>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="title"
-        label="问题"
-      />
-      <el-table-column
-        prop="price"
-        label="金额"
-        sortable
-        min-width="10%"
-      />
-      <el-table-column
-        prop="ausername"
-        label="回答者"
-        min-width="10%"
-      />
-      <el-table-column
-        prop="qusername"
-        label="提问者"
-        min-width="10%"
-      />
-      <el-table-column
-        prop="state"
-        label="状态"
-        :formatter="stateFormat"
-        sortable
-        min-width="10%"
-      />
-
-      <el-table-column
-        prop="asked"
-        label="类型"
-        min-width="10%"
-        :filters="[
-          { text: '我提出的', value: true },
-          { text: '我回答的', value: false },
-        ]"
-        :filter-method="filterTag"
-        filter-placemeidnt="bottom-end"
+  <el-main>
+    <el-container>
+      <el-table
+        ref="filterTable"
+        :data="tableData.slice((currentPage-1)*pageSize,currentPage*pageSize)"
+        :default-sort="{ prop: 'date', order: 'descending' }"
+        style="width: 100%"
       >
-        <template #default="scope">
-          <el-tag
-            :type="scope.row.asked ? 'warning' : 'success'"
-            disable-transitions
-          >
-            {{ scope.row.asked ? "我提出的" : "我回答的" }}
-          </el-tag>
-        </template>
-      </el-table-column>
-    </el-table>
-  </el-container>
+        <el-table-column type="expand">
+          <template #default="props">
+            <p>{{ props.row.content }}</p>
+            <el-button
+              v-if="props.row.asked && props.row.state === 'created'"
+              @click="pay(props.row.id)"
+            >
+              去支付
+            </el-button>
+            <el-button
+              v-if="!props.row.asked && props.row.state === 'created'"
+              disabled
+            >
+              等待对方支付
+            </el-button>
+            <el-button
+              v-if="props.row.state === 'paid'"
+              disabled
+            >
+              审核中
+            </el-button>
+            <el-button
+              v-if="props.row.asked && props.row.state === 'reviewed'"
+              disabled
+            >
+              等待对方接单
+            </el-button>
+            <el-button
+              v-if="!props.row.asked && props.row.state === 'reviewed'"
+              type="success"
+              @click="accept(props.row.id, true)"
+            >
+              接受提问
+            </el-button>
+            <el-button
+              v-if="!props.row.asked && props.row.state === 'reviewed'"
+              type="danger"
+              @click="accept(props.row.id, false)"
+            >
+              拒绝提问
+            </el-button>
+            <el-button
+              v-if="['accepted', 'done'].includes(props.row.state)"
+              type="primary"
+              @click="openChat(props.row)"
+            >
+              开始聊天
+            </el-button>
+            <el-button
+              v-if="props.row.state === 'accepted'"
+              type="primary"
+              @click="done(props.row.id)"
+            >
+              完成问答
+            </el-button>
+            <el-button
+              v-if="
+                props.row.asked &&
+                  !['accepted', 'done', 'canceled'].includes(props.row.state)
+              "
+              type="danger"
+              @click="cancel(props.row.id)"
+            >
+              取消提问
+            </el-button>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="title"
+          label="问题"
+        />
+        <el-table-column
+          prop="price"
+          label="金额"
+          sortable
+          min-width="10%"
+        />
+        <el-table-column
+          prop="ausername"
+          label="回答者"
+          min-width="10%"
+        />
+        <el-table-column
+          prop="qusername"
+          label="提问者"
+          min-width="10%"
+        />
+        <el-table-column
+          prop="state"
+          label="状态"
+          :formatter="stateFormat"
+          sortable
+          min-width="10%"
+        />
+
+        <el-table-column
+          prop="asked"
+          label="类型"
+          min-width="10%"
+          :filters="[
+            { text: '我提出的', value: true },
+            { text: '我回答的', value: false },
+          ]"
+          :filter-method="filterTag"
+          filter-placemeidnt="bottom-end"
+        >
+          <template #default="scope">
+            <el-tag
+              :type="scope.row.asked ? 'warning' : 'success'"
+              disable-transitions
+            >
+              {{ scope.row.asked ? "我提出的" : "我回答的" }}
+            </el-tag>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-container>
     <beautiful-chat
       style="z-index: 1000"
       :participants="participants"
@@ -145,19 +145,19 @@
       :message-styling="true"
       @scrollToTop="handleScrollToTop"
     />
-  <el-container>
-    <el-pagination
-    :page-size="10"
-    layout="prev, pager, next, jumper"
-    v-model:currentPage="currentPage"
-    :total="total"
-    @size-change="handleSizeChange"
-    @current-change="handleCurrentChange"
-    style="margin:0 auto"
-    >
-    </el-pagination>
-  </el-container>
-</el-main>
+    <el-container>
+      <el-pagination
+        v-model:currentPage="currentPage"
+        :page-size="10"
+        layout="prev, pager, next, jumper"
+        :total="total"
+        style="margin:0 auto"
+        :hide-on-single-page="true"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </el-container>
+  </el-main>
 </template>
 
 <script>

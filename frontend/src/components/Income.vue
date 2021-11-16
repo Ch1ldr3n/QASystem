@@ -13,14 +13,25 @@
         >
           <el-table-column
             prop="month"
+            label="年份"
+            min-width="10%"
+          />
+          <el-table-column
+            prop="month"
             label="月份"
             sortable
             min-width="10%"
             column-key="month"
           />
           <el-table-column
-            prop="income"
+            prop="earning"
             label="收入"
+            sortable
+            min-width="20%"
+          />
+          <el-table-column
+            prop="spending"
+            label="支出"
             sortable
             min-width="20%"
           />
@@ -40,20 +51,19 @@ export default {
   },
   data() {
     return {
-      tableData: [],
       list: [],
     };
   },
   created() {
-    fetch('/v1/question/list', {
+    fetch('/v1/question/aggreg', {
       method: 'GET',
     })
       .then((resp) => {
-        if (!resp.ok) { throw new Error('获取我的问题列表失败！'); }
+        if (!resp.ok) { throw new Error('获取收入统计失败！'); }
         return resp.json();
       })
       .then((data) => {
-        this.tableData = data.questionlist;
+        this.list = data.list;
       })
       .catch((error) => {
         this.$message({
@@ -61,22 +71,6 @@ export default {
           type: 'error',
         });
       });
-    this.tableData.forEach(function (item) {
-      if (item.tag === 'que') {
-        const date = this.list.get(item.date);
-        const money = item.price;
-        if (date === null) {
-          this.list.push({ month: date, income: money });
-        } else {
-          this.list.forEach((value) => {
-            if (value.date === item.date) {
-              // eslint-disable-next-line no-param-reassign
-              value.income += money;
-            }
-          });
-        }
-      }
-    });
   },
   methods: {
 

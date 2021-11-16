@@ -1,50 +1,50 @@
 <template>
-<el-main>
-  <el-container>
-  <el-table
-    ref="filterTable"
-    :data="tableData.slice((currentPage-1)*pageSize,currentPage*pageSize)"
-    :default-sort="{ prop: 'date', order: 'descending' }"
-    style="width: 100%"
-    stripe
-  >
-    <el-table-column type="expand">
-      <template #default="props">
-        <p>{{ props.row.content }}</p>
-        <el-button @click="submit">
-          查看详情
-        </el-button>
-      </template>
-    </el-table-column>
-    <el-table-column
-      prop="title"
-      label="问题"
-    />
-    <el-table-column
-      prop="qusername"
-      label="提问者"
-      min-width="10%"
-    />
-    <el-table-column
-      prop="ausername"
-      label="回答者"
-      min-width="10%"
-    />
-  </el-table>
-  </el-container>
-  <el-container>
-    <el-pagination
-    :page-size="10"
-    layout="prev, pager, next, jumper"
-    v-model:currentPage="currentPage"
-    :total="total"
-    @size-change="handleSizeChange"
-    @current-change="handleCurrentChange"
-    style="margin:0 auto"
-    >
-    </el-pagination>
-  </el-container>
-</el-main>
+  <el-main>
+    <el-container>
+      <el-table
+        ref="filterTable"
+        :data="tableData.slice((currentPage-1)*pageSize,currentPage*pageSize)"
+        :default-sort="{ prop: 'date', order: 'descending' }"
+        style="width: 100%"
+        stripe
+      >
+        <el-table-column type="expand">
+          <template #default="props">
+            <p>{{ props.row.content }}</p>
+            <el-button @click="submit">
+              查看详情
+            </el-button>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="title"
+          label="问题"
+        />
+        <el-table-column
+          prop="qusername"
+          label="提问者"
+          min-width="10%"
+        />
+        <el-table-column
+          prop="ausername"
+          label="回答者"
+          min-width="10%"
+        />
+      </el-table>
+    </el-container>
+    <el-container>
+      <el-pagination
+        v-model:currentPage="currentPage"
+        :page-size="10"
+        layout="prev, pager, next, jumper"
+        :total="total"
+        style="margin:0 auto"
+        :hide-on-single-page="true"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </el-container>
+  </el-main>
 </template>
 
 <script>
