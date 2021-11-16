@@ -1,62 +1,62 @@
 <template>
-<el-main>
-<el-container>
-  <el-table
-    ref="filterTable"
-    :data="userlist.slice((currentPage-1)*pageSize,currentPage*pageSize)"
-    :default-sort="{ prop: 'username', order: 'descending' }"
-    style="width: 100%"
-  >
-    <el-table-column
-      prop="username"
-      label="姓名"
-      min-width="10%"
-      column-key="name"
-    />
-    <el-table-column
-      prop="price"
-      label="价格"
-      sortable
-      min-width="10%"
-    />
-    <el-table-column
-      prop="profession"
-      label="专业领域"
-      min-width="10%"
-      :filters="
-        Array.from(new Set(userlist.map((x) => x.profession))).map((x) => {
-          return { text: x, value: x };
-        })
-      "
-      :filter-method="filterTag"
-      filter-placement="bottom-end"
-    >
-      <template #default="scope">
-        <el-tag>{{ scope.row.profession }}</el-tag>
-      </template>
-    </el-table-column>
-    <el-table-column min-width="10%">
-      <template #default="scope">
-        <el-button @click="ask(scope.row.id)">
-          向他提问
-        </el-button>
-      </template>
-    </el-table-column>
-  </el-table>
-</el-container>
-<el-container>
-  <el-pagination
-    :page-size="10"
-    layout="prev, pager, next, jumper"
-    v-model:currentPage="currentPage"
-    :total="total"
-    @size-change="handleSizeChange"
-    @current-change="handleCurrentChange"
-    style="margin:0 auto"
-    >
-    </el-pagination>
-</el-container>
-</el-main>
+  <el-main>
+    <el-container>
+      <el-table
+        ref="filterTable"
+        :data="userlist.slice((currentPage-1)*pageSize,currentPage*pageSize)"
+        :default-sort="{ prop: 'username', order: 'descending' }"
+        style="width: 100%"
+      >
+        <el-table-column
+          prop="username"
+          label="姓名"
+          min-width="10%"
+          column-key="name"
+        />
+        <el-table-column
+          prop="price"
+          label="价格"
+          sortable
+          min-width="10%"
+        />
+        <el-table-column
+          prop="profession"
+          label="专业领域"
+          min-width="10%"
+          :filters="
+            Array.from(new Set(userlist.map((x) => x.profession))).map((x) => {
+              return { text: x, value: x };
+            })
+          "
+          :filter-method="filterTag"
+          filter-placement="bottom-end"
+        >
+          <template #default="scope">
+            <el-tag>{{ scope.row.profession }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column min-width="10%">
+          <template #default="scope">
+            <el-button @click="ask(scope.row.id)">
+              向他提问
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-container>
+    <el-container>
+      <el-pagination
+        v-model:currentPage="currentPage"
+        :page-size="10"
+        layout="prev, pager, next, jumper"
+        :total="total"
+        style="margin:0 auto"
+        :hide-on-single-page="true"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </el-container>
+  </el-main>
 </template>
 
 <script>
