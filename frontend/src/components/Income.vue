@@ -57,6 +57,7 @@ export default {
   created() {
     fetch('/v1/question/aggreg', {
       method: 'GET',
+      headers: { authorization: window.localStorage.getItem('token') },
     })
       .then((resp) => {
         if (!resp.ok) { throw new Error('获取收入统计失败！'); }
