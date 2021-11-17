@@ -183,13 +183,10 @@ export default {
   created() {
     fetch('/v1/admin/param', {
       method: 'GET',
-      headers: {
-        Authorization: window.localStorage.getItem('admintoken'),
-      },
     })
       .then((resp) => {
         if (!resp.ok) {
-          throw new Error('用户信息加载失败');
+          throw new Error('系统参数加载失败');
         }
         return resp.json();
       })
