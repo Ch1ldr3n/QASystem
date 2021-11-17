@@ -123,7 +123,7 @@ export default {
         callback(new Error('价格区间不能为空！'));
       }
       setTimeout(() => {
-        if (this.model.min_price > this.model.max_price) {
+        if (parseFloat(this.model.min_price) > parseFloat(this.model.max_price)) {
           callback(new Error('最低价格不能超过最高价格！'));
         } else {
           callback();
