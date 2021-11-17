@@ -514,7 +514,7 @@ func close(c echo.Context) error {
 	}
 	// Forbid sending message
 	err = ctx.RequestTIM("group_open_http_svc", "forbid_send_msg", struct {
-		GroupId         string   `json:"GroupId`
+		GroupId         string   `json:"GroupId"`
 		Members_Account []string `json:"Members_Account"`
 		ShutUpTime      int      `json:"ShutUpTime"`
 	}{
