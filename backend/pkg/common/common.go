@@ -87,5 +87,20 @@ func (c *Context) RequestTIM(svc string, cmd string, body interface{}) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("request failed")
 	}
+	// // Test output
+	// respdata := new(struct {
+	// 	ActionStatus string `json:"ActionStatus"`
+	// 	ErrorInfo    string `json:"ErrorInfo"`
+	// 	ErrorCode    int    `json:"ErrorCode"`
+	// })
+	// err = json.NewDecoder(resp.Body).Decode(respdata)
+	// if err != nil {
+	// 	return err
+	// }
+	// // fmt.Println(respdata)
+	// // Real failure report
+	// if respdata.ActionStatus != "OK" {
+	// 	return fmt.Errorf("request failed")
+	// }
 	return nil
 }
