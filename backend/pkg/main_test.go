@@ -1138,11 +1138,6 @@ func TestAdminChangeXv(t *testing.T) {
 		return AuxAdminChange(e, t, token, "anotherAdmin", "none")
 	})
 }
-func TestParamViewXv(t *testing.T) {
-	AuxTestAdminVerificationX("ParamView", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
-		return AuxParamView(e, t, token)
-	})
-}
 func TestParamEditXv(t *testing.T) {
 	AuxTestAdminVerificationX("ParamEdit", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxParamEdit(e, t, token, "{}")

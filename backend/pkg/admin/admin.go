@@ -161,23 +161,11 @@ type adminListResponse struct {
 // @Summary Param Query
 // @Description Query current system param
 // @Produce json
-// @Security token
 // @Success 200 {object} paramQueryResponse "param query response"
 // @Failure 400 {string} string
 // @Router /v1/admin/param [get]
 func param(c echo.Context) error {
 	ctx := c.(*common.Context)
-	u := new(paramQueryRequest)
-	if err := (&echo.DefaultBinder{}).BindHeaders(ctx, u); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	if err := ctx.Validate(u); err != nil {
-		return err
-	}
-	_, err := ctx.VerifyAdmin(u.Token)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusForbidden, err.Error())
-	}
 	pa, err := ctx.DB().Param.Query().Where(paramp.Scope("default")).Only(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -190,10 +178,6 @@ func param(c echo.Context) error {
 		AnswerLimit:    pa.AnswerLimit,
 		DoneDeadline:   pa.DoneDeadline,
 	})
-}
-
-type paramQueryRequest struct {
-	Token string `header:"authorization" validate:"required"`
 }
 
 type paramQueryResponse struct {
