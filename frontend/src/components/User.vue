@@ -131,7 +131,7 @@ export default {
       if (!value && this.model.answerer) {
         return callback(new Error('请完善回答者个人信息'));
       }
-      if (value > 500) return callback(new Error('问题定价不能超过500'));
+      if (value > this.model.max_price || value < this.model.min_price) return callback(new Error(`问题定价区间为[${this.model.min_price}, ${this.model.max_price}]`));
       return true;
     };
     return {
@@ -146,6 +146,9 @@ export default {
         profession: '',
         balance: 0,
         description: '',
+
+        min_price: 0,
+        max_price: 500,
       },
       rules: {
         password1: [
@@ -232,6 +235,26 @@ export default {
         this.model.profession = data.profession;
         this.model.balance = data.balance;
         this.model.description = data.description;
+      })
+      .catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
+
+    fetch('/v1/admin/param', {
+      method: 'GET',
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('系统参数加载失败');
+        }
+        return resp.json();
+      })
+      .then((data) => {
+        this.model.min_price = data.min_price;
+        this.model.max_price = data.max_price;
       })
       .catch((error) => {
         this.$message({
