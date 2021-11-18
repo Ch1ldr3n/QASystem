@@ -124,6 +124,7 @@
         </el-table-column>
       </el-table>
     </el-container>
+    <el-container>
     <beautiful-chat
       style="z-index: 1000"
       :participants="participants"
@@ -145,6 +146,7 @@
       :message-styling="true"
       @scrollToTop="handleScrollToTop"
     />
+    </el-container>
     <el-container>
       <el-pagination
         v-model:currentPage="currentPage"
