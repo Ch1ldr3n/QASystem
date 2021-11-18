@@ -775,7 +775,7 @@ func callback(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	upd := ctx.DB().Question.Update().Where(questionp.ID(groupid)).SetMsgCount(question.MsgCount + 1)
+	upd := ctx.DB().Question.Update().Where(questionp.ID(groupid)).SetMsgCount(question.MsgCount + 1).SetModified(time.Now())
 	if !question.Answered && senderid == question.Edges.Answerer.ID {
 		upd = upd.SetAnswered(true)
 	}
