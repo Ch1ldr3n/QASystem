@@ -11,7 +11,7 @@
         <el-table-column type="expand">
           <template #default="props">
             <p>{{ props.row.content }}</p>
-            <el-button @click="submit">
+            <el-button @click="openChat(props.row)">
               查看详情
             </el-button>
           </template>
@@ -43,6 +43,26 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
       />
+      <beautiful-chat
+        style="z-index: 1000"
+        :participants="participants"
+        :message-list="messageList"
+        :is-open="isChatOpen"
+        :close="closeChat"
+        :on-message-was-sent="(msg) => console.log(msg)"
+        :show-emoji="false"
+        :open="() => {}"
+        :show-file="false"
+        :show-edition="false"
+        :show-deletion="false"
+        :show-launcher="false"
+        :show-close-button="true"
+        :colors="colors"
+        :always-scroll-to-bottom="false"
+        :disable-user-list-toggle="true"
+        :message-styling="true"
+        @scrollToTop="handleScrollToTop"
+        />
     </el-container>
   </el-main>
 </template>
@@ -57,6 +77,38 @@ export default {
       currentPage: 1,
       pageSize: 10,
       total: 1000,
+      tim: {},
+      participants: [],
+      messageList: [], // the list of the messages to show, can be paginated and adjusted dynamically
+      isChatOpen: false, // to determine whether the chat window should be open or closed
+      showTypingIndicator: '', // when set to a value matching the participant.id it shows the typing indicator for the specific user
+      colors: {
+        header: {
+          bg: '#4e8cff',
+          text: '#ffffff',
+        },
+        launcher: {
+          bg: '#4e8cff',
+        },
+        messageList: {
+          bg: '#ffffff',
+        },
+        sentMessage: {
+          bg: '#4e8cff',
+          text: '#ffffff',
+        },
+        receivedMessage: {
+          bg: '#eaeaea',
+          text: '#222222',
+        },
+        userInput: {
+          bg: '#f4f7f9',
+          text: '#565867',
+        },
+      },
+      nextReqMessageID: '',
+      isCompleted: false,
+      chatid: 0,
     };
   },
   async created() {
@@ -106,10 +158,56 @@ export default {
       });
   },
   methods: {
-    submit() {
-      this.$message({
-        message: '尚未实现！',
-      });
+    openChat(row) {
+      console.log(row);
+      this.participants = [
+        {
+          id: row.answererid,
+          name: row.ausername,
+        },
+        {
+          id: row.questionerid,
+          name: row.qusername,
+        },
+      ];
+      this.tim
+        .getMessageList({ conversationID: `GROUP${row.id}`, count: 15 })
+        .then((imResponse) => {
+          this.messageList = imResponse.data.messageList.map((x) => ({
+            type: 'text',
+            author: x.from,
+            data: { text: x.payload.text },
+          }));
+          this.chatid = row.id;
+          console.log(imResponse.data.messageList);
+          this.nextReqMessageID = imResponse.data.nextReqMessageID;
+          this.isCompleted = imResponse.data.isCompleted;
+        });
+      this.isChatOpen = true;
+      this.newMessagesCount = 0;
+    },
+    handleScrollToTop() {
+      this.tim
+        .getMessageList({
+          conversationID: `GROUP${this.chatid}`,
+          count: 15,
+          nextReqMessageID: this.nextReqMessageID,
+        })
+        .then((imResponse) => {
+          this.messageList = [
+            ...imResponse.data.messageList.map((x) => ({
+              type: 'text',
+              author: x.flow === 'in' ? 'other' : 'me',
+              data: { text: x.payload.text },
+            })),
+            ...this.messageList,
+          ];
+          this.nextReqMessageID = imResponse.data.nextReqMessageID;
+          this.isCompleted = imResponse.data.isCompleted;
+        });
+    },
+    closeChat() {
+      this.isChatOpen = false;
     },
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
