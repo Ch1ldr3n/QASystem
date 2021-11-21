@@ -48,6 +48,8 @@
 </template>
 
 <script>
+import TIM from 'tim-js-sdk';
+
 export default {
   data() {
     return {
@@ -57,8 +59,33 @@ export default {
       total: 1000,
     };
   },
-  created() {
-    // TODO: ask backend to return more related information
+  async created() {
+    const options = {
+      SDKAppID: 1400586942,
+    };
+    this.tim = TIM.create(options);
+    this.tim.setLogLevel(1);
+    // this.tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived);
+    await this.tim.logout().catch((e) => console.log(e));
+    fetch('/v1/user/genpublicsig', {
+      method: 'GET',
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('获取imsdk签名失败');
+        }
+        return resp.json();
+      })
+      .then((data) => this.tim.login({ userID: data.userid, userSig: data.signature }))
+      .then((resp) => {
+        console.log(resp);
+      })
+      .catch((error) => {
+        this.$message({
+          message: error,
+          type: 'error',
+        });
+      });
     fetch('/v1/question/list', {
       method: 'GET',
       headers: {},

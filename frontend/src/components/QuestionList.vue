@@ -207,14 +207,15 @@ export default {
       chatid: 0,
     };
   },
-  created() {
+  async created() {
     this.refresh();
     const options = {
       SDKAppID: 1400586942,
     };
     this.tim = TIM.create(options);
-    this.tim.setLogLevel(0);
+    this.tim.setLogLevel(1);
     this.tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived);
+    await this.tim.logout().catch((e) => console.log(e));
     fetch('/v1/user/gensig', {
       method: 'GET',
       headers: {
