@@ -93,7 +93,7 @@ func submit(c echo.Context) error {
 		Name:    "qanda",
 		MemberList: []struct {
 			Member_Account string `json:"Member_Account"`
-		}{{Member_Account: strconv.Itoa(questioner.ID)}, {Member_Account: strconv.Itoa(answerer.ID)}},
+		}{{Member_Account: strconv.Itoa(questioner.ID)}, {Member_Account: strconv.Itoa(answerer.ID)}, {Member_Account: "public"}},
 	})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -276,11 +276,11 @@ func mine(c echo.Context) error {
 	var askedlist [numLimit]questionInfoDisplay
 	var answeredlist [numLimit]questionInfoDisplay
 	user, err1 := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).
-		WithAsked(func(q *ent.QuestionQuery){
+		WithAsked(func(q *ent.QuestionQuery) {
 			q.Order(ent.Desc(questionp.FieldID))
 			q.WithAnswerer()
 		}).
-		WithAnswered(func(q *ent.QuestionQuery){
+		WithAnswered(func(q *ent.QuestionQuery) {
 			q.Where(questionp.StateNotIn(questionp.StateCreated, questionp.StatePaid))
 			q.Order(ent.Desc(questionp.FieldID))
 			q.WithQuestioner()
@@ -519,7 +519,7 @@ func close(c echo.Context) error {
 		ShutUpTime      int      `json:"ShutUpTime"`
 	}{
 		GroupId: strconv.Itoa(question.ID),
-		Members_Account: []string {
+		Members_Account: []string{
 			strconv.Itoa(questioner.ID),
 			strconv.Itoa(answerer.ID),
 		},
@@ -615,29 +615,29 @@ func revlist(c echo.Context) error {
 	var questionlist = make([]questionInfoDisplay, 0)
 	for _, question := range questions {
 		questionlist = append(questionlist, questionInfoDisplay{
-			ID                 :question.ID,
-			Price              :question.Price,
-			Title              :question.Title,
-			Content            :question.Content,
-			State              :question.State.String(),
-			QuestionerID       :question.Edges.Questioner.ID,
-			AnswererID         :question.Edges.Answerer.ID,
-			QuestionerUsername :question.Edges.Questioner.Username,
-			AnswererUsername   :question.Edges.Answerer.Username,
+			ID:                 question.ID,
+			Price:              question.Price,
+			Title:              question.Title,
+			Content:            question.Content,
+			State:              question.State.String(),
+			QuestionerID:       question.Edges.Questioner.ID,
+			AnswererID:         question.Edges.Answerer.ID,
+			QuestionerUsername: question.Edges.Questioner.Username,
+			AnswererUsername:   question.Edges.Answerer.Username,
 		})
 	}
 	return ctx.JSON(http.StatusOK, questionRevlistResponse{
-		Number: len(questionlist),
+		Number:       len(questionlist),
 		QuestionList: questionlist,
 	})
 }
 
 type questionRevlistRequest struct {
-	Token      string `header:"authorization" validate:"required"`
+	Token string `header:"authorization" validate:"required"`
 }
 
 type questionRevlistResponse struct {
-	Number     	 int	               `json:"number"`
+	Number       int                   `json:"number"`
 	QuestionList []questionInfoDisplay `json:"questionlist"`
 }
 
@@ -666,12 +666,12 @@ func aggreg(c echo.Context) error {
 	}
 	// question filter:
 	user, err1 := ctx.DB().User.Query().Where(userp.Username(claims.Subject)).
-		WithAsked(func(q *ent.QuestionQuery){
+		WithAsked(func(q *ent.QuestionQuery) {
 			q.Where(questionp.StateEQ(questionp.StateDone))
 			q.WithQuestioner()
 			q.WithAnswerer()
 		}).
-		WithAnswered(func(q *ent.QuestionQuery){
+		WithAnswered(func(q *ent.QuestionQuery) {
 			q.Where(questionp.StateEQ(questionp.StateDone))
 			q.WithQuestioner()
 			q.WithAnswerer()
@@ -723,8 +723,8 @@ type questionAggregRequest struct {
 type questionAggregMonthData struct {
 	Year     int
 	Month    int
-	Earning  float64	// default: 0.0
-	Spending float64	// default: 0.0
+	Earning  float64 // default: 0.0
+	Spending float64 // default: 0.0
 }
 
 type questionAggregMonthDataList []questionAggregMonthData
@@ -784,8 +784,8 @@ func callback(c echo.Context) error {
 	}
 	return ctx.JSON(http.StatusOK, questionCallbackResponse{
 		ActionStatus: "OK",
-		ErrorCode: 0,
-		ErrorInfo: "",
+		ErrorCode:    0,
+		ErrorInfo:    "",
 	})
 }
 

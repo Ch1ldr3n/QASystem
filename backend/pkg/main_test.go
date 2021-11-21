@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
-	"time"
 	"testing"
+	"time"
 )
 
 // Global constants
@@ -1039,7 +1039,7 @@ func AuxTestVerificationX(name string, t *testing.T, af func(*echo.Echo, *testin
 }
 
 func TestUserEditXv(t *testing.T) {
-	AuxTestVerificationX("UserEdit", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+	AuxTestVerificationX("UserEdit", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxUserEdit(e, t, token, "{}")
 	})
 }
@@ -1054,7 +1054,7 @@ func TestUserGensigXv(t *testing.T) {
 	})
 }
 func TestUserFilterXv(t *testing.T) {
-	AuxTestVerificationX("UserFilter", t, func (e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder{
+	AuxTestVerificationX("UserFilter", t, func(e *echo.Echo, t *testing.T, token string) *httptest.ResponseRecorder {
 		return AuxUserFilter(e, t, token, "")
 	})
 }
@@ -1197,7 +1197,7 @@ func TestParam(t *testing.T) {
 
 	const (
 		StateCanceled = "canceled"
-		StateDone = "done"
+		StateDone     = "done"
 	)
 
 	// accept deadline

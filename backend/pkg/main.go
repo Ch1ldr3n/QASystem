@@ -12,8 +12,8 @@ import (
 	"gitlab.secoder.net/bauhinia/qanda-schema/ent"
 	adminp "gitlab.secoder.net/bauhinia/qanda-schema/ent/admin"
 	paramp "gitlab.secoder.net/bauhinia/qanda-schema/ent/param"
-	userp "gitlab.secoder.net/bauhinia/qanda-schema/ent/user"
 	questionp "gitlab.secoder.net/bauhinia/qanda-schema/ent/question"
+	userp "gitlab.secoder.net/bauhinia/qanda-schema/ent/user"
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/admin"
 	"gitlab.secoder.net/bauhinia/qanda/backend/pkg/common"
 	_ "gitlab.secoder.net/bauhinia/qanda/backend/pkg/docs"
@@ -96,9 +96,9 @@ func New(serve string, storage string, database string, key string, adminKey str
 	question.Register(v1.Group("/question"))
 	admin.Register(v1.Group("/admin"))
 
-	// Check question modified time EVERY SECOND 
-	go func(db *ent.Client){
-		timeBackwardSecond := func (num int) time.Time {
+	// Check question modified time EVERY SECOND
+	go func(db *ent.Client) {
+		timeBackwardSecond := func(num int) time.Time {
 			return time.Now().Add(time.Second * time.Duration(-num))
 		}
 		for {

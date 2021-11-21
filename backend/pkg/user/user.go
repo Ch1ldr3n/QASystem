@@ -17,6 +17,7 @@ func Register(group *echo.Group) {
 	group.POST("/edit", edit)
 	group.GET("/filter", filter)
 	group.GET("/gensig", gensig)
+	group.GET("/genpublicsig", genpublicsig)
 }
 
 // @Summary User Register
@@ -162,6 +163,24 @@ type userGensigRequest struct {
 type userGensigResponse struct {
 	Userid    string `json:"userid"`
 	Signature string `json:"signature"`
+}
+
+// @Summary User Genpublicsig
+// @Description Gensig of public user
+// @Produce json
+// @Success 200 {object} userGensigResponse "user gensig response"
+// @Failure 400 {string} string
+// @Router /v1/user/genpublicsig [get]
+func genpublicsig(c echo.Context) error {
+	ctx := c.(*common.Context)
+	sig, err := ctx.Gensig("public")
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return ctx.JSON(http.StatusOK, userGensigResponse{
+		Userid:    "public",
+		Signature: sig,
+	})
 }
 
 // @Summary User Info
