@@ -108,6 +108,7 @@ export default {
       },
       nextReqMessageID: '',
       isCompleted: false,
+      row: {},
       chatid: 0,
     };
   },
@@ -175,6 +176,7 @@ export default {
             data: { text: x.payload.text },
           }));
           this.chatid = row.id;
+          this.row = row;
           console.log(imResponse.data.messageList);
           this.nextReqMessageID = imResponse.data.nextReqMessageID;
           this.isCompleted = imResponse.data.isCompleted;
@@ -193,7 +195,7 @@ export default {
           this.messageList = [
             ...imResponse.data.messageList.map((x) => ({
               type: 'text',
-              author: x.flow === 'in' ? 'other' : 'me',
+              author: x.from === `${this.row.answererid}` ? 'other' : 'me',
               data: { text: x.payload.text },
             })),
             ...this.messageList,
