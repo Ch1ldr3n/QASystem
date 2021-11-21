@@ -125,27 +125,27 @@
       </el-table>
     </el-container>
     <el-container>
-    <beautiful-chat
-      style="z-index: 1000"
-      :participants="participants"
-      :on-message-was-sent="onMessageWasSent"
-      :message-list="messageList"
-      :new-messages-count="newMessagesCount"
-      :is-open="isChatOpen"
-      :close="closeChat"
-      :show-emoji="false"
-      :open="() => {}"
-      :show-file="false"
-      :show-edition="false"
-      :show-deletion="false"
-      :show-launcher="false"
-      :show-close-button="true"
-      :colors="colors"
-      :always-scroll-to-bottom="false"
-      :disable-user-list-toggle="true"
-      :message-styling="true"
-      @scrollToTop="handleScrollToTop"
-    />
+      <beautiful-chat
+        style="z-index: 1000"
+        :participants="participants"
+        :on-message-was-sent="onMessageWasSent"
+        :message-list="messageList"
+        :new-messages-count="newMessagesCount"
+        :is-open="isChatOpen"
+        :close="closeChat"
+        :show-emoji="false"
+        :open="() => {}"
+        :show-file="false"
+        :show-edition="false"
+        :show-deletion="false"
+        :show-launcher="false"
+        :show-close-button="true"
+        :colors="colors"
+        :always-scroll-to-bottom="false"
+        :disable-user-list-toggle="true"
+        :message-styling="true"
+        @scrollToTop="handleScrollToTop"
+      />
     </el-container>
     <el-container>
       <el-pagination
@@ -168,6 +168,7 @@ import TIM from 'tim-js-sdk';
 export default {
   data() {
     return {
+      tim: {},
       participants: [],
       messageList: [], // the list of the messages to show, can be paginated and adjusted dynamically
       newMessagesCount: 0,
@@ -211,9 +212,9 @@ export default {
     const options = {
       SDKAppID: 1400586942,
     };
-    const tim = TIM.create(options);
-    tim.setLogLevel(0);
-    tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived);
+    this.tim = TIM.create(options);
+    this.tim.setLogLevel(0);
+    this.tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived);
     fetch('/v1/user/gensig', {
       method: 'GET',
       headers: {
@@ -226,7 +227,7 @@ export default {
         }
         return resp.json();
       })
-      .then((data) => tim.login({ userID: data.userid, userSig: data.signature }))
+      .then((data) => this.tim.login({ userID: data.userid, userSig: data.signature }))
       .then((resp) => {
         console.log(resp);
       })
@@ -361,7 +362,7 @@ export default {
           name: row.asked ? row.ausername : row.qusername,
         },
       ];
-      tim
+      this.tim
         .getMessageList({ conversationID: `GROUP${row.id}`, count: 15 })
         .then((imResponse) => {
           this.messageList = imResponse.data.messageList.map((x) => ({
@@ -379,14 +380,14 @@ export default {
     },
     onMessageWasSent(message) {
       console.log(this.chatid);
-      const msg = tim.createTextMessage({
+      const msg = this.tim.createTextMessage({
         to: `${this.chatid}`,
         conversationType: TIM.TYPES.CONV_GROUP,
         payload: {
           text: message.data.text,
         },
       });
-      tim
+      this.tim
         .sendMessage(msg)
         .then((resp) => {
           console.log(resp);
@@ -424,7 +425,7 @@ export default {
       });
     },
     handleScrollToTop() {
-      tim
+      this.tim
         .getMessageList({
           conversationID: `GROUP${this.chatid}`,
           count: 15,

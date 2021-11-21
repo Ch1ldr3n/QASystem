@@ -1,14 +1,13 @@
 <template>
   <div class="demo-pagination-block">
     <el-pagination
-    :page-size="5"
-    layout="prev, pager, next, jumper"
-    v-model:currentPage="currentPage"
-    :total="100"
-    @size-change="handleSizeChange"
-    @current-change="handleCurrentChange"
-    >
-    </el-pagination>
+      v-model:currentPage="currentPage"
+      :page-size="5"
+      layout="prev, pager, next, jumper"
+      :total="100"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    />
   </div>
 </template>
 <script>
