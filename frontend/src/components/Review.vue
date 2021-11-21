@@ -91,22 +91,25 @@ export default {
           choice,
           questionid: id,
         }),
-      }).then((resp) => {
-        if (!resp.ok) {
-          throw new Error('无审核权限！');
-        }
-      }).then(() => {
-        this.$message({
-          message: '确认成功',
-          type: 'success',
+      })
+        .then((resp) => {
+          if (!resp.ok) {
+            throw new Error('无审核权限！');
+          }
+        })
+        .then(() => {
+          this.$message({
+            message: '确认成功',
+            type: 'success',
+          });
+          this.refresh();
+        })
+        .catch((error) => {
+          this.$message({
+            message: error,
+            type: 'error',
+          });
         });
-        this.refresh();
-      }).catch((error) => {
-        this.$message({
-          message: error,
-          type: 'error',
-        });
-      });
     },
   },
 };
