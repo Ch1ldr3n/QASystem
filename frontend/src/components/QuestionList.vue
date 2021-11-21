@@ -9,7 +9,7 @@
       >
         <el-table-column type="expand">
           <template #default="props">
-            <p>{{ props.row.content }}</p>
+            <p>{{ props.row.content.split(' ').join('\n') }}</p>
             <el-button
               v-if="props.row.asked && props.row.state === 'created'"
               @click="pay(props.row.id)"

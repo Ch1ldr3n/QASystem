@@ -98,7 +98,11 @@ export default {
   },
   methods: {
     onSubmit() {
-      console.log(this.qdesc);
+      console.log(JSON.stringify({
+        answererid: parseInt(this.$route.query.id, 10),
+        content: this.qdesc.split(' ').join('\n'),
+        title: this.qname,
+      }));
       fetch('/v1/question/submit', {
         method: 'POST',
         headers: {
