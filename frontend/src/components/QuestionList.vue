@@ -165,12 +165,6 @@
 <script>
 import TIM from 'tim-js-sdk';
 
-const options = {
-  SDKAppID: 1400586942,
-};
-const tim = TIM.create(options);
-tim.setLogLevel(0);
-
 export default {
   data() {
     return {
@@ -214,6 +208,11 @@ export default {
   },
   created() {
     this.refresh();
+    const options = {
+      SDKAppID: 1400586942,
+    };
+    const tim = TIM.create(options);
+    tim.setLogLevel(0);
     tim.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived);
     fetch('/v1/user/gensig', {
       method: 'GET',
