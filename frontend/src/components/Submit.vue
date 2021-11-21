@@ -44,8 +44,12 @@
               <el-button
                 type="primary"
                 @click="onSubmit"
-              />
-              <el-button @click="$router.go(-1)">
+              >
+                向他提问
+              </el-button>
+              <el-button
+                @click="$router.go(-1)"
+              >
                 取消提问
               </el-button>
             </el-form-item>
