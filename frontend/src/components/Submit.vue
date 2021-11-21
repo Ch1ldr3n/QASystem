@@ -44,9 +44,7 @@
               <el-button
                 type="primary"
                 @click="onSubmit"
-              >
-                提交问题
-              </el-button>
+              />
               <el-button @click="$router.go(-1)">
                 取消提问
               </el-button>
@@ -96,6 +94,7 @@ export default {
   },
   methods: {
     onSubmit() {
+      console.log(this.qdesc);
       fetch('/v1/question/submit', {
         method: 'POST',
         headers: {
@@ -104,29 +103,32 @@ export default {
         },
         body: JSON.stringify({
           answererid: parseInt(this.$route.query.id, 10),
-          content: this.qdesc,
+          content: this.qdesc.split(' ').join('\n'),
           title: this.qname,
         }),
-      }).then((resp) => {
-        if (!resp.ok) {
-          throw new Error('提交失败!');
-        }
-        return resp.json();
-      }).then((resp) => {
-        this.$message({
-          message: '提交成功',
-          type: 'success',
+      })
+        .then((resp) => {
+          if (!resp.ok) {
+            throw new Error('提交失败!');
+          }
+          return resp.json();
+        })
+        .then((resp) => {
+          this.$message({
+            message: '提交成功',
+            type: 'success',
+          });
+          this.$router.push({
+            name: 'Pay',
+            query: { id: resp.questionid },
+          });
+        })
+        .catch((error) => {
+          this.$message({
+            message: error,
+            type: 'error',
+          });
         });
-        this.$router.push({
-          name: 'Pay',
-          query: { id: resp.questionid },
-        });
-      }).catch((error) => {
-        this.$message({
-          message: error,
-          type: 'error',
-        });
-      });
     },
   },
 };
