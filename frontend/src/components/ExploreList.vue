@@ -162,12 +162,8 @@ export default {
       console.log(row);
       this.participants = [
         {
-          id: row.answererid,
+          id: 'other',
           name: row.ausername,
-        },
-        {
-          id: row.questionerid,
-          name: row.qusername,
         },
       ];
       this.tim
@@ -175,7 +171,7 @@ export default {
         .then((imResponse) => {
           this.messageList = imResponse.data.messageList.map((x) => ({
             type: 'text',
-            author: x.from,
+            author: x.from === `${row.answererid}` ? 'other' : 'me',
             data: { text: x.payload.text },
           }));
           this.chatid = row.id;
