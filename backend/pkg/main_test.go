@@ -586,11 +586,12 @@ func TestUser(t *testing.T) {
 	"price":100,
 	"answerer":true,
 	"profession":"Geschichte",
-	"password":"`+newpassword+`"
+	"password":"`+newpassword+`",
+	"description":"Ich liebe THU."
 }
 	`)
 	token1, _ = GetIdTokenFromRec(AuxUserLogin(e, t, "user1", newpassword), t)
-	AuxUserFilter(e, t, token2, "?id="+strconv.Itoa(userid1)+"&username=user1&email=hello&phone=12345678&answerer=true&priceUpperBound=1000&priceLowerBound=-1000&profession=Geschichte")
+	AuxUserFilter(e, t, token2, "?id="+strconv.Itoa(userid1)+"&username=user1&email=hello&phone=12345678&answerer=true&priceUpperBound=1000&priceLowerBound=-1000&profession=Geschichte&description=THU")
 }
 
 // Register: no password
