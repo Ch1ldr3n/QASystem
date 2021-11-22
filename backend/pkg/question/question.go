@@ -76,6 +76,7 @@ func submit(c echo.Context) error {
 		SetAnswererID(answerer.ID).
 		SetMsgCount(0).
 		SetAnswered(false).
+		SetPublic(true).
 		Save(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
