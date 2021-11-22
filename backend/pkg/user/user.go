@@ -208,14 +208,15 @@ func info(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return ctx.JSON(http.StatusOK, userInfoResponse{
-		ID:         user.ID,
-		Username:   user.Username,
-		Email:      user.Email,
-		Phone:      user.Phone,
-		Answerer:   user.Answerer,
-		Price:      user.Price,
-		Balance:    user.Balance,
-		Profession: user.Profession,
+		ID:          user.ID,
+		Username:    user.Username,
+		Email:       user.Email,
+		Phone:       user.Phone,
+		Answerer:    user.Answerer,
+		Price:       user.Price,
+		Balance:     user.Balance,
+		Profession:  user.Profession,
+		Description: user.Description,
 	})
 }
 
@@ -224,14 +225,15 @@ type userInfoRequest struct {
 }
 
 type userInfoResponse struct {
-	ID         int     `json:"id"`
-	Username   string  `json:"username"`
-	Email      string  `json:"email"`
-	Phone      string  `json:"phone"`
-	Answerer   bool    `json:"answerer"`
-	Price      float64 `json:"price"`
-	Balance    float64 `json:"balance"`
-	Profession string  `json:"profession"`
+	ID          int     `json:"id"`
+	Username    string  `json:"username"`
+	Email       string  `json:"email"`
+	Phone       string  `json:"phone"`
+	Answerer    bool    `json:"answerer"`
+	Price       float64 `json:"price"`
+	Balance     float64 `json:"balance"`
+	Profession  string  `json:"profession"`
+	Description string  `json:"description"`
 }
 
 // @Summary User Edit
@@ -270,7 +272,7 @@ func edit(c echo.Context) error {
 	user := ctx.DB().User.Update().Where(userp.Username(claims.Subject)).
 		SetNillableEmail(u.Email).SetNillablePhone(u.Phone).
 		SetNillableAnswerer(u.Answerer).SetNillablePrice(u.Price).
-		SetNillableProfession(u.Profession)
+		SetNillableProfession(u.Profession).SetNillableDescription(u.Description)
 	if u.Password != nil {
 		password, err := bcrypt.GenerateFromPassword([]byte(*u.Password), bcrypt.DefaultCost)
 		if err != nil {
@@ -286,13 +288,14 @@ func edit(c echo.Context) error {
 }
 
 type userEditRequest struct {
-	Token      string   `header:"authorization" validate:"required"`
-	Email      *string  `json:"email"`
-	Phone      *string  `json:"phone"`
-	Answerer   *bool    `json:"answerer"`
-	Price      *float64 `json:"price"`
-	Profession *string  `json:"profession"`
-	Password   *string  `json:"password"`
+	Token       string   `header:"authorization" validate:"required"`
+	Email       *string  `json:"email"`
+	Phone       *string  `json:"phone"`
+	Answerer    *bool    `json:"answerer"`
+	Price       *float64 `json:"price"`
+	Profession  *string  `json:"profession"`
+	Password    *string  `json:"password"`
+	Description *string  `json:"description"`
 }
 
 // @Summary User Filter
@@ -345,6 +348,9 @@ func filter(c echo.Context) error {
 	if u.Profession != nil {
 		users = users.Where(userp.Profession(*u.Profession))
 	}
+	if u.Description != nil {
+		users = users.Where(userp.DescriptionContains(*u.Description))
+	}
 	// print result
 	const numLimit = 1000
 	candidates, err := users.Order(ent.Asc(userp.FieldID)).Limit(numLimit).All(ctx.Request().Context())
@@ -362,6 +368,7 @@ func filter(c echo.Context) error {
 		userlist[i].Price = candidates[i].Price
 		userlist[i].Balance = candidates[i].Balance
 		userlist[i].Profession = candidates[i].Profession
+		userlist[i].Description = candidates[i].Description
 	}
 	return ctx.JSON(http.StatusOK, userFilterResponse{
 		ResultNum: listlen,
@@ -379,6 +386,7 @@ type userFilterRequest struct {
 	PriceUpperBound *float64 `query:"priceUpperBound"`
 	PriceLowerBound *float64 `query:"priceLowerBound"`
 	Profession      *string  `query:"profession"`
+	Description     *string  `query:"description"`
 }
 
 type userInfoDisplay = userInfoResponse

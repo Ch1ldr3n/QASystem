@@ -76,6 +76,7 @@ func submit(c echo.Context) error {
 		SetAnswererID(answerer.ID).
 		SetMsgCount(0).
 		SetAnswered(false).
+		SetPublic(true).
 		Save(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -201,7 +202,7 @@ func query(c echo.Context) error {
 type questionQueryResponse = questionInfoDisplay
 
 // @Summary Question List
-// @Description List of all questions open to all users
+// @Description List of all done and public questions open to all users
 // @Produce json
 // @Success 200 {object} questionListResponse "question list response"
 // @Failure 400 {string} string
@@ -210,7 +211,12 @@ func list(c echo.Context) error {
 	ctx := c.(*common.Context)
 	const numLimit = 1000
 	var questionlist [numLimit]questionInfoDisplay
-	questions, err := ctx.DB().Question.Query().Order(ent.Desc(questionp.FieldID)).Limit(numLimit).WithQuestioner().WithAnswerer().All(ctx.Request().Context())
+	questions, err := ctx.DB().Question.Query().
+		Where(questionp.StateEQ(questionp.StateDone)).
+		Where(questionp.Public(true)).
+		Order(ent.Desc(questionp.FieldID)).Limit(numLimit).
+		WithQuestioner().WithAnswerer().
+		All(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
