@@ -62,7 +62,7 @@
         :disable-user-list-toggle="true"
         :message-styling="true"
         @scrollToTop="handleScrollToTop"
-        />
+      />
     </el-container>
   </el-main>
 </template>
