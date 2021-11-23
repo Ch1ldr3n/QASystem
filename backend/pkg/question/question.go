@@ -507,29 +507,13 @@ func close(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	// Send a message
+	// Send a system notice
 	err = ctx.RequestTIM("group_open_http_svc", "send_group_system_notification", struct {
 		GroupId string `json:"GroupId"`
 		Content string `json:"Content"`
 	}{
 		GroupId: strconv.Itoa(question.ID),
 		Content: "--- Question is Done ---",
-	})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	// Forbid sending message
-	err = ctx.RequestTIM("group_open_http_svc", "forbid_send_msg", struct {
-		GroupId         string   `json:"GroupId"`
-		Members_Account []string `json:"Members_Account"`
-		ShutUpTime      int      `json:"ShutUpTime"`
-	}{
-		GroupId: strconv.Itoa(question.ID),
-		Members_Account: []string{
-			strconv.Itoa(questioner.ID),
-			strconv.Itoa(answerer.ID),
-		},
-		ShutUpTime: 4294967295, // => forever
 	})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
