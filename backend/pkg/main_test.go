@@ -693,6 +693,7 @@ func TestQuestion(t *testing.T) {
 {
 	"title": "test title1",
 	"content":"test content1",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid2)+`
 }
 	`), t)
@@ -700,6 +701,7 @@ func TestQuestion(t *testing.T) {
 {
 	"title": "test title2",
 	"content":"test content2",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid2)+`
 }
 	`), t)
@@ -707,6 +709,7 @@ func TestQuestion(t *testing.T) {
 {
 	"title": "test title3",
 	"content":"test content3",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid2)+`
 }
 	`), t)
@@ -714,6 +717,7 @@ func TestQuestion(t *testing.T) {
 {
 	"title": "test title4",
 	"content":"test content4",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid1)+`
 }
 	`), t)
@@ -721,6 +725,7 @@ func TestQuestion(t *testing.T) {
 {
 	"title": "test title5",
 	"content":"test content5",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid1)+`
 }
 	`), t)
@@ -759,6 +764,7 @@ func TestQuestion(t *testing.T) {
 	AuxQuestionClose(e, t, questionid1, token1)
 	AuxQuestionAggreg(e, t, token1)
 	AuxQuestionAggreg(e, t, token2)
+	AuxQuestionList(e, t)
 }
 
 func TestQuestionX1(t *testing.T) {
@@ -776,6 +782,7 @@ func TestQuestionX1(t *testing.T) {
 {
 	"title": "test titleX",
 	"content":"test contentX",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid3)+`
 }
 	`); rec.Result().StatusCode != http.StatusBadRequest {
@@ -787,6 +794,7 @@ func TestQuestionX1(t *testing.T) {
 {
 	"title": "test titleX",
 	"content":"test contentX",
+	"public": true,
 	"answererid":-1
 }
 	`); rec.Result().StatusCode != http.StatusBadRequest {
@@ -799,6 +807,7 @@ func TestQuestionX1(t *testing.T) {
 {
 	"title": "test title4",
 	"content":"test content4",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid2)+`
 }
 	`), t)
@@ -827,6 +836,7 @@ func TestQuestionX1(t *testing.T) {
 {
 	"title": "test title5",
 	"content":"test content5",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid1)+`
 }
 	`), t)
@@ -840,6 +850,7 @@ func TestQuestionX1(t *testing.T) {
 {
 	"title": "test titleX",
 	"content":"test contentX",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid4)+`
 }
 	`); rec.Result().StatusCode != http.StatusBadRequest {
@@ -877,6 +888,7 @@ func TestQuestionX2(t *testing.T) {
 {
 	"title": "test title6",
 	"content":"test content6",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid2)+`
 }
 	`)
@@ -1065,6 +1077,7 @@ func TestQuestionSubmitXv(t *testing.T) {
 {
 	"title":"titleX",
 	"content":"contentX",
+	"public": true,
 	"answererid":-1
 }
 		`)
@@ -1206,6 +1219,7 @@ func TestParam(t *testing.T) {
 {
 	"title": "test title",
 	"content":"test content",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid2)+`
 }
 	`), t)
@@ -1222,6 +1236,7 @@ func TestParam(t *testing.T) {
 {
 	"title": "test title",
 	"content":"test content",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid2)+`
 }
 	`), t)
@@ -1239,6 +1254,7 @@ func TestParam(t *testing.T) {
 {
 	"title": "test title",
 	"content":"test content",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid2)+`
 }
 	`), t)
@@ -1269,6 +1285,7 @@ func TestParam(t *testing.T) {
 {
 	"title": "test title",
 	"content":"test content",
+	"public": true,
 	"answererid":`+strconv.Itoa(userid2)+`
 }
 	`), t)

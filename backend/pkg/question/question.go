@@ -76,7 +76,7 @@ func submit(c echo.Context) error {
 		SetAnswererID(answerer.ID).
 		SetMsgCount(0).
 		SetAnswered(false).
-		SetPublic(true).
+		SetPublic(u.Public).
 		Save(ctx.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -109,6 +109,7 @@ type questionSubmitRequest struct {
 	Title      string `json:"title" validate:"required"`
 	Content    string `json:"content" validate:"required"`
 	AnswererID int    `json:"answererid" validate:"required"`
+	Public     bool   `json:"public"`
 }
 
 type questionSubmitResponse struct {
