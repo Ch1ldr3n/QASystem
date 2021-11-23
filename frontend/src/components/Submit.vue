@@ -40,6 +40,9 @@
                 :autosize="{ minRows: 6, maxRows: 10 }"
               />
             </el-form-item>
+            <el-form-item label="公开">
+              <el-switch v-model="pub" />
+            </el-form-item>
             <el-form-item>
               <el-button
                 type="primary"
@@ -70,6 +73,7 @@ export default {
       aname: '',
       aprof: '',
       price: '',
+      pub: false,
     };
   },
   created() {
@@ -113,6 +117,7 @@ export default {
           answererid: parseInt(this.$route.query.id, 10),
           content: this.qdesc.split(' ').join('\n'),
           title: this.qname,
+          public: this.pub,
         }),
       })
         .then((resp) => {
