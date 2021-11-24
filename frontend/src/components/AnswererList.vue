@@ -3,7 +3,7 @@
     <el-container>
       <el-table
         ref="filterTable"
-        :data="userlist.slice((currentPage-1)*pageSize,currentPage*pageSize)"
+        :data="userlist"
         :default-sort="{ prop: 'username', order: 'descending' }"
         style="width: 100%"
       >
@@ -43,18 +43,6 @@
           </template>
         </el-table-column>
       </el-table>
-    </el-container>
-    <el-container>
-      <el-pagination
-        v-model:currentPage="currentPage"
-        :page-size="10"
-        layout="prev, pager, next, jumper"
-        :total="total"
-        style="margin:0 auto"
-        :hide-on-single-page="true"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
     </el-container>
   </el-main>
 </template>

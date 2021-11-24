@@ -3,7 +3,7 @@
     <el-container>
       <el-table
         ref="filterTable"
-        :data="tableData.slice((currentPage-1)*pageSize,currentPage*pageSize)"
+        :data="tableData"
         :default-sort="{ prop: 'date', order: 'descending' }"
         style="width: 100%"
       >
@@ -145,18 +145,6 @@
         :disable-user-list-toggle="true"
         :message-styling="true"
         @scrollToTop="handleScrollToTop"
-      />
-    </el-container>
-    <el-container>
-      <el-pagination
-        v-model:currentPage="currentPage"
-        :page-size="10"
-        layout="prev, pager, next, jumper"
-        :total="total"
-        style="margin:0 auto"
-        :hide-on-single-page="true"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
       />
     </el-container>
   </el-main>
